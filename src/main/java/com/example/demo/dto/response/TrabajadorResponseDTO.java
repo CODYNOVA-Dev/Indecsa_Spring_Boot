@@ -1,6 +1,7 @@
 package com.example.demo.dto.response;
 
 import com.example.demo.model.Trabajador.EstadoTrabajador;
+import com.example.demo.model.Trabajador.Ubicacion;
 import lombok.Builder;
 import lombok.Data;
 
@@ -22,4 +23,6 @@ public class TrabajadorResponseDTO {
     private String descripcionTrabajador;
     private Byte calificacionTrabajador;
     private LocalDate fechaIngreso;
+    // Campo agregado: ubicacion_trabajador existe en la BD
+    private Ubicacion ubicacionTrabajador;
 }

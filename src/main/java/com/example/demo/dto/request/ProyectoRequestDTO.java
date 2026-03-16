@@ -1,5 +1,6 @@
 package com.example.demo.dto.request;
 
+import com.example.demo.model.Proyecto.UbicacionGeo;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -21,8 +22,9 @@ public class ProyectoRequestDTO {
     @Size(max = 100, message = "El municipio no puede exceder 100 caracteres")
     private String municipioProyecto;
 
-    @Size(max = 100, message = "El estado geográfico no puede exceder 100 caracteres")
-    private String estadoProyectoGeo;
+    // Corregido: era String con @Size, pero en la BD es ENUM('CDMX','Hidalgo','Puebla') NOT NULL
+    @NotNull(message = "El estado geográfico del proyecto es obligatorio")
+    private UbicacionGeo estadoProyectoGeo;
 
     private LocalDate fechaEstimadaInicio;
 

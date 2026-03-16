@@ -1,5 +1,6 @@
 package com.example.demo.dto.request;
 
+import com.example.demo.model.Trabajador.Ubicacion;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -27,9 +28,8 @@ public class TrabajadorRequestDTO {
     @Size(max = 100, message = "El correo no puede exceder 100 caracteres")
     private String correoTrabajador;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 8, max = 255, message = "La contraseña debe tener entre 8 y 255 caracteres")
-    private String contraseniaTrabajador;
+    // Campo eliminado: contrasenia_trabajador no existe en la BD
+    // private String contraseniaTrabajador;
 
     @NotBlank(message = "La especialidad es obligatoria")
     @Size(max = 100, message = "La especialidad no puede exceder 100 caracteres")
@@ -44,4 +44,8 @@ public class TrabajadorRequestDTO {
 
     @NotNull(message = "La fecha de ingreso es obligatoria")
     private LocalDate fechaIngreso;
+
+    // Campo agregado: ubicacion_trabajador es NOT NULL en la BD
+    @NotNull(message = "La ubicación del trabajador es obligatoria")
+    private Ubicacion ubicacionTrabajador;
 }

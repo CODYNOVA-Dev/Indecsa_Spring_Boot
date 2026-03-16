@@ -104,13 +104,11 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Contrato (asignacion_pc) no encontrado con id: " + dto.getIdAsignacionPc()));
 
-        // Validar que el contrato pertenece al proyecto indicado (equivalente al trigger T1)
         if (!asignacionPc.getProyecto().getIdProyecto().equals(dto.getIdProyecto())) {
             throw new IllegalArgumentException(
                     "El contrato indicado no pertenece al proyecto especificado.");
         }
 
-        // Validar unicidad trabajador-proyecto (equivalente a la constraint uq_trabajador_proyecto)
         if (asignacionRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
                 dto.getIdTrabajador(), dto.getIdProyecto())) {
             throw new IllegalArgumentException(
@@ -219,6 +217,8 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
                 .descripcionTrabajador(t.getDescripcionTrabajador())
                 .calificacionTrabajador(t.getCalificacionTrabajador())
                 .fechaIngreso(t.getFechaIngreso())
+                // Agregado: ubicacionTrabajador existe en la BD
+                .ubicacionTrabajador(t.getUbicacionTrabajador())
                 .build();
 
         ProyectoResponseDTO proyectoDTO = ProyectoResponseDTO.builder()
@@ -237,6 +237,8 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
 
         ContratistaResponseDTO contratistaDTO = ContratistaResponseDTO.builder()
                 .idContratista(c.getIdContratista())
+                // Agregados: nombreContratista y ubicacionContratista existen en la BD
+                .nombreContratista(c.getNombreContratista())
                 .rfcContratista(c.getRfcContratista())
                 .telefonoContratista(c.getTelefonoContratista())
                 .correoContratista(c.getCorreoContratista())
@@ -244,6 +246,7 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
                 .experiencia(c.getExperiencia())
                 .calificacionContratista(c.getCalificacionContratista())
                 .estadoContratista(c.getEstadoContratista())
+                .ubicacionContratista(c.getUbicacionContratista())
                 .build();
 
         AsignacionProyectoContratistaResponseDTO apcDTO = AsignacionProyectoContratistaResponseDTO.builder()

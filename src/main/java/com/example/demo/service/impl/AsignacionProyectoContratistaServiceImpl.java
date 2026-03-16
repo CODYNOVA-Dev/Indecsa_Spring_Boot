@@ -197,6 +197,8 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
 
         ContratistaResponseDTO contratistaDTO = ContratistaResponseDTO.builder()
                 .idContratista(c.getIdContratista())
+                // Agregados: nombreContratista y ubicacionContratista existen en la BD
+                .nombreContratista(c.getNombreContratista())
                 .rfcContratista(c.getRfcContratista())
                 .telefonoContratista(c.getTelefonoContratista())
                 .correoContratista(c.getCorreoContratista())
@@ -204,6 +206,7 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
                 .experiencia(c.getExperiencia())
                 .calificacionContratista(c.getCalificacionContratista())
                 .estadoContratista(c.getEstadoContratista())
+                .ubicacionContratista(c.getUbicacionContratista())
                 .build();
 
         return AsignacionProyectoContratistaResponseDTO.builder()

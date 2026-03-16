@@ -1,6 +1,7 @@
 package com.example.demo.dto.response;
 
 import com.example.demo.model.Proyecto.EstatusProyecto;
+import com.example.demo.model.Proyecto.UbicacionGeo;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,7 +16,8 @@ public class ProyectoResponseDTO {
     private String tipoProyecto;
     private String lugarProyecto;
     private String municipioProyecto;
-    private String estadoProyectoGeo;
+    // Corregido: era String, pero en la BD es ENUM('CDMX','Hidalgo','Puebla')
+    private UbicacionGeo estadoProyectoGeo;
     private LocalDate fechaEstimadaInicio;
     private LocalDate fechaEstimadaFin;
     private Byte calificacionProyecto;

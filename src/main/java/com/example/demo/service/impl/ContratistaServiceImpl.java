@@ -8,7 +8,6 @@ import com.example.demo.repository.ContratistaRepository;
 import com.example.demo.service.ContratistaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +19,8 @@ import java.util.stream.Collectors;
 public class ContratistaServiceImpl implements ContratistaService {
 
     private final ContratistaRepository contratistaRepository;
-    private final PasswordEncoder passwordEncoder;
+
+    // Se eliminó PasswordEncoder: contrasenia_contratista no existe en la BD
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
@@ -63,7 +63,6 @@ public class ContratistaServiceImpl implements ContratistaService {
         }
         Contratista contratista = new Contratista();
         mapDtoToEntity(dto, contratista);
-        contratista.setContraseniaContratista(passwordEncoder.encode(dto.getContraseniaContratista()));
         contratista.setEstadoContratista(EstadoContratista.ACTIVO);
         return toResponse(contratistaRepository.save(contratista));
     }
@@ -85,7 +84,6 @@ public class ContratistaServiceImpl implements ContratistaService {
                     "Ya existe un contratista con el RFC: " + dto.getRfcContratista());
         }
         mapDtoToEntity(dto, contratista);
-        contratista.setContraseniaContratista(passwordEncoder.encode(dto.getContraseniaContratista()));
         return toResponse(contratistaRepository.save(contratista));
     }
 
@@ -116,18 +114,24 @@ public class ContratistaServiceImpl implements ContratistaService {
     }
 
     private void mapDtoToEntity(ContratistaRequestDTO dto, Contratista contratista) {
+        // Agregado: nombreContratista existe en la BD
+        contratista.setNombreContratista(dto.getNombreContratista());
         contratista.setRfcContratista(dto.getRfcContratista());
         contratista.setTelefonoContratista(dto.getTelefonoContratista());
         contratista.setCorreoContratista(dto.getCorreoContratista().toLowerCase().trim());
         contratista.setDescripcionContratista(dto.getDescripcionContratista());
         contratista.setExperiencia(dto.getExperiencia());
         contratista.setCalificacionContratista(dto.getCalificacionContratista());
+        // Agregado: ubicacionContratista existe en la BD
+        contratista.setUbicacionContratista(dto.getUbicacionContratista());
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────
     private ContratistaResponseDTO toResponse(Contratista c) {
         return ContratistaResponseDTO.builder()
                 .idContratista(c.getIdContratista())
+                // Agregado: nombreContratista existe en la BD
+                .nombreContratista(c.getNombreContratista())
                 .rfcContratista(c.getRfcContratista())
                 .telefonoContratista(c.getTelefonoContratista())
                 .correoContratista(c.getCorreoContratista())
@@ -135,6 +139,8 @@ public class ContratistaServiceImpl implements ContratistaService {
                 .experiencia(c.getExperiencia())
                 .calificacionContratista(c.getCalificacionContratista())
                 .estadoContratista(c.getEstadoContratista())
+                // Agregado: ubicacionContratista existe en la BD
+                .ubicacionContratista(c.getUbicacionContratista())
                 .build();
     }
 }

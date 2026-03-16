@@ -26,7 +26,7 @@ public class Rol {
 
     public enum NombreRol {
         ADMIN,
-        CAPITAL_HUMANO,
-        SUPERVISOR
+        CAPITAL_HUMANO
+        // Se eliminó SUPERVISOR: no existe en la BD (indecsa_v3_0.sql)
     }
 }

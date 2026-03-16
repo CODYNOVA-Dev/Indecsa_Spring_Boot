@@ -1,6 +1,7 @@
 package com.example.demo.dto.response;
 
 import com.example.demo.model.Contratista.EstadoContratista;
+import com.example.demo.model.Contratista.Ubicacion;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,6 +10,8 @@ import lombok.Data;
 public class ContratistaResponseDTO {
 
     private Integer idContratista;
+    // Campo agregado: nombre_contratista existe en la BD
+    private String nombreContratista;
     private String rfcContratista;
     private String telefonoContratista;
     private String correoContratista;
@@ -17,4 +20,6 @@ public class ContratistaResponseDTO {
     private String experiencia;
     private Byte calificacionContratista;
     private EstadoContratista estadoContratista;
+    // Campo agregado: ubicacion_contratista existe en la BD
+    private Ubicacion ubicacionContratista;
 }

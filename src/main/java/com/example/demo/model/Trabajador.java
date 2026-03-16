@@ -34,8 +34,8 @@ public class Trabajador {
     @Column(name = "correo_trabajador", nullable = false, unique = true, length = 100)
     private String correoTrabajador;
 
-    @Column(name = "contrasenia_trabajador", nullable = false, length = 255)
-    private String contraseniaTrabajador;
+    // Campo eliminado: contrasenia_trabajador no existe en la BD
+    // private String contraseniaTrabajador;
 
     @Column(name = "especialidad_trabajador", nullable = false, length = 100)
     private String especialidadTrabajador;
@@ -53,10 +53,21 @@ public class Trabajador {
     @Column(name = "fecha_ingreso", nullable = false)
     private LocalDate fechaIngreso;
 
+    // Campo agregado: existe en la BD pero faltaba en el modelo
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ubicacion_trabajador", nullable = false)
+    private Ubicacion ubicacionTrabajador;
+
     public enum EstadoTrabajador {
         ACTIVO,
         INACTIVO,
         VACACIONES,
         BAJA
+    }
+
+    public enum Ubicacion {
+        CDMX,
+        Hidalgo,
+        Puebla
     }
 }

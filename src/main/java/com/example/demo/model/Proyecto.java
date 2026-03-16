@@ -31,8 +31,10 @@ public class Proyecto {
     @Column(name = "municipio_proyecto", length = 100)
     private String municipioProyecto;
 
-    @Column(name = "estado_proyecto_geo", length = 100)
-    private String estadoProyectoGeo;
+    // Corregido: en la BD es ENUM('CDMX','Hidalgo','Puebla') NOT NULL, no VARCHAR
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_proyecto_geo", nullable = false)
+    private UbicacionGeo estadoProyectoGeo;
 
     @Column(name = "fecha_estimada_inicio")
     private LocalDate fechaEstimadaInicio;
@@ -56,5 +58,11 @@ public class Proyecto {
         PAUSADO,
         FINALIZADO,
         CANCELADO
+    }
+
+    public enum UbicacionGeo {
+        CDMX,
+        Hidalgo,
+        Puebla
     }
 }

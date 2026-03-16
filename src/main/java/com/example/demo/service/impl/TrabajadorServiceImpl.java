@@ -8,7 +8,6 @@ import com.example.demo.repository.TrabajadorRepository;
 import com.example.demo.service.TrabajadorService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +19,8 @@ import java.util.stream.Collectors;
 public class TrabajadorServiceImpl implements TrabajadorService {
 
     private final TrabajadorRepository trabajadorRepository;
-    private final PasswordEncoder passwordEncoder;
+
+    // Se eliminó PasswordEncoder: contrasenia_trabajador no existe en la BD
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
@@ -40,6 +40,7 @@ public class TrabajadorServiceImpl implements TrabajadorService {
     }
 
     // ─── FIND BY ESTADO ───────────────────────────────────────────────────────
+    @Override  // Agregado @Override que faltaba
     @Transactional(readOnly = true)
     public List<TrabajadorResponseDTO> findByEstado(EstadoTrabajador estado) {
         return trabajadorRepository.findByEstadoTrabajador(estado)
@@ -73,7 +74,8 @@ public class TrabajadorServiceImpl implements TrabajadorService {
         }
         Trabajador trabajador = new Trabajador();
         mapDtoToEntity(dto, trabajador);
-        trabajador.setContraseniaTrabajador(passwordEncoder.encode(dto.getContraseniaTrabajador()));
+        // Se eliminó: passwordEncoder.encode(dto.getContraseniaTrabajador())
+        // contrasenia_trabajador no existe en la BD
         trabajador.setEstadoTrabajador(EstadoTrabajador.ACTIVO);
         return toResponse(trabajadorRepository.save(trabajador));
     }
@@ -96,7 +98,7 @@ public class TrabajadorServiceImpl implements TrabajadorService {
                     "Ya existe un trabajador con el NSS: " + dto.getNssTrabajador());
         }
         mapDtoToEntity(dto, trabajador);
-        trabajador.setContraseniaTrabajador(passwordEncoder.encode(dto.getContraseniaTrabajador()));
+        // Se eliminó: passwordEncoder.encode(dto.getContraseniaTrabajador())
         return toResponse(trabajadorRepository.save(trabajador));
     }
 
@@ -136,6 +138,8 @@ public class TrabajadorServiceImpl implements TrabajadorService {
         trabajador.setDescripcionTrabajador(dto.getDescripcionTrabajador());
         trabajador.setCalificacionTrabajador(dto.getCalificacionTrabajador());
         trabajador.setFechaIngreso(dto.getFechaIngreso());
+        // Agregado: ubicacionTrabajador existe en la BD
+        trabajador.setUbicacionTrabajador(dto.getUbicacionTrabajador());
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────
@@ -152,6 +156,8 @@ public class TrabajadorServiceImpl implements TrabajadorService {
                 .descripcionTrabajador(t.getDescripcionTrabajador())
                 .calificacionTrabajador(t.getCalificacionTrabajador())
                 .fechaIngreso(t.getFechaIngreso())
+                // Agregado: ubicacionTrabajador existe en la BD
+                .ubicacionTrabajador(t.getUbicacionTrabajador())
                 .build();
     }
 }

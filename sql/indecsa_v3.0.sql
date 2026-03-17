@@ -53,7 +53,7 @@ CREATE TABLE Trabajador (
                             telefono_trabajador     VARCHAR(15)  NOT NULL,
                             correo_trabajador       VARCHAR(100) NOT NULL UNIQUE,
                             especialidad_trabajador VARCHAR(100) NOT NULL,
-                            estado_trabajador       ENUM('ACTIVO','INACTIVO','VACACIONES','BAJA') NOT NULL DEFAULT 'ACTIVO',
+                            estado_trabajador       ENUM('ACTIVO','OCUPADO','VACACIONES','BAJA') NOT NULL DEFAULT 'ACTIVO',
                             descripcion_trabajador  VARCHAR(800) DEFAULT 'Sin descripcion',
                             calificacion_trabajador TINYINT CHECK (calificacion_trabajador BETWEEN 1 AND 5),
                             fecha_ingreso           DATE NOT NULL,

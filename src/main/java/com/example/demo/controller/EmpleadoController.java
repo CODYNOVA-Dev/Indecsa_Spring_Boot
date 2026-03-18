@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.request.EmpleadoRequestDTO;
 import com.example.demo.dto.request.LoginRequestDTO;
 import com.example.demo.dto.response.EmpleadoResponseDTO;
+import com.example.demo.dto.response.LoginResponseDTO;
 import com.example.demo.service.EmpleadoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/empleados")
@@ -38,6 +38,24 @@ public class EmpleadoController {
         return ResponseEntity.ok(empleadoService.findByRol(idRol));
     }
 
+    // ─── LOGIN ────────────────────────────────────────────────────────────────
+    // POST /api/v1/empleados/login
+    // Body: { "correoEmpleado": "admin", "contrasena": "1234" }
+    // Response 200: LoginResponseDTO con idEmpleado, nombreEmpleado, correoEmpleado, nombreRol
+    // Response 401: credenciales incorrectas
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
+        try {
+            LoginResponseDTO response = empleadoService.login(
+                    dto.getCorreoEmpleado(),
+                    dto.getContrasena()
+            );
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
     // ─── CREATE ───────────────────────────────────────────────────────────────
     @PostMapping
     public ResponseEntity<EmpleadoResponseDTO> create(@Valid @RequestBody EmpleadoRequestDTO dto) {
@@ -58,29 +76,4 @@ public class EmpleadoController {
         empleadoService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
-    // ─── LOGIN ────────────────────────────────────────────────────────────────
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
-        EmpleadoResponseDTO empleado = empleadoService.login(
-                dto.getCorreoEmpleado(),
-                dto.getContrasena()
-        );
-
-        if (empleado != null) {
-            return ResponseEntity.ok(Map.of(
-                    "success", true,
-                    "message", "Login exitoso",
-                    "empleado", empleado
-            ));
-        } else {
-            return ResponseEntity.status(401).body(Map.of(
-                    "success", false,
-                    "message", "Credenciales incorrectas"
-            ));
-        }
-    }
 }
-
-
-

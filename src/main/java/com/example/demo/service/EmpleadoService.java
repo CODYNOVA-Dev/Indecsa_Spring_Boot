@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.request.EmpleadoRequestDTO;
 import com.example.demo.dto.response.EmpleadoResponseDTO;
+import com.example.demo.dto.response.LoginResponseDTO;
 
 import java.util.List;
 
@@ -19,5 +20,8 @@ public interface EmpleadoService {
 
     void delete(Integer id);
 
-    EmpleadoResponseDTO login(String correo, String contrasena); // ← nuevo
+    // ─── LOGIN ────────────────────────────────────────────────────────────────
+    // Devuelve LoginResponseDTO con el rol como String, o lanza
+    // IllegalArgumentException si las credenciales son incorrectas.
+    LoginResponseDTO login(String correo, String contrasena);
 }

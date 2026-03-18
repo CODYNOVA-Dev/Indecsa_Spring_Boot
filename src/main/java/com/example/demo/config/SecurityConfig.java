@@ -26,12 +26,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
-                "http://localhost:63342",
-                "http://127.0.0.1:63342"
-        ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+
+        // Permite cualquier origen (Android, browser local, etc.)
+        // En producción reemplaza "*" por los orígenes específicos permitidos
+        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
@@ -44,7 +45,6 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/empleados/login").permitAll()
                         .anyRequest().permitAll()
                 );
         return http.build();

@@ -2,6 +2,7 @@ package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.EmpleadoRequestDTO;
 import com.example.demo.dto.response.EmpleadoResponseDTO;
+import com.example.demo.dto.response.LoginResponseDTO;
 import com.example.demo.dto.response.RolResponseDTO;
 import com.example.demo.model.Empleado;
 import com.example.demo.model.Rol;
@@ -110,16 +111,23 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     // ─── LOGIN ────────────────────────────────────────────────────────────────
     @Override
     @Transactional(readOnly = true)
-    public EmpleadoResponseDTO login(String correo, String contrasena) {
+    public LoginResponseDTO login(String correo, String contrasena) {
+        // Buscar empleado por correo (ignorando mayúsculas y espacios)
         Empleado empleado = empleadoRepository
                 .findByCorreoEmpleado(correo.toLowerCase().trim())
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas"));
 
-        if (empleado == null || !passwordEncoder.matches(contrasena, empleado.getContrasena())) {
-            return null;
+        // Verificar contraseña con BCrypt
+        if (!passwordEncoder.matches(contrasena, empleado.getContrasena())) {
+            throw new IllegalArgumentException("Credenciales incorrectas");
         }
 
-        return toResponse(empleado);
+        return LoginResponseDTO.builder()
+                .idEmpleado(empleado.getIdEmpleado())
+                .nombreEmpleado(empleado.getNombreEmpleado())
+                .correoEmpleado(empleado.getCorreoEmpleado())
+                .nombreRol(empleado.getRol().getNombreRol().name())
+                .build();
     }
 
     // ─── HELPERS ──────────────────────────────────────────────────────────────

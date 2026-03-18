@@ -107,6 +107,21 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleadoRepository.deleteById(id);
     }
 
+    // ─── LOGIN ────────────────────────────────────────────────────────────────
+    @Override
+    @Transactional(readOnly = true)
+    public EmpleadoResponseDTO login(String correo, String contrasena) {
+        Empleado empleado = empleadoRepository
+                .findByCorreoEmpleado(correo.toLowerCase().trim())
+                .orElse(null);
+
+        if (empleado == null || !passwordEncoder.matches(contrasena, empleado.getContrasena())) {
+            return null;
+        }
+
+        return toResponse(empleado);
+    }
+
     // ─── HELPERS ──────────────────────────────────────────────────────────────
     private Empleado getEmpleadoOrThrow(Integer id) {
         return empleadoRepository.findById(id)

@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.dto.request.EmpleadoRequestDTO;
+import com.example.demo.dto.request.LoginRequestDTO;
 import com.example.demo.dto.response.EmpleadoResponseDTO;
 import com.example.demo.service.EmpleadoService;
 import jakarta.validation.Valid;
@@ -10,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/empleados")
@@ -56,4 +58,29 @@ public class EmpleadoController {
         empleadoService.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    // ─── LOGIN ────────────────────────────────────────────────────────────────
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
+        EmpleadoResponseDTO empleado = empleadoService.login(
+                dto.getCorreoEmpleado(),
+                dto.getContrasena()
+        );
+
+        if (empleado != null) {
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Login exitoso",
+                    "empleado", empleado
+            ));
+        } else {
+            return ResponseEntity.status(401).body(Map.of(
+                    "success", false,
+                    "message", "Credenciales incorrectas"
+            ));
+        }
+    }
 }
+
+
+

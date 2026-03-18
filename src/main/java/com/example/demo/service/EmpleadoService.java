@@ -18,4 +18,6 @@ public interface EmpleadoService {
     EmpleadoResponseDTO update(Integer id, EmpleadoRequestDTO dto);
 
     void delete(Integer id);
+
+    EmpleadoResponseDTO login(String correo, String contrasena); // ← nuevo
 }

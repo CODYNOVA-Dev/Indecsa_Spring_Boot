@@ -39,13 +39,13 @@ INSERT INTO Rol (nombre_rol, descripcion_rol) VALUES
 -- Se eliminó el empleado con rol SUPERVISOR (ya no existe en el ENUM)
 INSERT INTO Empleado (nombre_empleado, correo_empleado, contrasena, id_rol) VALUES
                                                                                 ('Admin Principal',
-                                                                                 'admin@indecsa.com',
-                                                                                 'Admin_unico_123',
+                                                                                 'admin',
+                                                                                 '1234',
                                                                                  (SELECT id_rol FROM Rol WHERE nombre_rol = 'ADMIN')),
 
                                                                                 ('Laura Ramirez',
-                                                                                 'laura.ramirez@indecsa.com',
-                                                                                 'CapHum_456',
+                                                                                 'cap',
+                                                                                 '1234',
                                                                                  (SELECT id_rol FROM Rol WHERE nombre_rol = 'CAPITAL_HUMANO'));
 
 

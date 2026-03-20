@@ -130,7 +130,7 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON indecsa.Asignacion_Trabajador_Proyecto  
 
 -- Usuario administrador único
 DROP USER IF EXISTS 'Admin_unico'@'%';
-CREATE USER 'Admin_unico'@'%' IDENTIFIED BY 'Admin_unico_123';
+CREATE USER 'Admin_unico'@'%' IDENTIFIED BY 'Admin_unico@indecsa.com';
 GRANT 'ROL_ADMIN' TO 'Admin_unico'@'%';
 ALTER USER 'Admin_unico'@'%' DEFAULT ROLE 'ROL_ADMIN';
 

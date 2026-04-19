@@ -1,7 +1,6 @@
-package com.example.demo.repository;
+package com.indecsa.repository;
 
-import com.example.demo.model.Rol;
-import com.example.demo.model.Rol.NombreRol;
+import com.indecsa.model.Rol;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,8 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface RolRepository extends JpaRepository<Rol, Integer> {
-
-    Optional<Rol> findByNombreRol(NombreRol nombreRol);
-
-    boolean existsByNombreRol(NombreRol nombreRol);
+    Optional<Rol> findByNombreRol(Rol.NombreRol nombreRol);
 }

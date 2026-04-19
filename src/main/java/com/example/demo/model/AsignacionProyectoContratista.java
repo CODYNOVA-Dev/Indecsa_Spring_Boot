@@ -1,23 +1,20 @@
-package com.example.demo.model;
+package com.indecsa.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
+import lombok.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(
     name = "Asignacion_Proyecto_Contratista",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uq_proyecto_contratista", columnNames = {"id_proyecto", "id_contratista"})
-    }
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_proyecto_contratista",
+        columnNames = {"id_proyecto", "id_contratista"}
+    )
 )
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class AsignacionProyectoContratista {
 
     @Id
@@ -42,20 +39,20 @@ public class AsignacionProyectoContratista {
     @Column(name = "fecha_fin_estimada")
     private LocalDate fechaFinEstimada;
 
-    @Column(name = "monto_contratado", precision = 15, scale = 2)
-    private BigDecimal montoContratado;
+    @Column(name = "personal_asignado", nullable = false)
+    private Integer personalAsignado;
+
+    @Column(name = "puestos_requeridos", length = 500)
+    private String puestosRequeridos;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_contrato", nullable = false, columnDefinition = "ENUM('ACTIVO','SUSPENDIDO','FINALIZADO','RESCINDIDO') DEFAULT 'ACTIVO'")
-    private EstatusContrato estatusContrato = EstatusContrato.ACTIVO;
+    @Column(name = "estatus_contrato", nullable = false)
+    private EstatusContrato estatusContrato;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
 
     public enum EstatusContrato {
-        ACTIVO,
-        SUSPENDIDO,
-        FINALIZADO,
-        RESCINDIDO
+        ACTIVO, VIGENTE, SUSPENDIDO, FINALIZADO, CANCELADO
     }
 }

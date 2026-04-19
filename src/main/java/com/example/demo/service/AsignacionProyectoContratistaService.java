@@ -1,28 +1,15 @@
-package com.example.demo.service;
+package com.indecsa.service;
 
-import com.example.demo.dto.request.AsignacionProyectoContratistaRequestDTO;
-import com.example.demo.dto.response.AsignacionProyectoContratistaResponseDTO;
-import com.example.demo.model.AsignacionProyectoContratista.EstatusContrato;
+import com.indecsa.dto.asignacion.AsignacionProyectoContratistaRequest;
+import com.indecsa.dto.asignacion.AsignacionProyectoContratistaResponse;
 
 import java.util.List;
 
 public interface AsignacionProyectoContratistaService {
-
-    List<AsignacionProyectoContratistaResponseDTO> findAll();
-
-    AsignacionProyectoContratistaResponseDTO findById(Integer id);
-
-    List<AsignacionProyectoContratistaResponseDTO> findByProyecto(Integer idProyecto);
-
-    List<AsignacionProyectoContratistaResponseDTO> findByContratista(Integer idContratista);
-
-    List<AsignacionProyectoContratistaResponseDTO> findByEstatus(EstatusContrato estatus);
-
-    AsignacionProyectoContratistaResponseDTO create(AsignacionProyectoContratistaRequestDTO dto);
-
-    AsignacionProyectoContratistaResponseDTO update(Integer id, AsignacionProyectoContratistaRequestDTO dto);
-
-    AsignacionProyectoContratistaResponseDTO cambiarEstatus(Integer id, EstatusContrato estatus);
-
+    List<AsignacionProyectoContratistaResponse> findByProyecto(Integer idProyecto);
+    List<AsignacionProyectoContratistaResponse> findByContratista(Integer idContratista);
+    AsignacionProyectoContratistaResponse findById(Integer id);
+    AsignacionProyectoContratistaResponse create(AsignacionProyectoContratistaRequest request);
+    AsignacionProyectoContratistaResponse update(Integer id, AsignacionProyectoContratistaRequest request);
     void delete(Integer id);
 }

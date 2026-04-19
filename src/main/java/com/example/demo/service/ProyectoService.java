@@ -1,26 +1,22 @@
-package com.example.demo.service;
+package com.indecsa.service;
 
-import com.example.demo.dto.request.ProyectoRequestDTO;
-import com.example.demo.dto.response.ProyectoResponseDTO;
-import com.example.demo.model.Proyecto.EstatusProyecto;
-
-import java.util.List;
+import com.indecsa.dto.proyecto.ProyectoRequest;
+import com.indecsa.dto.proyecto.ProyectoResponse;
+import com.indecsa.model.Proyecto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProyectoService {
-
-    List<ProyectoResponseDTO> findAll();
-
-    ProyectoResponseDTO findById(Integer id);
-
-    List<ProyectoResponseDTO> findByEstatus(EstatusProyecto estatus);
-
-    List<ProyectoResponseDTO> findByMunicipio(String municipio);
-
-    ProyectoResponseDTO create(ProyectoRequestDTO dto);
-
-    ProyectoResponseDTO update(Integer id, ProyectoRequestDTO dto);
-
-    ProyectoResponseDTO cambiarEstatus(Integer id, EstatusProyecto estatus);
-
+    Page<ProyectoResponse> findByFiltros(
+            String nombre,
+            Proyecto.TipoProyecto tipo,
+            Proyecto.EstatusProyecto estatus,
+            Proyecto.EntidadFederativa estadoGeo,
+            String cliente,
+            Pageable pageable
+    );
+    ProyectoResponse findById(Integer id);
+    ProyectoResponse create(ProyectoRequest request);
+    ProyectoResponse update(Integer id, ProyectoRequest request);
     void delete(Integer id);
 }

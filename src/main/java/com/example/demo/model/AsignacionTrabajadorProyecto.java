@@ -1,22 +1,20 @@
-package com.example.demo.model;
+package com.indecsa.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(
     name = "Asignacion_Trabajador_Proyecto",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uq_trabajador_proyecto", columnNames = {"id_trabajador", "id_proyecto"})
-    }
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_trabajador_proyecto",
+        columnNames = {"id_trabajador", "id_proyecto"}
+    )
 )
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class AsignacionTrabajadorProyecto {
 
     @Id
@@ -36,8 +34,8 @@ public class AsignacionTrabajadorProyecto {
     @JoinColumn(name = "id_asignacion_pc", nullable = false)
     private AsignacionProyectoContratista asignacionProyectoContratista;
 
-    @Column(name = "rol_en_proyecto", length = 100)
-    private String rolEnProyecto;
+    @Column(name = "puesto_en_proyecto", length = 100)
+    private String puestoEnProyecto;
 
     @Column(name = "fecha_inicio")
     private LocalDate fechaInicio;
@@ -46,15 +44,13 @@ public class AsignacionTrabajadorProyecto {
     private LocalDate fechaFinEstimada;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_asignacion", nullable = false, columnDefinition = "ENUM('ACTIVO','SUSPENDIDO','FINALIZADO') DEFAULT 'ACTIVO'")
-    private EstatusAsignacion estatusAsignacion = EstatusAsignacion.ACTIVO;
+    @Column(name = "estatus_asignacion", nullable = false)
+    private EstatusAsignacion estatusAsignacion;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
 
     public enum EstatusAsignacion {
-        ACTIVO,
-        SUSPENDIDO,
-        FINALIZADO
+        ACTIVO, SUSPENDIDO, INCAPACIDAD, CANCELADO, VACACIONES, FINALIZADO
     }
 }

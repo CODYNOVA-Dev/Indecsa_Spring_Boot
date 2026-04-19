@@ -1,92 +1,63 @@
-package com.example.demo.controller;
+package com.indecsa.controller;
 
-import com.example.demo.dto.request.AsignacionTrabajadorProyectoRequestDTO;
-import com.example.demo.dto.response.AsignacionTrabajadorProyectoResponseDTO;
-import com.example.demo.model.AsignacionTrabajadorProyecto.EstatusAsignacion;
-import com.example.demo.service.AsignacionTrabajadorProyectoService;
+import com.indecsa.dto.asignacion.AsignacionTrabajadorProyectoRequest;
+import com.indecsa.dto.asignacion.AsignacionTrabajadorProyectoResponse;
+import com.indecsa.service.AsignacionTrabajadorProyectoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/asignaciones/trabajador-proyecto")
+@RequestMapping("/api/asignaciones-trabajador")
 @RequiredArgsConstructor
 public class AsignacionTrabajadorProyectoController {
 
-    private final AsignacionTrabajadorProyectoService asignacionService;
+    private final AsignacionTrabajadorProyectoService asignacionTpService;
 
-    // ─── GET ALL ──────────────────────────────────────────────────────────────
-    @GetMapping
-    public ResponseEntity<List<AsignacionTrabajadorProyectoResponseDTO>> getAll() {
-        return ResponseEntity.ok(asignacionService.findAll());
-    }
-
-    // ─── GET BY ID ────────────────────────────────────────────────────────────
-    @GetMapping("/{id}")
-    public ResponseEntity<AsignacionTrabajadorProyectoResponseDTO> getById(
-            @PathVariable Integer id) {
-        return ResponseEntity.ok(asignacionService.findById(id));
-    }
-
-    // ─── GET BY PROYECTO ──────────────────────────────────────────────────────
     @GetMapping("/proyecto/{idProyecto}")
-    public ResponseEntity<List<AsignacionTrabajadorProyectoResponseDTO>> getByProyecto(
+    @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
+    public ResponseEntity<List<AsignacionTrabajadorProyectoResponse>> findByProyecto(
             @PathVariable Integer idProyecto) {
-        return ResponseEntity.ok(asignacionService.findByProyecto(idProyecto));
+        return ResponseEntity.ok(asignacionTpService.findByProyecto(idProyecto));
     }
 
-    // ─── GET BY TRABAJADOR ────────────────────────────────────────────────────
     @GetMapping("/trabajador/{idTrabajador}")
-    public ResponseEntity<List<AsignacionTrabajadorProyectoResponseDTO>> getByTrabajador(
+    @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
+    public ResponseEntity<List<AsignacionTrabajadorProyectoResponse>> findByTrabajador(
             @PathVariable Integer idTrabajador) {
-        return ResponseEntity.ok(asignacionService.findByTrabajador(idTrabajador));
+        return ResponseEntity.ok(asignacionTpService.findByTrabajador(idTrabajador));
     }
 
-    // ─── GET BY ASIGNACION PC ─────────────────────────────────────────────────
-    @GetMapping("/contrato/{idAsignacionPc}")
-    public ResponseEntity<List<AsignacionTrabajadorProyectoResponseDTO>> getByAsignacionPc(
-            @PathVariable Integer idAsignacionPc) {
-        return ResponseEntity.ok(asignacionService.findByAsignacionPc(idAsignacionPc));
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
+    public ResponseEntity<AsignacionTrabajadorProyectoResponse> findById(@PathVariable Integer id) {
+        return ResponseEntity.ok(asignacionTpService.findById(id));
     }
 
-    // ─── GET BY ESTATUS ───────────────────────────────────────────────────────
-    @GetMapping("/estatus/{estatus}")
-    public ResponseEntity<List<AsignacionTrabajadorProyectoResponseDTO>> getByEstatus(
-            @PathVariable EstatusAsignacion estatus) {
-        return ResponseEntity.ok(asignacionService.findByEstatus(estatus));
-    }
-
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @PostMapping
-    public ResponseEntity<AsignacionTrabajadorProyectoResponseDTO> create(
-            @Valid @RequestBody AsignacionTrabajadorProyectoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(asignacionService.create(dto));
+    @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
+    public ResponseEntity<AsignacionTrabajadorProyectoResponse> create(
+            @Valid @RequestBody AsignacionTrabajadorProyectoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(asignacionTpService.create(request));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @PutMapping("/{id}")
-    public ResponseEntity<AsignacionTrabajadorProyectoResponseDTO> update(
+    @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
+    public ResponseEntity<AsignacionTrabajadorProyectoResponse> update(
             @PathVariable Integer id,
-            @Valid @RequestBody AsignacionTrabajadorProyectoRequestDTO dto) {
-        return ResponseEntity.ok(asignacionService.update(id, dto));
+            @Valid @RequestBody AsignacionTrabajadorProyectoRequest request) {
+        return ResponseEntity.ok(asignacionTpService.update(id, request));
     }
 
-    // ─── CAMBIAR ESTATUS ASIGNACIÓN ───────────────────────────────────────────
-    @PatchMapping("/{id}/estatus")
-    public ResponseEntity<AsignacionTrabajadorProyectoResponseDTO> cambiarEstatus(
-            @PathVariable Integer id,
-            @RequestParam EstatusAsignacion estatus) {
-        return ResponseEntity.ok(asignacionService.cambiarEstatus(id, estatus));
-    }
-
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
-        asignacionService.delete(id);
+        asignacionTpService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,92 +1,65 @@
-package com.example.demo.service.impl;
+package com.indecsa.service.impl;
 
-import com.example.demo.dto.request.RolRequestDTO;
-import com.example.demo.dto.response.RolResponseDTO;
-import com.example.demo.model.Rol;
-import com.example.demo.repository.RolRepository;
-import com.example.demo.service.RolService;
+import com.indecsa.dto.rol.RolRequest;
+import com.indecsa.dto.rol.RolResponse;
+import com.indecsa.model.Rol;
+import com.indecsa.repository.RolRepository;
+import com.indecsa.service.RolService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class RolServiceImpl implements RolService {
 
     private final RolRepository rolRepository;
 
-    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<RolResponseDTO> findAll() {
+    public List<RolResponse> findAll() {
         return rolRepository.findAll()
                 .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .map(RolResponse::from)
+                .toList();
     }
 
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public RolResponseDTO findById(Integer id) {
-        Rol rol = rolRepository.findById(id)
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
-                        "Rol no encontrado con id: " + id));
-        return toResponse(rol);
+    public RolResponse findById(Integer id) {
+        return RolResponse.from(getRolOrThrow(id));
     }
 
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public RolResponseDTO create(RolRequestDTO dto) {
-        if (rolRepository.existsByNombreRol(dto.getNombreRol())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un rol con el nombre: " + dto.getNombreRol());
-        }
-        Rol rol = new Rol();
-        rol.setNombreRol(dto.getNombreRol());
-        rol.setDescripcionRol(dto.getDescripcionRol());
-        return toResponse(rolRepository.save(rol));
+    public RolResponse create(RolRequest request) {
+        Rol rol = Rol.builder()
+                .nombreRol(request.getNombreRol())
+                .descripcionRol(request.getDescripcionRol())
+                .build();
+        return RolResponse.from(rolRepository.save(rol));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public RolResponseDTO update(Integer id, RolRequestDTO dto) {
-        Rol rol = rolRepository.findById(id)
-                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException(
-                        "Rol no encontrado con id: " + id));
-
-        if (!rol.getNombreRol().equals(dto.getNombreRol())
-                && rolRepository.existsByNombreRol(dto.getNombreRol())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un rol con el nombre: " + dto.getNombreRol());
-        }
-        rol.setNombreRol(dto.getNombreRol());
-        rol.setDescripcionRol(dto.getDescripcionRol());
-        return toResponse(rolRepository.save(rol));
+    public RolResponse update(Integer id, RolRequest request) {
+        Rol rol = getRolOrThrow(id);
+        rol.setNombreRol(request.getNombreRol());
+        rol.setDescripcionRol(request.getDescripcionRol());
+        return RolResponse.from(rolRepository.save(rol));
     }
 
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!rolRepository.existsById(id)) {
-            throw new jakarta.persistence.EntityNotFoundException(
-                    "Rol no encontrado con id: " + id);
-        }
+        getRolOrThrow(id);
         rolRepository.deleteById(id);
     }
 
-    // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private RolResponseDTO toResponse(Rol rol) {
-        return RolResponseDTO.builder()
-                .idRol(rol.getIdRol())
-                .nombreRol(rol.getNombreRol())
-                .descripcionRol(rol.getDescripcionRol())
-                .build();
+    private Rol getRolOrThrow(Integer id) {
+        return rolRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con id: " + id));
     }
 }

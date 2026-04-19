@@ -1,143 +1,119 @@
-package com.example.demo.service.impl;
+package com.indecsa.service.impl;
 
-import com.example.demo.dto.request.ProyectoRequestDTO;
-import com.example.demo.dto.response.ProyectoResponseDTO;
-import com.example.demo.model.Proyecto;
-import com.example.demo.model.Proyecto.EstatusProyecto;
-import com.example.demo.repository.ProyectoRepository;
-import com.example.demo.service.ProyectoService;
+import com.indecsa.dto.proyecto.ProyectoRequest;
+import com.indecsa.dto.proyecto.ProyectoResponse;
+import com.indecsa.model.Proyecto;
+import com.indecsa.model.UbicacionProyecto;
+import com.indecsa.repository.ProyectoRepository;
+import com.indecsa.repository.UbicacionProyectoRepository;
+import com.indecsa.service.ProyectoService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProyectoServiceImpl implements ProyectoService {
 
     private final ProyectoRepository proyectoRepository;
+    private final UbicacionProyectoRepository ubicacionRepository;
 
-    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<ProyectoResponseDTO> findAll() {
-        return proyectoRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<ProyectoResponse> findByFiltros(
+            String nombre,
+            Proyecto.TipoProyecto tipo,
+            Proyecto.EstatusProyecto estatus,
+            Proyecto.EntidadFederativa estadoGeo,
+            String cliente,
+            Pageable pageable
+    ) {
+        return proyectoRepository
+                .findByFiltros(nombre, tipo, estatus, estadoGeo, cliente, pageable)
+                .map(ProyectoResponse::from);
     }
 
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public ProyectoResponseDTO findById(Integer id) {
-        return toResponse(getProyectoOrThrow(id));
+    public ProyectoResponse findById(Integer id) {
+        return ProyectoResponse.from(getOrThrow(id));
     }
 
-    // ─── FIND BY ESTATUS ──────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProyectoResponseDTO> findByEstatus(EstatusProyecto estatus) {
-        return proyectoRepository.findByEstatusProyecto(estatus)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    // ─── FIND BY MUNICIPIO ────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProyectoResponseDTO> findByMunicipio(String municipio) {
-        return proyectoRepository.findByMunicipioProyectoIgnoreCase(municipio)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public ProyectoResponseDTO create(ProyectoRequestDTO dto) {
-        validarFechas(dto);
-        Proyecto proyecto = new Proyecto();
-        mapDtoToEntity(dto, proyecto);
-        proyecto.setEstatusProyecto(EstatusProyecto.PLANEACION);
-        return toResponse(proyectoRepository.save(proyecto));
+    public ProyectoResponse create(ProyectoRequest request) {
+        UbicacionProyecto ubicacion = ubicacionRepository.findById(request.getIdUbicacion())
+                .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada con id: " + request.getIdUbicacion()));
+
+        if (request.getFechaEstimadaFin() != null
+                && request.getFechaEstimadaInicio() != null
+                && request.getFechaEstimadaFin().isBefore(request.getFechaEstimadaInicio())) {
+            throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio.");
+        }
+
+        Proyecto proyecto = Proyecto.builder()
+                .nombreProyecto(request.getNombreProyecto())
+                .tipoProyecto(request.getTipoProyecto())
+                .ofertaTrabajo(request.getOfertaTrabajo())
+                .cliente(request.getCliente())
+                .ubicacion(ubicacion)
+                .municipioProyecto(request.getMunicipioProyecto())
+                .estadoProyectoGeo(request.getEstadoProyectoGeo())
+                .fechaEstimadaInicio(request.getFechaEstimadaInicio())
+                .fechaEstimadaFin(request.getFechaEstimadaFin())
+                .calificacionProyecto(request.getCalificacionProyecto())
+                .estatusProyecto(request.getEstatusProyecto() != null
+                        ? request.getEstatusProyecto()
+                        : Proyecto.EstatusProyecto.PLANEACION)
+                .descripcionProyecto(request.getDescripcionProyecto())
+                .build();
+
+        return ProyectoResponse.from(proyectoRepository.save(proyecto));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public ProyectoResponseDTO update(Integer id, ProyectoRequestDTO dto) {
-        Proyecto proyecto = getProyectoOrThrow(id);
-        validarFechas(dto);
-        mapDtoToEntity(dto, proyecto);
-        return toResponse(proyectoRepository.save(proyecto));
+    public ProyectoResponse update(Integer id, ProyectoRequest request) {
+        Proyecto proyecto = getOrThrow(id);
+
+        UbicacionProyecto ubicacion = ubicacionRepository.findById(request.getIdUbicacion())
+                .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada con id: " + request.getIdUbicacion()));
+
+        if (request.getFechaEstimadaFin() != null
+                && request.getFechaEstimadaInicio() != null
+                && request.getFechaEstimadaFin().isBefore(request.getFechaEstimadaInicio())) {
+            throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio.");
+        }
+
+        proyecto.setNombreProyecto(request.getNombreProyecto());
+        proyecto.setTipoProyecto(request.getTipoProyecto());
+        proyecto.setOfertaTrabajo(request.getOfertaTrabajo());
+        proyecto.setCliente(request.getCliente());
+        proyecto.setUbicacion(ubicacion);
+        proyecto.setMunicipioProyecto(request.getMunicipioProyecto());
+        proyecto.setEstadoProyectoGeo(request.getEstadoProyectoGeo());
+        proyecto.setFechaEstimadaInicio(request.getFechaEstimadaInicio());
+        proyecto.setFechaEstimadaFin(request.getFechaEstimadaFin());
+        proyecto.setCalificacionProyecto(request.getCalificacionProyecto());
+        if (request.getEstatusProyecto() != null) {
+            proyecto.setEstatusProyecto(request.getEstatusProyecto());
+        }
+        proyecto.setDescripcionProyecto(request.getDescripcionProyecto());
+
+        return ProyectoResponse.from(proyectoRepository.save(proyecto));
     }
 
-    // ─── CAMBIAR ESTATUS ──────────────────────────────────────────────────────
-    @Override
-    @Transactional
-    public ProyectoResponseDTO cambiarEstatus(Integer id, EstatusProyecto estatus) {
-        Proyecto proyecto = getProyectoOrThrow(id);
-        proyecto.setEstatusProyecto(estatus);
-        return toResponse(proyectoRepository.save(proyecto));
-    }
-
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!proyectoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Proyecto no encontrado con id: " + id);
-        }
+        getOrThrow(id);
         proyectoRepository.deleteById(id);
     }
 
-    // ─── HELPERS ──────────────────────────────────────────────────────────────
-    private Proyecto getProyectoOrThrow(Integer id) {
+    private Proyecto getOrThrow(Integer id) {
         return proyectoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Proyecto no encontrado con id: " + id));
-    }
-
-    private void validarFechas(ProyectoRequestDTO dto) {
-        if (dto.getFechaEstimadaInicio() != null && dto.getFechaEstimadaFin() != null
-                && dto.getFechaEstimadaFin().isBefore(dto.getFechaEstimadaInicio())) {
-            throw new IllegalArgumentException(
-                    "La fecha de fin estimada no puede ser anterior a la fecha de inicio.");
-        }
-    }
-
-    private void mapDtoToEntity(ProyectoRequestDTO dto, Proyecto proyecto) {
-        proyecto.setNombreProyecto(dto.getNombreProyecto());
-        proyecto.setTipoProyecto(dto.getTipoProyecto());
-        proyecto.setLugarProyecto(dto.getLugarProyecto());
-        proyecto.setMunicipioProyecto(dto.getMunicipioProyecto());
-        proyecto.setEstadoProyectoGeo(dto.getEstadoProyectoGeo());
-        proyecto.setFechaEstimadaInicio(dto.getFechaEstimadaInicio());
-        proyecto.setFechaEstimadaFin(dto.getFechaEstimadaFin());
-        proyecto.setCalificacionProyecto(dto.getCalificacionProyecto());
-        proyecto.setDescripcionProyecto(dto.getDescripcionProyecto());
-    }
-
-    // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private ProyectoResponseDTO toResponse(Proyecto p) {
-        return ProyectoResponseDTO.builder()
-                .idProyecto(p.getIdProyecto())
-                .nombreProyecto(p.getNombreProyecto())
-                .tipoProyecto(p.getTipoProyecto())
-                .lugarProyecto(p.getLugarProyecto())
-                .municipioProyecto(p.getMunicipioProyecto())
-                .estadoProyectoGeo(p.getEstadoProyectoGeo())
-                .fechaEstimadaInicio(p.getFechaEstimadaInicio())
-                .fechaEstimadaFin(p.getFechaEstimadaFin())
-                .calificacionProyecto(p.getCalificacionProyecto())
-                .estatusProyecto(p.getEstatusProyecto())
-                .descripcionProyecto(p.getDescripcionProyecto())
-                .build();
+                .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado con id: " + id));
     }
 }

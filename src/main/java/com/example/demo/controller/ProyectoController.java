@@ -1,74 +1,61 @@
-package com.example.demo.controller;
+package com.indecsa.controller;
 
-import com.example.demo.dto.request.ProyectoRequestDTO;
-import com.example.demo.dto.response.ProyectoResponseDTO;
-import com.example.demo.model.Proyecto.EstatusProyecto;
-import com.example.demo.service.ProyectoService;
+import com.indecsa.dto.proyecto.ProyectoRequest;
+import com.indecsa.dto.proyecto.ProyectoResponse;
+import com.indecsa.model.Proyecto;
+import com.indecsa.service.ProyectoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/v1/proyectos")
+@RequestMapping("/api/proyectos")
 @RequiredArgsConstructor
 public class ProyectoController {
 
     private final ProyectoService proyectoService;
 
-    // ─── GET ALL ──────────────────────────────────────────────────────────────
     @GetMapping
-    public ResponseEntity<List<ProyectoResponseDTO>> getAll() {
-        return ResponseEntity.ok(proyectoService.findAll());
+    @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
+    public ResponseEntity<Page<ProyectoResponse>> findByFiltros(
+            @RequestParam(required = false) String nombre,
+            @RequestParam(required = false) Proyecto.TipoProyecto tipo,
+            @RequestParam(required = false) Proyecto.EstatusProyecto estatus,
+            @RequestParam(required = false) Proyecto.EntidadFederativa estadoGeo,
+            @RequestParam(required = false) String cliente,
+            @PageableDefault(size = 20, sort = "nombreProyecto") Pageable pageable
+    ) {
+        return ResponseEntity.ok(
+                proyectoService.findByFiltros(nombre, tipo, estatus, estadoGeo, cliente, pageable));
     }
 
-    // ─── GET BY ID ────────────────────────────────────────────────────────────
     @GetMapping("/{id}")
-    public ResponseEntity<ProyectoResponseDTO> getById(@PathVariable Integer id) {
+    @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
+    public ResponseEntity<ProyectoResponse> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(proyectoService.findById(id));
     }
 
-    // ─── GET BY ESTATUS ───────────────────────────────────────────────────────
-    @GetMapping("/estatus/{estatus}")
-    public ResponseEntity<List<ProyectoResponseDTO>> getByEstatus(
-            @PathVariable EstatusProyecto estatus) {
-        return ResponseEntity.ok(proyectoService.findByEstatus(estatus));
-    }
-
-    // ─── GET BY MUNICIPIO ─────────────────────────────────────────────────────
-    @GetMapping("/municipio/{municipio}")
-    public ResponseEntity<List<ProyectoResponseDTO>> getByMunicipio(
-            @PathVariable String municipio) {
-        return ResponseEntity.ok(proyectoService.findByMunicipio(municipio));
-    }
-
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @PostMapping
-    public ResponseEntity<ProyectoResponseDTO> create(@Valid @RequestBody ProyectoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(proyectoService.create(dto));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProyectoResponse> create(@Valid @RequestBody ProyectoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(proyectoService.create(request));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @PutMapping("/{id}")
-    public ResponseEntity<ProyectoResponseDTO> update(
-            @PathVariable Integer id,
-            @Valid @RequestBody ProyectoRequestDTO dto) {
-        return ResponseEntity.ok(proyectoService.update(id, dto));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProyectoResponse> update(@PathVariable Integer id,
+                                                    @Valid @RequestBody ProyectoRequest request) {
+        return ResponseEntity.ok(proyectoService.update(id, request));
     }
 
-    // ─── CAMBIAR ESTATUS ──────────────────────────────────────────────────────
-    @PatchMapping("/{id}/estatus")
-    public ResponseEntity<ProyectoResponseDTO> cambiarEstatus(
-            @PathVariable Integer id,
-            @RequestParam EstatusProyecto estatus) {
-        return ResponseEntity.ok(proyectoService.cambiarEstatus(id, estatus));
-    }
-
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         proyectoService.delete(id);
         return ResponseEntity.noContent().build();

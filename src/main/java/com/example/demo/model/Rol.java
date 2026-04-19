@@ -1,15 +1,13 @@
-package com.example.demo.model;
+package com.indecsa.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "Rol")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Rol {
 
     @Id
@@ -21,12 +19,10 @@ public class Rol {
     @Column(name = "nombre_rol", nullable = false, unique = true)
     private NombreRol nombreRol;
 
-    @Column(name = "descripcion_rol", length = 255, columnDefinition = "VARCHAR(255) DEFAULT 'Sin descripcion'")
+    @Column(name = "descripcion_rol", length = 255)
     private String descripcionRol;
 
     public enum NombreRol {
-        ADMIN,
-        CAPITAL_HUMANO
-        // Se eliminó SUPERVISOR: no existe en la BD (indecsa_v3_0.sql)
+        ADMIN, CAPITAL_HUMANO
     }
 }

@@ -1,7 +1,6 @@
-package com.example.demo.repository;
+package com.indecsa.repository;
 
-import com.example.demo.model.AsignacionTrabajadorProyecto;
-import com.example.demo.model.AsignacionTrabajadorProyecto.EstatusAsignacion;
+import com.indecsa.model.AsignacionTrabajadorProyecto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,23 +12,10 @@ public interface AsignacionTrabajadorProyectoRepository
         extends JpaRepository<AsignacionTrabajadorProyecto, Integer> {
 
     List<AsignacionTrabajadorProyecto> findByProyecto_IdProyecto(Integer idProyecto);
-
     List<AsignacionTrabajadorProyecto> findByTrabajador_IdTrabajador(Integer idTrabajador);
-
-    List<AsignacionTrabajadorProyecto> findByAsignacionProyectoContratista_IdAsignacionPc(
-            Integer idAsignacionPc);
-
-    List<AsignacionTrabajadorProyecto> findByEstatusAsignacion(EstatusAsignacion estatusAsignacion);
-
-    List<AsignacionTrabajadorProyecto> findByProyecto_IdProyectoAndEstatusAsignacion(
-            Integer idProyecto, EstatusAsignacion estatusAsignacion);
-
-    List<AsignacionTrabajadorProyecto> findByTrabajador_IdTrabajadorAndEstatusAsignacion(
-            Integer idTrabajador, EstatusAsignacion estatusAsignacion);
-
+    List<AsignacionTrabajadorProyecto> findByAsignacionProyectoContratista_IdAsignacionPc(Integer idAsignacionPc);
     Optional<AsignacionTrabajadorProyecto> findByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
             Integer idTrabajador, Integer idProyecto);
-
     boolean existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
             Integer idTrabajador, Integer idProyecto);
 }

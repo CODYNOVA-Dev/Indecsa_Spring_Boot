@@ -1,77 +1,51 @@
-package com.example.demo.controller;
+package com.indecsa.controller;
 
-import com.example.demo.dto.request.EmpleadoRequestDTO;
-import com.example.demo.dto.request.LoginRequestDTO;
-import com.example.demo.dto.response.EmpleadoResponseDTO;
-import com.example.demo.dto.response.LoginResponseDTO;
-import com.example.demo.service.EmpleadoService;
+import com.indecsa.dto.empleado.EmpleadoRequest;
+import com.indecsa.dto.empleado.EmpleadoResponse;
+import com.indecsa.service.EmpleadoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/empleados")
+@RequestMapping("/api/empleados")
 @RequiredArgsConstructor
 public class EmpleadoController {
 
     private final EmpleadoService empleadoService;
 
-    // ─── GET ALL ──────────────────────────────────────────────────────────────
     @GetMapping
-    public ResponseEntity<List<EmpleadoResponseDTO>> getAll() {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<EmpleadoResponse>> findAll() {
         return ResponseEntity.ok(empleadoService.findAll());
     }
 
-    // ─── GET BY ID ────────────────────────────────────────────────────────────
     @GetMapping("/{id}")
-    public ResponseEntity<EmpleadoResponseDTO> getById(@PathVariable Integer id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EmpleadoResponse> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(empleadoService.findById(id));
     }
 
-    // ─── GET BY ROL ───────────────────────────────────────────────────────────
-    @GetMapping("/rol/{idRol}")
-    public ResponseEntity<List<EmpleadoResponseDTO>> getByRol(@PathVariable Integer idRol) {
-        return ResponseEntity.ok(empleadoService.findByRol(idRol));
-    }
-
-    // ─── LOGIN ────────────────────────────────────────────────────────────────
-    // POST /api/v1/empleados/login
-    // Body: { "correoEmpleado": "admin", "contrasena": "1234" }
-    // Response 200: LoginResponseDTO con idEmpleado, nombreEmpleado, correoEmpleado, nombreRol
-    // Response 401: credenciales incorrectas
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
-        try {
-            LoginResponseDTO response = empleadoService.login(
-                    dto.getCorreoEmpleado(),
-                    dto.getContrasena()
-            );
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-    }
-
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @PostMapping
-    public ResponseEntity<EmpleadoResponseDTO> create(@Valid @RequestBody EmpleadoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(empleadoService.create(dto));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EmpleadoResponse> create(@Valid @RequestBody EmpleadoRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(empleadoService.create(request));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @PutMapping("/{id}")
-    public ResponseEntity<EmpleadoResponseDTO> update(
-            @PathVariable Integer id,
-            @Valid @RequestBody EmpleadoRequestDTO dto) {
-        return ResponseEntity.ok(empleadoService.update(id, dto));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EmpleadoResponse> update(@PathVariable Integer id,
+                                                    @Valid @RequestBody EmpleadoRequest request) {
+        return ResponseEntity.ok(empleadoService.update(id, request));
     }
 
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         empleadoService.delete(id);
         return ResponseEntity.noContent().build();

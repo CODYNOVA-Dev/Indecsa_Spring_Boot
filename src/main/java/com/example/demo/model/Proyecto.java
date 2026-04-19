@@ -1,17 +1,14 @@
-package com.example.demo.model;
+package com.indecsa.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "Proyecto")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Proyecto {
 
     @Id
@@ -22,19 +19,26 @@ public class Proyecto {
     @Column(name = "nombre_proyecto", nullable = false, length = 150)
     private String nombreProyecto;
 
-    @Column(name = "tipo_proyecto", length = 80)
-    private String tipoProyecto;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_proyecto")
+    private TipoProyecto tipoProyecto;
 
-    @Column(name = "lugar_proyecto", length = 200)
-    private String lugarProyecto;
+    @Column(name = "oferta_trabajo", length = 200)
+    private String ofertaTrabajo;
+
+    @Column(name = "cliente", nullable = false, length = 200)
+    private String cliente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_ubicacion", nullable = false)
+    private UbicacionProyecto ubicacion;
 
     @Column(name = "municipio_proyecto", length = 100)
     private String municipioProyecto;
 
-    // Corregido: en la BD es ENUM('CDMX','Hidalgo','Puebla') NOT NULL, no VARCHAR
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_proyecto_geo", nullable = false)
-    private UbicacionGeo estadoProyectoGeo;
+    private EntidadFederativa estadoProyectoGeo;
 
     @Column(name = "fecha_estimada_inicio")
     private LocalDate fechaEstimadaInicio;
@@ -46,23 +50,22 @@ public class Proyecto {
     private Byte calificacionProyecto;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_proyecto", nullable = false, columnDefinition = "ENUM('PLANEACION','EN_CURSO','PAUSADO','FINALIZADO','CANCELADO') DEFAULT 'PLANEACION'")
-    private EstatusProyecto estatusProyecto = EstatusProyecto.PLANEACION;
+    @Column(name = "estatus_proyecto", nullable = false)
+    private EstatusProyecto estatusProyecto;
 
-    @Column(name = "descripcion_proyecto", length = 500, columnDefinition = "VARCHAR(500) DEFAULT 'Sin descripcion'")
+    @Column(name = "descripcion_proyecto", length = 500)
     private String descripcionProyecto;
 
-    public enum EstatusProyecto {
-        PLANEACION,
-        EN_CURSO,
-        PAUSADO,
-        FINALIZADO,
-        CANCELADO
+    public enum TipoProyecto {
+        Construccion, Remodelacion,
+        Venta_mobiliaria, Instalacion_de_mobiliario
     }
 
-    public enum UbicacionGeo {
-        CDMX,
-        Hidalgo,
-        Puebla
+    public enum EstatusProyecto {
+        PLANEACION, EN_CURSO, PENDIENTE, FINALIZADO, CANCELADO
+    }
+
+    public enum EntidadFederativa {
+        CDMX, Hidalgo, Puebla
     }
 }

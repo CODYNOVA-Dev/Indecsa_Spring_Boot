@@ -51,129 +51,120 @@ CREATE TABLE Contratista (
 -- CORREGIDO: registros_migratorios usaba SERIAL (PostgreSQL) → INT AUTO_INCREMENT (MySQL)
 --            tipo_visitante como ENUM inline en lugar de CREATE TYPE
 CREATE TABLE registros_migratorios (
-                                       id_migratorio    INT AUTO_INCREMENT PRIMARY KEY,
-                                       folio_documento  VARCHAR(50)  NOT NULL UNIQUE,
+    id_migratorio    INT AUTO_INCREMENT PRIMARY KEY,
+    folio_documento  VARCHAR(50)  NOT NULL UNIQUE,
     -- CORREGIDO: CREATE TYPE tipo_visitante no existe en MySQL → ENUM inline
-                                       categoria        ENUM('turismo','negocios','razones_humanitarias','transito','actividades_remuneradas') NOT NULL,
-                                       fecha_emision    DATE NOT NULL,
-                                       dias_vigencia    INT  CHECK (dias_vigencia <= 1460),
-                                       fecha_vencimiento DATE NOT NULL,
-                                       permiso_trabajo  TINYINT(1) NOT NULL DEFAULT 0,   -- BOOLEAN → TINYINT(1) estándar MySQL
-                                       activo           TINYINT(1) NOT NULL DEFAULT 1
+    categoria        ENUM('turismo','negocios','razones_humanitarias','transito','actividades_remuneradas') NOT NULL,
+    fecha_emision    DATE NOT NULL,
+    dias_vigencia    INT  CHECK (dias_vigencia <= 1460),
+    fecha_vencimiento DATE NOT NULL,
+    permiso_trabajo  TINYINT(1) NOT NULL DEFAULT 0,   -- BOOLEAN → TINYINT(1) estándar MySQL
+    activo           TINYINT(1) NOT NULL DEFAULT 1
 );
 
--- CORREGIDO: Ubicacion_Proyecto se mueve ANTES de Proyecto (Proyecto la referencia)
---            Se elimina la coma sobrante al final de la última columna
---            num_int pasa a nullable (no siempre existe número interior)
 CREATE TABLE Ubicacion_Proyecto (
-                                    id_ubicacion INT AUTO_INCREMENT PRIMARY KEY,
-                                    calle        VARCHAR(100) NOT NULL,
-                                    num_ext      VARCHAR(10)  NOT NULL,
-                                    num_int      VARCHAR(10)  NULL,          -- CORREGIDO: nullable, no siempre existe
-                                    colonia      VARCHAR(100) NOT NULL,
-                                    cod_post     INT          NOT NULL,
-                                    mun_alc      VARCHAR(100) NOT NULL,
-    -- CORREGIDO: tipo_entidad_fede no existe en MySQL → ENUM inline
-                                    estado       ENUM('CDMX','Hidalgo','Puebla') NOT NULL
-);                                            -- CORREGIDO: se eliminó la coma sobrante
+    id_ubicacion INT AUTO_INCREMENT PRIMARY KEY,
+    calle        VARCHAR(100) NOT NULL,
+    num_ext      VARCHAR(10)  NOT NULL,
+    num_int      VARCHAR(10)  NULL,
+    colonia      VARCHAR(100) NOT NULL,
+    cod_post     INT          NOT NULL,
+    mun_alc      VARCHAR(100) NOT NULL,
+    estado       ENUM('CDMX','Hidalgo','Puebla') NOT NULL
+);
 
 CREATE TABLE Proyecto (
-                          id_proyecto           INT AUTO_INCREMENT PRIMARY KEY,
-                          nombre_proyecto       VARCHAR(150) NOT NULL,
-    -- CORREGIDO: tipo_proyecto se define como ENUM inline (el CREATE TYPE era PostgreSQL y nunca se usaba)
-                          tipo_proyecto         ENUM('Construccion','Remodelacion','Venta mobiliaria','Instalacion de mobiliario'),
-                          oferta_trabajo        VARCHAR(200),
-                          cliente               VARCHAR(200) NOT NULL,
-    -- CORREGIDO: se agrega FK a Ubicacion_Proyecto (antes faltaba)
-                          id_ubicacion          INT NOT NULL,
-                          municipio_proyecto    VARCHAR(100),
-    -- CORREGIDO: tipo_entidad_fede no existe en MySQL → ENUM inline
-                          estado_proyecto_geo   ENUM('CDMX','Hidalgo','Puebla') NOT NULL,
-                          fecha_estimada_inicio DATE,
-                          fecha_estimada_fin    DATE,
-                          calificacion_proyecto TINYINT CHECK (calificacion_proyecto BETWEEN 1 AND 5),
-                          estatus_proyecto      ENUM('PLANEACION','EN_CURSO','PENDIENTE','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'PLANEACION',
-                          descripcion_proyecto  VARCHAR(500) DEFAULT 'Sin descripcion',
-                          FOREIGN KEY (id_ubicacion) REFERENCES Ubicacion_Proyecto(id_ubicacion) ON UPDATE CASCADE ON DELETE RESTRICT
+    id_proyecto           INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_proyecto       VARCHAR(150) NOT NULL,
+    tipo_proyecto         ENUM('Construccion','Remodelacion','Venta mobiliaria','Instalacion de mobiliario'),
+    oferta_trabajo        VARCHAR(200),
+    cliente               VARCHAR(200) NOT NULL,
+    id_ubicacion          INT NOT NULL,
+    municipio_proyecto    VARCHAR(100),
+    estado_proyecto_geo   ENUM('CDMX','Hidalgo','Puebla') NOT NULL,
+    fecha_estimada_inicio DATE,
+    fecha_estimada_fin    DATE,
+    calificacion_proyecto TINYINT CHECK (calificacion_proyecto BETWEEN 1 AND 5),
+    estatus_proyecto      ENUM('PLANEACION','EN_CURSO','PENDIENTE','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'PLANEACION',
+    descripcion_proyecto  VARCHAR(500) DEFAULT 'Sin descripcion',
+    FOREIGN KEY (id_ubicacion) REFERENCES Ubicacion_Proyecto(id_ubicacion) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
--- CORREGIDO: Trabajador usaba SERIAL (PostgreSQL) → INT AUTO_INCREMENT (MySQL)
---            estatus_laboral y tipo_entidad_fede como ENUM inline
 CREATE TABLE Trabajador (
-                            id_trabajador           INT AUTO_INCREMENT PRIMARY KEY,
-                            nombre_trabajador       VARCHAR(100) NOT NULL,
-                            curp                    VARCHAR(18)  NOT NULL UNIQUE,
-                            rfc                     VARCHAR(13)  NOT NULL UNIQUE,
-                            nss_trabajador          VARCHAR(11),
-                            nacionalidad            VARCHAR(100) NOT NULL,
-                            id_migratorio           INT NULL,        -- NULL si es mexicano
+    id_trabajador           INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_trabajador       VARCHAR(100) NOT NULL,
+    curp                    VARCHAR(18)  NOT NULL UNIQUE,
+    rfc                     VARCHAR(13)  NOT NULL UNIQUE,
+    nss_trabajador          VARCHAR(11),
+    nacionalidad            VARCHAR(100) NOT NULL,
+    id_migratorio           INT NULL,        -- NULL si es mexicano
     -- Domicilio
-                            calle                   VARCHAR(100) NOT NULL,
-                            num_ext                 VARCHAR(10)  NOT NULL,
-                            num_int                 VARCHAR(10)  NULL,
-                            colonia                 VARCHAR(100) NOT NULL,
-                            cod_post                INT          NOT NULL,
-                            mun_alc                 VARCHAR(100) NOT NULL,
-                            estado                  VARCHAR(100) NOT NULL,
+    calle                   VARCHAR(100) NOT NULL,
+    num_ext                 VARCHAR(10)  NOT NULL,
+    num_int                 VARCHAR(10)  NULL,
+    colonia                 VARCHAR(100) NOT NULL,
+    cod_post                INT          NOT NULL,
+    mun_alc                 VARCHAR(100) NOT NULL,
+    estado                  VARCHAR(100) NOT NULL,
     -- Información Laboral
-                            puesto                  VARCHAR(100) NOT NULL,
-                            desc_puesto             VARCHAR(500) NOT NULL,
-                            especialidad_trabajador VARCHAR(100) NOT NULL,
-                            escolaridad             VARCHAR(100) NOT NULL,
-                            experiencia             VARCHAR(200),
-                            telefono_trabajador     VARCHAR(15)  NOT NULL,
-                            correo_trabajador       VARCHAR(100) NOT NULL UNIQUE,
-                            contratacion            VARCHAR(200) NOT NULL,
-                            jornada                 VARCHAR(200) NOT NULL,
+    puesto                  VARCHAR(100) NOT NULL,
+    desc_puesto             VARCHAR(500) NOT NULL,
+    especialidad_trabajador VARCHAR(100) NOT NULL,
+    escolaridad             VARCHAR(100) NOT NULL,
+    experiencia             VARCHAR(200),
+    telefono_trabajador     VARCHAR(15)  NOT NULL,
+    correo_trabajador       VARCHAR(100) NOT NULL UNIQUE,
+    contratacion            VARCHAR(200) NOT NULL,
+    jornada                 VARCHAR(200) NOT NULL,
     -- CORREGIDO: estatus_laboral no existe en MySQL → ENUM inline
-                            estado_trabajador       ENUM('DESCANSO','VACACIONES','INCAPACIDAD','ACTIVO','INACTIVO','BAJA','BOLETINADO') NOT NULL DEFAULT 'ACTIVO',
+    estado_trabajador       ENUM('DESCANSO','VACACIONES','INCAPACIDAD','ACTIVO','INACTIVO','BAJA','BOLETINADO') NOT NULL DEFAULT 'ACTIVO',
     -- Otros Datos
-                            descripcion_trabajador  TEXT         DEFAULT 'Sin descripcion',
-                            evaluacion_trabajador   TINYINT      CHECK (evaluacion_trabajador BETWEEN 1 AND 5),
-                            fecha_ingreso           DATE         NOT NULL,
+    descripcion_trabajador  TEXT         DEFAULT 'Sin descripcion',
+    evaluacion_trabajador   TINYINT      CHECK (evaluacion_trabajador BETWEEN 1 AND 5),
+    fecha_ingreso           DATE         NOT NULL,
     -- CORREGIDO: tipo_entidad_fede no existe en MySQL → ENUM inline
-                            calidad_vida            ENUM('CDMX','Hidalgo','Puebla') NOT NULL,
-                            ant_penal               VARCHAR(500),
-                            deudor_alim             VARCHAR(500),
-                            folio_lic_cond          VARCHAR(20),
-                            estado_civil            VARCHAR(50),
-                            idiomas                 VARCHAR(200),
-                            lengua_indigena         VARCHAR(100),
-                            sexo                    VARCHAR(50),
-                            FOREIGN KEY (id_migratorio) REFERENCES registros_migratorios(id_migratorio) ON UPDATE CASCADE ON DELETE SET NULL
+    calidad_vida            ENUM('CDMX','Hidalgo','Puebla') NOT NULL,
+    ant_penal               VARCHAR(500),
+    deudor_alim             VARCHAR(500),
+    folio_lic_cond          VARCHAR(20),
+    estado_civil            VARCHAR(50),
+    idiomas                 VARCHAR(200),
+    lengua_indigena         VARCHAR(100),
+    sexo                    VARCHAR(50),
+    FOREIGN KEY (id_migratorio) REFERENCES registros_migratorios(id_migratorio) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE Asignacion_Proyecto_Contratista (
-                                                 id_asignacion_pc   INT AUTO_INCREMENT PRIMARY KEY,
-                                                 id_proyecto        INT          NOT NULL,
-                                                 id_contratista     INT          NOT NULL,
-                                                 numero_contrato    VARCHAR(50),
-                                                 fecha_inicio       DATE,
-                                                 fecha_fin_estimada DATE,
-                                                 personal_asignado  INT          NOT NULL,
-                                                 puestos_requeridos VARCHAR(500),
+    id_asignacion_pc   INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto        INT          NOT NULL,
+    id_contratista     INT          NOT NULL,
+    numero_contrato    VARCHAR(50),
+    fecha_inicio       DATE,
+    fecha_fin_estimada DATE,
+    personal_asignado  INT          NOT NULL,
+    puestos_requeridos VARCHAR(500),
     -- CORREGIDO: se agregó 'ACTIVO' al ENUM para que el Trigger T7 funcione correctamente
-                                                 estatus_contrato   ENUM('ACTIVO','VIGENTE','SUSPENDIDO','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'VIGENTE',
-                                                 observaciones      VARCHAR(500),
-                                                 UNIQUE KEY uq_proyecto_contratista (id_proyecto, id_contratista),
-                                                 FOREIGN KEY (id_proyecto)    REFERENCES Proyecto(id_proyecto)       ON UPDATE CASCADE ON DELETE CASCADE,
-                                                 FOREIGN KEY (id_contratista) REFERENCES Contratista(id_contratista) ON UPDATE CASCADE ON DELETE CASCADE
+    estatus_contrato   ENUM('ACTIVO','VIGENTE','SUSPENDIDO','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'VIGENTE',
+    observaciones      VARCHAR(500),
+    UNIQUE KEY uq_proyecto_contratista (id_proyecto, id_contratista),
+    FOREIGN KEY (id_proyecto)    REFERENCES Proyecto(id_proyecto)       ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_contratista) REFERENCES Contratista(id_contratista) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE TABLE Asignacion_Trabajador_Proyecto (
-                                                id_asignacion_tp   INT AUTO_INCREMENT PRIMARY KEY,
-                                                id_trabajador      INT NOT NULL,
-                                                id_proyecto        INT NOT NULL,
-                                                id_asignacion_pc   INT NOT NULL,
-                                                puesto_en_proyecto VARCHAR(100),
-                                                fecha_inicio       DATE,
-                                                fecha_fin_estimada DATE,
-                                                estatus_asignacion ENUM('ACTIVO','SUSPENDIDO','INCAPACIDAD','CANCELADO','VACACIONES','FINALIZADO') NOT NULL DEFAULT 'ACTIVO',
-                                                observaciones      VARCHAR(500),
-                                                UNIQUE KEY uq_trabajador_proyecto (id_trabajador, id_proyecto),
-                                                FOREIGN KEY (id_trabajador)    REFERENCES Trabajador(id_trabajador)                         ON UPDATE CASCADE ON DELETE CASCADE,
-                                                FOREIGN KEY (id_proyecto)      REFERENCES Proyecto(id_proyecto)                             ON UPDATE CASCADE ON DELETE CASCADE,
-                                                FOREIGN KEY (id_asignacion_pc) REFERENCES Asignacion_Proyecto_Contratista(id_asignacion_pc) ON UPDATE CASCADE ON DELETE CASCADE
+    id_asignacion_tp   INT AUTO_INCREMENT PRIMARY KEY,
+    id_trabajador      INT NOT NULL,
+    id_proyecto        INT NOT NULL,
+    id_asignacion_pc   INT NOT NULL,
+    puesto_en_proyecto VARCHAR(100),
+    fecha_inicio       DATE,
+    fecha_fin_estimada DATE,
+    estatus_asignacion ENUM('ACTIVO','SUSPENDIDO','INCAPACIDAD','CANCELADO','VACACIONES','FINALIZADO') NOT NULL DEFAULT 'ACTIVO',
+    observaciones      VARCHAR(500),
+    UNIQUE KEY uq_trabajador_proyecto (id_trabajador, id_proyecto),
+    FOREIGN KEY (id_trabajador)    REFERENCES Trabajador(id_trabajador)                         ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_proyecto)      REFERENCES Proyecto(id_proyecto)                             ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_asignacion_pc) REFERENCES Asignacion_Proyecto_Contratista(id_asignacion_pc) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 

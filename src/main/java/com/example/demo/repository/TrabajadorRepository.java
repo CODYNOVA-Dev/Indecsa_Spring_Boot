@@ -1,26 +1,19 @@
-package com.example.demo.repository;
+package com.indecsa.repository;
 
-import com.example.demo.model.Trabajador;
-import com.example.demo.model.Trabajador.EstadoTrabajador;
+import com.indecsa.model.Trabajador;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TrabajadorRepository extends JpaRepository<Trabajador, Integer> {
+public interface TrabajadorRepository extends JpaRepository<Trabajador, Integer>,
+        TrabajadorRepositoryCustom {
 
-    Optional<Trabajador> findByCorreoTrabajador(String correoTrabajador);
-
-    boolean existsByCorreoTrabajador(String correoTrabajador);
-
-    boolean existsByNssTrabajador(String nssTrabajador);
-
-    List<Trabajador> findByEstadoTrabajador(EstadoTrabajador estadoTrabajador);
-
-    List<Trabajador> findByEspecialidadTrabajadorContainingIgnoreCase(String especialidad);
-
-    List<Trabajador> findByEstadoTrabajadorAndEspecialidadTrabajadorContainingIgnoreCase(
-            EstadoTrabajador estadoTrabajador, String especialidad);
+    Optional<Trabajador> findByCurp(String curp);
+    Optional<Trabajador> findByRfc(String rfc);
+    Optional<Trabajador> findByCorreoTrabajador(String correo);
+    boolean existsByCurp(String curp);
+    boolean existsByRfc(String rfc);
+    boolean existsByCorreoTrabajador(String correo);
 }

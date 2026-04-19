@@ -1,24 +1,21 @@
-package com.example.demo.service;
+package com.indecsa.service;
 
-import com.example.demo.dto.request.ContratistaRequestDTO;
-import com.example.demo.dto.response.ContratistaResponseDTO;
-import com.example.demo.model.Contratista.EstadoContratista;
-
-import java.util.List;
+import com.indecsa.dto.contratista.ContratistaRequest;
+import com.indecsa.dto.contratista.ContratistaResponse;
+import com.indecsa.model.Contratista;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ContratistaService {
-
-    List<ContratistaResponseDTO> findAll();
-
-    ContratistaResponseDTO findById(Integer id);
-
-    List<ContratistaResponseDTO> findByEstado(EstadoContratista estado);
-
-    ContratistaResponseDTO create(ContratistaRequestDTO dto);
-
-    ContratistaResponseDTO update(Integer id, ContratistaRequestDTO dto);
-
-    ContratistaResponseDTO cambiarEstado(Integer id, EstadoContratista estado);
-
+    Page<ContratistaResponse> findByFiltros(
+            String nombre,
+            Contratista.EstadoContratista estado,
+            Contratista.EntidadFederativa ubicacion,
+            Byte calificacionMin,
+            Pageable pageable
+    );
+    ContratistaResponse findById(Integer id);
+    ContratistaResponse create(ContratistaRequest request);
+    ContratistaResponse update(Integer id, ContratistaRequest request);
     void delete(Integer id);
 }

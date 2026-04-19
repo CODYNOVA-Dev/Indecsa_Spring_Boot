@@ -1,15 +1,13 @@
-package com.example.demo.model;
+package com.indecsa.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "Empleado")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Empleado {
 
     @Id
@@ -19,6 +17,9 @@ public class Empleado {
 
     @Column(name = "nombre_empleado", nullable = false, length = 100)
     private String nombreEmpleado;
+
+    @Column(name = "curp", nullable = false, length = 18)
+    private String curp;
 
     @Column(name = "correo_empleado", nullable = false, unique = true, length = 100)
     private String correoEmpleado;

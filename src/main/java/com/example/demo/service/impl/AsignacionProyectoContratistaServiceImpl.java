@@ -1,224 +1,129 @@
-package com.example.demo.service.impl;
+package com.indecsa.service.impl;
 
-import com.example.demo.dto.request.AsignacionProyectoContratistaRequestDTO;
-import com.example.demo.dto.response.AsignacionProyectoContratistaResponseDTO;
-import com.example.demo.dto.response.ContratistaResponseDTO;
-import com.example.demo.dto.response.ProyectoResponseDTO;
-import com.example.demo.model.AsignacionProyectoContratista;
-import com.example.demo.model.AsignacionProyectoContratista.EstatusContrato;
-import com.example.demo.model.Contratista;
-import com.example.demo.model.Proyecto;
-import com.example.demo.repository.AsignacionProyectoContratistaRepository;
-import com.example.demo.repository.ContratistaRepository;
-import com.example.demo.repository.ProyectoRepository;
-import com.example.demo.service.AsignacionProyectoContratistaService;
+import com.indecsa.dto.asignacion.AsignacionProyectoContratistaRequest;
+import com.indecsa.dto.asignacion.AsignacionProyectoContratistaResponse;
+import com.indecsa.model.AsignacionProyectoContratista;
+import com.indecsa.model.Contratista;
+import com.indecsa.model.Proyecto;
+import com.indecsa.repository.AsignacionProyectoContratistaRepository;
+import com.indecsa.repository.ContratistaRepository;
+import com.indecsa.repository.ProyectoRepository;
+import com.indecsa.service.AsignacionProyectoContratistaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AsignacionProyectoContratistaServiceImpl implements AsignacionProyectoContratistaService {
 
-    private final AsignacionProyectoContratistaRepository asignacionRepository;
+    private final AsignacionProyectoContratistaRepository asignacionPcRepository;
     private final ProyectoRepository proyectoRepository;
     private final ContratistaRepository contratistaRepository;
 
-    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<AsignacionProyectoContratistaResponseDTO> findAll() {
-        return asignacionRepository.findAll()
+    public List<AsignacionProyectoContratistaResponse> findByProyecto(Integer idProyecto) {
+        return asignacionPcRepository.findByProyecto_IdProyecto(idProyecto)
                 .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .map(AsignacionProyectoContratistaResponse::from)
+                .toList();
     }
 
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public AsignacionProyectoContratistaResponseDTO findById(Integer id) {
-        return toResponse(getAsignacionOrThrow(id));
-    }
-
-    // ─── FIND BY PROYECTO ─────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<AsignacionProyectoContratistaResponseDTO> findByProyecto(Integer idProyecto) {
-        return asignacionRepository.findByProyecto_IdProyecto(idProyecto)
+    public List<AsignacionProyectoContratistaResponse> findByContratista(Integer idContratista) {
+        return asignacionPcRepository.findByContratista_IdContratista(idContratista)
                 .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .map(AsignacionProyectoContratistaResponse::from)
+                .toList();
     }
 
-    // ─── FIND BY CONTRATISTA ──────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<AsignacionProyectoContratistaResponseDTO> findByContratista(Integer idContratista) {
-        return asignacionRepository.findByContratista_IdContratista(idContratista)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public AsignacionProyectoContratistaResponse findById(Integer id) {
+        return AsignacionProyectoContratistaResponse.from(getOrThrow(id));
     }
 
-    // ─── FIND BY ESTATUS ──────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<AsignacionProyectoContratistaResponseDTO> findByEstatus(EstatusContrato estatus) {
-        return asignacionRepository.findByEstatusContrato(estatus)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public AsignacionProyectoContratistaResponseDTO create(AsignacionProyectoContratistaRequestDTO dto) {
-        Proyecto proyecto = proyectoRepository.findById(dto.getIdProyecto())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Proyecto no encontrado con id: " + dto.getIdProyecto()));
+    public AsignacionProyectoContratistaResponse create(AsignacionProyectoContratistaRequest request) {
+        Proyecto proyecto = proyectoRepository.findById(request.getIdProyecto())
+                .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado con id: " + request.getIdProyecto()));
 
-        Contratista contratista = contratistaRepository.findById(dto.getIdContratista())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Contratista no encontrado con id: " + dto.getIdContratista()));
+        Contratista contratista = contratistaRepository.findById(request.getIdContratista())
+                .orElseThrow(() -> new EntityNotFoundException("Contratista no encontrado con id: " + request.getIdContratista()));
 
-        if (asignacionRepository.existsByProyecto_IdProyectoAndContratista_IdContratista(
-                dto.getIdProyecto(), dto.getIdContratista())) {
-            throw new IllegalArgumentException(
-                    "El contratista ya está asignado a este proyecto.");
+        if (asignacionPcRepository.existsByProyecto_IdProyectoAndContratista_IdContratista(
+                request.getIdProyecto(), request.getIdContratista())) {
+            throw new IllegalArgumentException("Ya existe una asignación para este proyecto y contratista.");
         }
 
-        validarFechas(dto);
-
-        AsignacionProyectoContratista asignacion = new AsignacionProyectoContratista();
-        asignacion.setProyecto(proyecto);
-        asignacion.setContratista(contratista);
-        mapDtoToEntity(dto, asignacion);
-        asignacion.setEstatusContrato(EstatusContrato.ACTIVO);
-        return toResponse(asignacionRepository.save(asignacion));
-    }
-
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
-    @Override
-    @Transactional
-    public AsignacionProyectoContratistaResponseDTO update(Integer id, AsignacionProyectoContratistaRequestDTO dto) {
-        AsignacionProyectoContratista asignacion = getAsignacionOrThrow(id);
-
-        Proyecto proyecto = proyectoRepository.findById(dto.getIdProyecto())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Proyecto no encontrado con id: " + dto.getIdProyecto()));
-
-        Contratista contratista = contratistaRepository.findById(dto.getIdContratista())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Contratista no encontrado con id: " + dto.getIdContratista()));
-
-        boolean cambioRelacion = !asignacion.getProyecto().getIdProyecto().equals(dto.getIdProyecto())
-                || !asignacion.getContratista().getIdContratista().equals(dto.getIdContratista());
-
-        if (cambioRelacion && asignacionRepository.existsByProyecto_IdProyectoAndContratista_IdContratista(
-                dto.getIdProyecto(), dto.getIdContratista())) {
-            throw new IllegalArgumentException(
-                    "El contratista ya está asignado a este proyecto.");
+        if (request.getFechaFinEstimada() != null
+                && request.getFechaInicio() != null
+                && request.getFechaFinEstimada().isBefore(request.getFechaInicio())) {
+            throw new IllegalArgumentException("La fecha fin no puede ser anterior a la fecha de inicio.");
         }
 
-        validarFechas(dto);
-        asignacion.setProyecto(proyecto);
-        asignacion.setContratista(contratista);
-        mapDtoToEntity(dto, asignacion);
-        return toResponse(asignacionRepository.save(asignacion));
+        AsignacionProyectoContratista asignacion = AsignacionProyectoContratista.builder()
+                .proyecto(proyecto)
+                .contratista(contratista)
+                .numeroContrato(request.getNumeroContrato())
+                .fechaInicio(request.getFechaInicio())
+                .fechaFinEstimada(request.getFechaFinEstimada())
+                .personalAsignado(request.getPersonalAsignado())
+                .puestosRequeridos(request.getPuestosRequeridos())
+                .estatusContrato(request.getEstatusContrato() != null
+                        ? request.getEstatusContrato()
+                        : AsignacionProyectoContratista.EstatusContrato.VIGENTE)
+                .observaciones(request.getObservaciones())
+                .build();
+
+        return AsignacionProyectoContratistaResponse.from(asignacionPcRepository.save(asignacion));
     }
 
-    // ─── CAMBIAR ESTATUS ──────────────────────────────────────────────────────
     @Override
     @Transactional
-    public AsignacionProyectoContratistaResponseDTO cambiarEstatus(Integer id, EstatusContrato estatus) {
-        AsignacionProyectoContratista asignacion = getAsignacionOrThrow(id);
-        asignacion.setEstatusContrato(estatus);
-        return toResponse(asignacionRepository.save(asignacion));
+    public AsignacionProyectoContratistaResponse update(Integer id, AsignacionProyectoContratistaRequest request) {
+        AsignacionProyectoContratista asignacion = getOrThrow(id);
+
+        Proyecto proyecto = proyectoRepository.findById(request.getIdProyecto())
+                .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado con id: " + request.getIdProyecto()));
+
+        Contratista contratista = contratistaRepository.findById(request.getIdContratista())
+                .orElseThrow(() -> new EntityNotFoundException("Contratista no encontrado con id: " + request.getIdContratista()));
+
+        if (request.getFechaFinEstimada() != null
+                && request.getFechaInicio() != null
+                && request.getFechaFinEstimada().isBefore(request.getFechaInicio())) {
+            throw new IllegalArgumentException("La fecha fin no puede ser anterior a la fecha de inicio.");
+        }
+
+        asignacion.setProyecto(proyecto);
+        asignacion.setContratista(contratista);
+        asignacion.setNumeroContrato(request.getNumeroContrato());
+        asignacion.setFechaInicio(request.getFechaInicio());
+        asignacion.setFechaFinEstimada(request.getFechaFinEstimada());
+        asignacion.setPersonalAsignado(request.getPersonalAsignado());
+        asignacion.setPuestosRequeridos(request.getPuestosRequeridos());
+        if (request.getEstatusContrato() != null) {
+            asignacion.setEstatusContrato(request.getEstatusContrato());
+        }
+        asignacion.setObservaciones(request.getObservaciones());
+
+        return AsignacionProyectoContratistaResponse.from(asignacionPcRepository.save(asignacion));
     }
 
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!asignacionRepository.existsById(id)) {
-            throw new EntityNotFoundException("Asignación no encontrada con id: " + id);
-        }
-        asignacionRepository.deleteById(id);
+        getOrThrow(id);
+        asignacionPcRepository.deleteById(id);
     }
 
-    // ─── HELPERS ──────────────────────────────────────────────────────────────
-    private AsignacionProyectoContratista getAsignacionOrThrow(Integer id) {
-        return asignacionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Asignación proyecto-contratista no encontrada con id: " + id));
-    }
-
-    private void validarFechas(AsignacionProyectoContratistaRequestDTO dto) {
-        if (dto.getFechaInicio() != null && dto.getFechaFinEstimada() != null
-                && dto.getFechaFinEstimada().isBefore(dto.getFechaInicio())) {
-            throw new IllegalArgumentException(
-                    "La fecha fin del contrato no puede ser anterior a la fecha de inicio.");
-        }
-    }
-
-    private void mapDtoToEntity(AsignacionProyectoContratistaRequestDTO dto,
-                                AsignacionProyectoContratista asignacion) {
-        asignacion.setNumeroContrato(dto.getNumeroContrato());
-        asignacion.setFechaInicio(dto.getFechaInicio());
-        asignacion.setFechaFinEstimada(dto.getFechaFinEstimada());
-        asignacion.setMontoContratado(dto.getMontoContratado());
-        asignacion.setObservaciones(dto.getObservaciones());
-    }
-
-    // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private AsignacionProyectoContratistaResponseDTO toResponse(AsignacionProyectoContratista a) {
-        Proyecto p = a.getProyecto();
-        Contratista c = a.getContratista();
-
-        ProyectoResponseDTO proyectoDTO = ProyectoResponseDTO.builder()
-                .idProyecto(p.getIdProyecto())
-                .nombreProyecto(p.getNombreProyecto())
-                .tipoProyecto(p.getTipoProyecto())
-                .lugarProyecto(p.getLugarProyecto())
-                .municipioProyecto(p.getMunicipioProyecto())
-                .estadoProyectoGeo(p.getEstadoProyectoGeo())
-                .fechaEstimadaInicio(p.getFechaEstimadaInicio())
-                .fechaEstimadaFin(p.getFechaEstimadaFin())
-                .calificacionProyecto(p.getCalificacionProyecto())
-                .estatusProyecto(p.getEstatusProyecto())
-                .descripcionProyecto(p.getDescripcionProyecto())
-                .build();
-
-        ContratistaResponseDTO contratistaDTO = ContratistaResponseDTO.builder()
-                .idContratista(c.getIdContratista())
-                // Agregados: nombreContratista y ubicacionContratista existen en la BD
-                .nombreContratista(c.getNombreContratista())
-                .rfcContratista(c.getRfcContratista())
-                .telefonoContratista(c.getTelefonoContratista())
-                .correoContratista(c.getCorreoContratista())
-                .descripcionContratista(c.getDescripcionContratista())
-                .experiencia(c.getExperiencia())
-                .calificacionContratista(c.getCalificacionContratista())
-                .estadoContratista(c.getEstadoContratista())
-                .ubicacionContratista(c.getUbicacionContratista())
-                .build();
-
-        return AsignacionProyectoContratistaResponseDTO.builder()
-                .idAsignacionPc(a.getIdAsignacionPc())
-                .proyecto(proyectoDTO)
-                .contratista(contratistaDTO)
-                .numeroContrato(a.getNumeroContrato())
-                .fechaInicio(a.getFechaInicio())
-                .fechaFinEstimada(a.getFechaFinEstimada())
-                .montoContratado(a.getMontoContratado())
-                .estatusContrato(a.getEstatusContrato())
-                .observaciones(a.getObservaciones())
-                .build();
+    private AsignacionProyectoContratista getOrThrow(Integer id) {
+        return asignacionPcRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Asignación proyecto-contratista no encontrada con id: " + id));
     }
 }

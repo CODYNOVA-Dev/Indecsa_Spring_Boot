@@ -1,163 +1,189 @@
-package com.example.demo.service.impl;
+package com.indecsa.service.impl;
 
-import com.example.demo.dto.request.TrabajadorRequestDTO;
-import com.example.demo.dto.response.TrabajadorResponseDTO;
-import com.example.demo.model.Trabajador;
-import com.example.demo.model.Trabajador.EstadoTrabajador;
-import com.example.demo.repository.TrabajadorRepository;
-import com.example.demo.service.TrabajadorService;
+import com.indecsa.dto.trabajador.TrabajadorRequest;
+import com.indecsa.dto.trabajador.TrabajadorResponse;
+import com.indecsa.model.RegistroMigratorio;
+import com.indecsa.model.Trabajador;
+import com.indecsa.repository.RegistroMigratorioRepository;
+import com.indecsa.repository.TrabajadorRepository;
+import com.indecsa.service.TrabajadorService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class TrabajadorServiceImpl implements TrabajadorService {
 
     private final TrabajadorRepository trabajadorRepository;
+    private final RegistroMigratorioRepository migratorioRepository;
 
-    // Se eliminó PasswordEncoder: contrasenia_trabajador no existe en la BD
-
-    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<TrabajadorResponseDTO> findAll() {
-        return trabajadorRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<TrabajadorResponse> findByFiltros(
+            String nombre,
+            Trabajador.EstadoTrabajador estado,
+            String especialidad,
+            String puesto,
+            Trabajador.EntidadFederativa calidadVida,
+            Pageable pageable
+    ) {
+        return trabajadorRepository
+                .findByFiltros(nombre, estado, especialidad, puesto, calidadVida, pageable)
+                .map(TrabajadorResponse::from);
     }
 
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public TrabajadorResponseDTO findById(Integer id) {
-        return toResponse(getTrabajadorOrThrow(id));
+    public TrabajadorResponse findById(Integer id) {
+        return TrabajadorResponse.from(getOrThrow(id));
     }
 
-    // ─── FIND BY ESTADO ───────────────────────────────────────────────────────
-    @Override  // Agregado @Override que faltaba
-    @Transactional(readOnly = true)
-    public List<TrabajadorResponseDTO> findByEstado(EstadoTrabajador estado) {
-        return trabajadorRepository.findByEstadoTrabajador(estado)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    // ─── FIND BY ESPECIALIDAD ─────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<TrabajadorResponseDTO> findByEspecialidad(String especialidad) {
-        return trabajadorRepository.findByEspecialidadTrabajadorContainingIgnoreCase(especialidad)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public TrabajadorResponseDTO create(TrabajadorRequestDTO dto) {
-        if (trabajadorRepository.existsByCorreoTrabajador(dto.getCorreoTrabajador())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un trabajador con el correo: " + dto.getCorreoTrabajador());
+    public TrabajadorResponse create(TrabajadorRequest request) {
+        if (trabajadorRepository.existsByCurp(request.getCurp())) {
+            throw new IllegalArgumentException("Ya existe un trabajador con la CURP: " + request.getCurp());
         }
-        if (dto.getNssTrabajador() != null
-                && trabajadorRepository.existsByNssTrabajador(dto.getNssTrabajador())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un trabajador con el NSS: " + dto.getNssTrabajador());
+        if (trabajadorRepository.existsByRfc(request.getRfc())) {
+            throw new IllegalArgumentException("Ya existe un trabajador con el RFC: " + request.getRfc());
         }
-        Trabajador trabajador = new Trabajador();
-        mapDtoToEntity(dto, trabajador);
-        // Se eliminó: passwordEncoder.encode(dto.getContraseniaTrabajador())
-        // contrasenia_trabajador no existe en la BD
-        trabajador.setEstadoTrabajador(EstadoTrabajador.ACTIVO);
-        return toResponse(trabajadorRepository.save(trabajador));
+        if (trabajadorRepository.existsByCorreoTrabajador(request.getCorreoTrabajador())) {
+            throw new IllegalArgumentException("Ya existe un trabajador con el correo: " + request.getCorreoTrabajador());
+        }
+
+        RegistroMigratorio migratorio = null;
+        if (request.getIdMigratorio() != null) {
+            migratorio = migratorioRepository.findById(request.getIdMigratorio())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Registro migratorio no encontrado con id: " + request.getIdMigratorio()));
+        }
+
+        Trabajador trabajador = buildTrabajador(request, migratorio);
+        return TrabajadorResponse.from(trabajadorRepository.save(trabajador));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public TrabajadorResponseDTO update(Integer id, TrabajadorRequestDTO dto) {
-        Trabajador trabajador = getTrabajadorOrThrow(id);
+    public TrabajadorResponse update(Integer id, TrabajadorRequest request) {
+        Trabajador trabajador = getOrThrow(id);
 
-        if (!trabajador.getCorreoTrabajador().equals(dto.getCorreoTrabajador())
-                && trabajadorRepository.existsByCorreoTrabajador(dto.getCorreoTrabajador())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un trabajador con el correo: " + dto.getCorreoTrabajador());
+        if (!trabajador.getCurp().equals(request.getCurp())
+                && trabajadorRepository.existsByCurp(request.getCurp())) {
+            throw new IllegalArgumentException("Ya existe un trabajador con la CURP: " + request.getCurp());
         }
-        if (dto.getNssTrabajador() != null
-                && !dto.getNssTrabajador().equals(trabajador.getNssTrabajador())
-                && trabajadorRepository.existsByNssTrabajador(dto.getNssTrabajador())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un trabajador con el NSS: " + dto.getNssTrabajador());
+        if (!trabajador.getRfc().equals(request.getRfc())
+                && trabajadorRepository.existsByRfc(request.getRfc())) {
+            throw new IllegalArgumentException("Ya existe un trabajador con el RFC: " + request.getRfc());
         }
-        mapDtoToEntity(dto, trabajador);
-        // Se eliminó: passwordEncoder.encode(dto.getContraseniaTrabajador())
-        return toResponse(trabajadorRepository.save(trabajador));
+        if (!trabajador.getCorreoTrabajador().equals(request.getCorreoTrabajador())
+                && trabajadorRepository.existsByCorreoTrabajador(request.getCorreoTrabajador())) {
+            throw new IllegalArgumentException("Ya existe un trabajador con el correo: " + request.getCorreoTrabajador());
+        }
+
+        RegistroMigratorio migratorio = null;
+        if (request.getIdMigratorio() != null) {
+            migratorio = migratorioRepository.findById(request.getIdMigratorio())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Registro migratorio no encontrado con id: " + request.getIdMigratorio()));
+        }
+
+        // Datos personales
+        trabajador.setNombreTrabajador(request.getNombreTrabajador());
+        trabajador.setCurp(request.getCurp());
+        trabajador.setRfc(request.getRfc());
+        trabajador.setNssTrabajador(request.getNssTrabajador());
+        trabajador.setNacionalidad(request.getNacionalidad());
+        trabajador.setRegistroMigratorio(migratorio);
+        // Domicilio
+        trabajador.setCalle(request.getCalle());
+        trabajador.setNumExt(request.getNumExt());
+        trabajador.setNumInt(request.getNumInt());
+        trabajador.setColonia(request.getColonia());
+        trabajador.setCodPost(request.getCodPost());
+        trabajador.setMunAlc(request.getMunAlc());
+        trabajador.setEstado(request.getEstado());
+        // Laboral
+        trabajador.setPuesto(request.getPuesto());
+        trabajador.setDescPuesto(request.getDescPuesto());
+        trabajador.setEspecialidadTrabajador(request.getEspecialidadTrabajador());
+        trabajador.setEscolaridad(request.getEscolaridad());
+        trabajador.setExperiencia(request.getExperiencia());
+        trabajador.setTelefonoTrabajador(request.getTelefonoTrabajador());
+        trabajador.setCorreoTrabajador(request.getCorreoTrabajador());
+        trabajador.setContratacion(request.getContratacion());
+        trabajador.setJornada(request.getJornada());
+        if (request.getEstadoTrabajador() != null) {
+            trabajador.setEstadoTrabajador(request.getEstadoTrabajador());
+        }
+        // Otros
+        trabajador.setDescripcionTrabajador(request.getDescripcionTrabajador());
+        trabajador.setEvaluacionTrabajador(request.getEvaluacionTrabajador());
+        trabajador.setFechaIngreso(request.getFechaIngreso());
+        trabajador.setCalidadVida(request.getCalidadVida());
+        trabajador.setAntPenal(request.getAntPenal());
+        trabajador.setDeudorAlim(request.getDeudorAlim());
+        trabajador.setFolioLicCond(request.getFolioLicCond());
+        trabajador.setEstadoCivil(request.getEstadoCivil());
+        trabajador.setIdiomas(request.getIdiomas());
+        trabajador.setLenguaIndigena(request.getLenguaIndigena());
+        trabajador.setSexo(request.getSexo());
+
+        return TrabajadorResponse.from(trabajadorRepository.save(trabajador));
     }
 
-    // ─── CAMBIAR ESTADO ───────────────────────────────────────────────────────
-    @Override
-    @Transactional
-    public TrabajadorResponseDTO cambiarEstado(Integer id, EstadoTrabajador estado) {
-        Trabajador trabajador = getTrabajadorOrThrow(id);
-        trabajador.setEstadoTrabajador(estado);
-        return toResponse(trabajadorRepository.save(trabajador));
-    }
-
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!trabajadorRepository.existsById(id)) {
-            throw new EntityNotFoundException("Trabajador no encontrado con id: " + id);
-        }
+        getOrThrow(id);
         trabajadorRepository.deleteById(id);
     }
 
-    // ─── HELPERS ──────────────────────────────────────────────────────────────
-    private Trabajador getTrabajadorOrThrow(Integer id) {
-        return trabajadorRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Trabajador no encontrado con id: " + id));
-    }
-
-    private void mapDtoToEntity(TrabajadorRequestDTO dto, Trabajador trabajador) {
-        trabajador.setNombreTrabajador(dto.getNombreTrabajador());
-        trabajador.setNssTrabajador(dto.getNssTrabajador());
-        trabajador.setExperiencia(dto.getExperiencia());
-        trabajador.setTelefonoTrabajador(dto.getTelefonoTrabajador());
-        trabajador.setCorreoTrabajador(dto.getCorreoTrabajador().toLowerCase().trim());
-        trabajador.setEspecialidadTrabajador(dto.getEspecialidadTrabajador());
-        trabajador.setDescripcionTrabajador(dto.getDescripcionTrabajador());
-        trabajador.setCalificacionTrabajador(dto.getCalificacionTrabajador());
-        trabajador.setFechaIngreso(dto.getFechaIngreso());
-        // Agregado: ubicacionTrabajador existe en la BD
-        trabajador.setUbicacionTrabajador(dto.getUbicacionTrabajador());
-    }
-
-    // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private TrabajadorResponseDTO toResponse(Trabajador t) {
-        return TrabajadorResponseDTO.builder()
-                .idTrabajador(t.getIdTrabajador())
-                .nombreTrabajador(t.getNombreTrabajador())
-                .nssTrabajador(t.getNssTrabajador())
-                .experiencia(t.getExperiencia())
-                .telefonoTrabajador(t.getTelefonoTrabajador())
-                .correoTrabajador(t.getCorreoTrabajador())
-                .especialidadTrabajador(t.getEspecialidadTrabajador())
-                .estadoTrabajador(t.getEstadoTrabajador())
-                .descripcionTrabajador(t.getDescripcionTrabajador())
-                .calificacionTrabajador(t.getCalificacionTrabajador())
-                .fechaIngreso(t.getFechaIngreso())
-                // Agregado: ubicacionTrabajador existe en la BD
-                .ubicacionTrabajador(t.getUbicacionTrabajador())
+    private Trabajador buildTrabajador(TrabajadorRequest r, RegistroMigratorio migratorio) {
+        return Trabajador.builder()
+                .nombreTrabajador(r.getNombreTrabajador())
+                .curp(r.getCurp())
+                .rfc(r.getRfc())
+                .nssTrabajador(r.getNssTrabajador())
+                .nacionalidad(r.getNacionalidad())
+                .registroMigratorio(migratorio)
+                .calle(r.getCalle())
+                .numExt(r.getNumExt())
+                .numInt(r.getNumInt())
+                .colonia(r.getColonia())
+                .codPost(r.getCodPost())
+                .munAlc(r.getMunAlc())
+                .estado(r.getEstado())
+                .puesto(r.getPuesto())
+                .descPuesto(r.getDescPuesto())
+                .especialidadTrabajador(r.getEspecialidadTrabajador())
+                .escolaridad(r.getEscolaridad())
+                .experiencia(r.getExperiencia())
+                .telefonoTrabajador(r.getTelefonoTrabajador())
+                .correoTrabajador(r.getCorreoTrabajador())
+                .contratacion(r.getContratacion())
+                .jornada(r.getJornada())
+                .estadoTrabajador(r.getEstadoTrabajador() != null
+                        ? r.getEstadoTrabajador()
+                        : Trabajador.EstadoTrabajador.ACTIVO)
+                .descripcionTrabajador(r.getDescripcionTrabajador())
+                .evaluacionTrabajador(r.getEvaluacionTrabajador())
+                .fechaIngreso(r.getFechaIngreso())
+                .calidadVida(r.getCalidadVida())
+                .antPenal(r.getAntPenal())
+                .deudorAlim(r.getDeudorAlim())
+                .folioLicCond(r.getFolioLicCond())
+                .estadoCivil(r.getEstadoCivil())
+                .idiomas(r.getIdiomas())
+                .lenguaIndigena(r.getLenguaIndigena())
+                .sexo(r.getSexo())
                 .build();
+    }
+
+    private Trabajador getOrThrow(Integer id) {
+        return trabajadorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Trabajador no encontrado con id: " + id));
     }
 }

@@ -4,6 +4,7 @@ import com.example.demo.dto.auth.LoginRequest;
 import com.example.demo.dto.auth.LoginResponse;
 import com.example.demo.model.Empleado;
 import com.example.demo.repository.EmpleadoRepository;
+import com.example.demo.security.JwtService;
 import com.example.demo.service.AuthService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final EmpleadoRepository empleadoRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     public LoginResponse login(LoginRequest request) {
@@ -30,11 +32,14 @@ public class AuthServiceImpl implements AuthService {
             throw new BadCredentialsException("Credenciales inválidas.");
         }
 
+        String token = jwtService.generateToken(empleado);
+
         return new LoginResponse(
                 empleado.getIdEmpleado(),
                 empleado.getNombreEmpleado(),
                 empleado.getCorreoEmpleado(),
-                empleado.getRol().getNombreRol().name()
+                empleado.getRol().getNombreRol().name(),
+                token
         );
     }
 }

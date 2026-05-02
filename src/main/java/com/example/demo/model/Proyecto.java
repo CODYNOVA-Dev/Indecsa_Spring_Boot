@@ -1,4 +1,4 @@
-package com.indecsa.model;
+package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,18 +26,18 @@ public class Proyecto {
     @Column(name = "oferta_trabajo", length = 200)
     private String ofertaTrabajo;
 
-    @Column(name = "cliente", nullable = false, length = 200)
+    @Column(name = "cliente", length = 200)
     private String cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_ubicacion", nullable = false)
+    @JoinColumn(name = "id_ubicacion")
     private UbicacionProyecto ubicacion;
 
     @Column(name = "municipio_proyecto", length = 100)
     private String municipioProyecto;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_proyecto_geo", nullable = false)
+    @Column(name = "estado_proyecto_geo")
     private EntidadFederativa estadoProyectoGeo;
 
     @Column(name = "fecha_estimada_inicio")
@@ -50,7 +50,7 @@ public class Proyecto {
     private Byte calificacionProyecto;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_proyecto", nullable = false)
+    @Column(name = "estatus_proyecto")
     private EstatusProyecto estatusProyecto;
 
     @Column(name = "descripcion_proyecto", length = 500)
@@ -62,7 +62,7 @@ public class Proyecto {
     }
 
     public enum EstatusProyecto {
-        PLANEACION, EN_CURSO, PENDIENTE, FINALIZADO, CANCELADO
+        PLANEACION, EN_CURSO, PAUSADO, FINALIZADO, CANCELADO
     }
 
     public enum EntidadFederativa {

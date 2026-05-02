@@ -1,8 +1,8 @@
-package com.indecsa.dto;
+package com.example.demo.dto;
 
-import com.indecsa.model.Proyecto.EntidadFederativa;
-import com.indecsa.model.Proyecto.EstatusProyecto;
-import com.indecsa.model.Proyecto.TipoProyecto;
+import com.example.demo.model.Proyecto.EntidadFederativa;
+import com.example.demo.model.Proyecto.EstatusProyecto;
+import com.example.demo.model.Proyecto.TipoProyecto;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 

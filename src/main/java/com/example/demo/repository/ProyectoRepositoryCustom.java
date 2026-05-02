@@ -1,15 +1,11 @@
-package com.indecsa.repository;
+package com.example.demo.repository;
 
-import com.indecsa.model.Proyecto;
+import com.example.demo.model.Proyecto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProyectoRepositoryCustom {
 
-    /**
-     * Filtrado dinámico de proyectos.
-     * Todos los parámetros son opcionales (null = ignorar filtro).
-     */
     Page<Proyecto> findByFiltros(
             String nombre,
             Proyecto.TipoProyecto tipo,

@@ -328,7 +328,7 @@ BEGIN
     UPDATE Asignacion_Proyecto_Contratista
     SET    estatus_contrato = 'FINALIZADO'
     WHERE  id_proyecto = NEW.id_proyecto
-      AND  estatus_contrato = 'ACTIVO';
+      AND  estatus_contrato IN ('ACTIVO', 'VIGENTE');
 END IF;
 END //
 

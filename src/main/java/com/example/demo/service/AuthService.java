@@ -1,7 +1,7 @@
-package com.indecsa.service;
+package com.example.demo.service;
 
-import com.indecsa.dto.auth.LoginRequest;
-import com.indecsa.dto.auth.LoginResponse;
+import com.example.demo.dto.auth.LoginRequest;
+import com.example.demo.dto.auth.LoginResponse;
 
 public interface AuthService {
     LoginResponse login(LoginRequest request);

@@ -1,6 +1,6 @@
-package com.indecsa.dto;
+package com.example.demo.dto;
 
-import com.indecsa.model.Rol.NombreRol;
+import com.example.demo.model.Rol.NombreRol;
 import jakarta.validation.constraints.NotNull;
 
 public class RolDTO {

@@ -1,10 +1,10 @@
-package com.indecsa.service.impl;
+package com.example.demo.service.impl;
 
-import com.indecsa.dto.ubicacion.UbicacionProyectoRequest;
-import com.indecsa.dto.ubicacion.UbicacionProyectoResponse;
-import com.indecsa.model.UbicacionProyecto;
-import com.indecsa.repository.UbicacionProyectoRepository;
-import com.indecsa.service.UbicacionProyectoService;
+import com.example.demo.dto.ubicacion.UbicacionProyectoRequest;
+import com.example.demo.dto.ubicacion.UbicacionProyectoResponse;
+import com.example.demo.model.UbicacionProyecto;
+import com.example.demo.repository.UbicacionProyectoRepository;
+import com.example.demo.service.UbicacionProyectoService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

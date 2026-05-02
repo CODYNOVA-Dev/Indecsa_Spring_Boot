@@ -1,8 +1,8 @@
-package com.indecsa.controller;
+package com.example.demo.controller;
 
-import com.indecsa.dto.rol.RolRequest;
-import com.indecsa.dto.rol.RolResponse;
-import com.indecsa.service.RolService;
+import com.example.demo.dto.rol.RolRequest;
+import com.example.demo.dto.rol.RolResponse;
+import com.example.demo.service.RolService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

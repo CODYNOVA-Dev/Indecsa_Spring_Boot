@@ -1,22 +1,18 @@
-package com.indecsa.service;
+package com.example.demo.service;
 
-import com.indecsa.dto.trabajador.TrabajadorRequest;
-import com.indecsa.dto.trabajador.TrabajadorResponse;
-import com.indecsa.model.Trabajador;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.example.demo.dto.trabajador.TrabajadorRequest;
+import com.example.demo.dto.trabajador.TrabajadorResponse;
+import com.example.demo.model.Trabajador;
+
+import java.util.List;
 
 public interface TrabajadorService {
-    Page<TrabajadorResponse> findByFiltros(
-            String nombre,
-            Trabajador.EstadoTrabajador estado,
-            String especialidad,
-            String puesto,
-            Trabajador.EntidadFederativa calidadVida,
-            Pageable pageable
-    );
+    List<TrabajadorResponse> findAll();
+    List<TrabajadorResponse> findByEstado(Trabajador.EstadoTrabajador estado);
+    List<TrabajadorResponse> findByEspecialidad(String especialidad);
     TrabajadorResponse findById(Integer id);
     TrabajadorResponse create(TrabajadorRequest request);
     TrabajadorResponse update(Integer id, TrabajadorRequest request);
+    TrabajadorResponse cambiarEstado(Integer id, Trabajador.EstadoTrabajador estado);
     void delete(Integer id);
 }

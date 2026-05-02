@@ -1,7 +1,7 @@
-package com.indecsa.dto;
+package com.example.demo.dto;
 
-import com.indecsa.model.Trabajador.EntidadFederativa;
-import com.indecsa.model.Trabajador.EstadoTrabajador;
+import com.example.demo.model.Trabajador.EntidadFederativa;
+import com.example.demo.model.Trabajador.EstadoTrabajador;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 

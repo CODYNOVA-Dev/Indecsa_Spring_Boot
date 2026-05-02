@@ -1,6 +1,6 @@
-package com.indecsa.repository;
+package com.example.demo.repository;
 
-import com.indecsa.model.Proyecto;
+import com.example.demo.model.Proyecto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +11,6 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Integer>,
         ProyectoRepositoryCustom {
 
     List<Proyecto> findByEstatusProyecto(Proyecto.EstatusProyecto estatus);
+    List<Proyecto> findByMunicipioProyectoContainingIgnoreCase(String municipio);
     boolean existsByNombreProyectoAndCliente(String nombre, String cliente);
 }

@@ -1,7 +1,7 @@
-package com.indecsa.service;
+package com.example.demo.service;
 
-import com.indecsa.dto.asignacion.AsignacionTrabajadorProyectoRequest;
-import com.indecsa.dto.asignacion.AsignacionTrabajadorProyectoResponse;
+import com.example.demo.dto.asignacion.AsignacionTrabajadorProyectoRequest;
+import com.example.demo.dto.asignacion.AsignacionTrabajadorProyectoResponse;
 
 import java.util.List;
 

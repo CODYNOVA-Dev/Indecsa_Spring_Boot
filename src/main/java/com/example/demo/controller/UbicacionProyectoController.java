@@ -1,9 +1,9 @@
-package com.indecsa.controller;
+package com.example.demo.controller;
 
-import com.indecsa.dto.ubicacion.UbicacionProyectoRequest;
-import com.indecsa.dto.ubicacion.UbicacionProyectoResponse;
-import com.indecsa.model.UbicacionProyecto;
-import com.indecsa.service.UbicacionProyectoService;
+import com.example.demo.dto.ubicacion.UbicacionProyectoRequest;
+import com.example.demo.dto.ubicacion.UbicacionProyectoResponse;
+import com.example.demo.model.UbicacionProyecto;
+import com.example.demo.service.UbicacionProyectoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

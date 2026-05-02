@@ -1,6 +1,6 @@
-package com.indecsa.dto;
+package com.example.demo.dto;
 
-import com.indecsa.model.RegistroMigratorio.CategoriaVisitante;
+import com.example.demo.model.RegistroMigratorio.CategoriaVisitante;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 

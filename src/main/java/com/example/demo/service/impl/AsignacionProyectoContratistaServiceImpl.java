@@ -1,14 +1,14 @@
-package com.indecsa.service.impl;
+package com.example.demo.service.impl;
 
-import com.indecsa.dto.asignacion.AsignacionProyectoContratistaRequest;
-import com.indecsa.dto.asignacion.AsignacionProyectoContratistaResponse;
-import com.indecsa.model.AsignacionProyectoContratista;
-import com.indecsa.model.Contratista;
-import com.indecsa.model.Proyecto;
-import com.indecsa.repository.AsignacionProyectoContratistaRepository;
-import com.indecsa.repository.ContratistaRepository;
-import com.indecsa.repository.ProyectoRepository;
-import com.indecsa.service.AsignacionProyectoContratistaService;
+import com.example.demo.dto.asignacion.AsignacionProyectoContratistaRequest;
+import com.example.demo.dto.asignacion.AsignacionProyectoContratistaResponse;
+import com.example.demo.model.AsignacionProyectoContratista;
+import com.example.demo.model.Contratista;
+import com.example.demo.model.Proyecto;
+import com.example.demo.repository.AsignacionProyectoContratistaRepository;
+import com.example.demo.repository.ContratistaRepository;
+import com.example.demo.repository.ProyectoRepository;
+import com.example.demo.service.AsignacionProyectoContratistaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
-package com.indecsa.service;
+package com.example.demo.service;
 
-import com.indecsa.dto.rol.RolRequest;
-import com.indecsa.dto.rol.RolResponse;
+import com.example.demo.dto.rol.RolRequest;
+import com.example.demo.dto.rol.RolResponse;
 
 import java.util.List;
 

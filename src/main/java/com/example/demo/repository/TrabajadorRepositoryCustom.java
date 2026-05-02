@@ -1,15 +1,11 @@
-package com.indecsa.repository;
+package com.example.demo.repository;
 
-import com.indecsa.model.Trabajador;
+import com.example.demo.model.Trabajador;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface TrabajadorRepositoryCustom {
 
-    /**
-     * Filtrado dinámico de trabajadores.
-     * Todos los parámetros son opcionales (null = ignorar filtro).
-     */
     Page<Trabajador> findByFiltros(
             String nombre,
             Trabajador.EstadoTrabajador estado,

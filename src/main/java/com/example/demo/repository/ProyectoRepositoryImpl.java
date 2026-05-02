@@ -1,7 +1,6 @@
-package com.indecsa.repository.impl;
+package com.example.demo.repository;
 
-import com.indecsa.model.Proyecto;
-import com.indecsa.repository.ProyectoRepositoryCustom;
+import com.example.demo.model.Proyecto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -31,7 +30,6 @@ public class ProyectoRepositoryImpl implements ProyectoRepositoryCustom {
     ) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
-        // --- Query de datos ---
         CriteriaQuery<Proyecto> query = cb.createQuery(Proyecto.class);
         Root<Proyecto> root = query.from(Proyecto.class);
         root.fetch("ubicacion", JoinType.LEFT);
@@ -43,7 +41,6 @@ public class ProyectoRepositoryImpl implements ProyectoRepositoryCustom {
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
 
-        // --- Query de conteo (sin fetch para evitar duplicados) ---
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Proyecto> countRoot = countQuery.from(Proyecto.class);
         List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, tipo, estatus, estadoGeo, cliente);

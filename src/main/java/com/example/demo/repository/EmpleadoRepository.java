@@ -1,9 +1,10 @@
-package com.indecsa.repository;
+package com.example.demo.repository;
 
-import com.indecsa.model.Empleado;
+import com.example.demo.model.Empleado;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -11,4 +12,5 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, Integer> {
     Optional<Empleado> findByCorreoEmpleado(String correoEmpleado);
     boolean existsByCorreoEmpleado(String correoEmpleado);
     boolean existsByCurp(String curp);
+    List<Empleado> findByRolIdRol(Integer idRol);
 }

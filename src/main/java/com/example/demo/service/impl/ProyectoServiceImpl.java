@@ -1,18 +1,19 @@
-package com.indecsa.service.impl;
+package com.example.demo.service.impl;
 
-import com.indecsa.dto.proyecto.ProyectoRequest;
-import com.indecsa.dto.proyecto.ProyectoResponse;
-import com.indecsa.model.Proyecto;
-import com.indecsa.model.UbicacionProyecto;
-import com.indecsa.repository.ProyectoRepository;
-import com.indecsa.repository.UbicacionProyectoRepository;
-import com.indecsa.service.ProyectoService;
+import com.example.demo.dto.proyecto.ProyectoRequest;
+import com.example.demo.dto.proyecto.ProyectoResponse;
+import com.example.demo.model.Proyecto;
+import com.example.demo.model.UbicacionProyecto;
+import com.example.demo.repository.ProyectoRepository;
+import com.example.demo.repository.UbicacionProyectoRepository;
+import com.example.demo.service.ProyectoService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,17 +24,21 @@ public class ProyectoServiceImpl implements ProyectoService {
     private final UbicacionProyectoRepository ubicacionRepository;
 
     @Override
-    public Page<ProyectoResponse> findByFiltros(
-            String nombre,
-            Proyecto.TipoProyecto tipo,
-            Proyecto.EstatusProyecto estatus,
-            Proyecto.EntidadFederativa estadoGeo,
-            String cliente,
-            Pageable pageable
-    ) {
-        return proyectoRepository
-                .findByFiltros(nombre, tipo, estatus, estadoGeo, cliente, pageable)
-                .map(ProyectoResponse::from);
+    public List<ProyectoResponse> findAll() {
+        return proyectoRepository.findAll()
+                .stream().map(ProyectoResponse::from).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProyectoResponse> findByEstatus(Proyecto.EstatusProyecto estatus) {
+        return proyectoRepository.findByEstatusProyecto(estatus)
+                .stream().map(ProyectoResponse::from).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ProyectoResponse> findByMunicipio(String municipio) {
+        return proyectoRepository.findByMunicipioProyectoContainingIgnoreCase(municipio)
+                .stream().map(ProyectoResponse::from).collect(Collectors.toList());
     }
 
     @Override
@@ -44,8 +49,11 @@ public class ProyectoServiceImpl implements ProyectoService {
     @Override
     @Transactional
     public ProyectoResponse create(ProyectoRequest request) {
-        UbicacionProyecto ubicacion = ubicacionRepository.findById(request.getIdUbicacion())
-                .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada con id: " + request.getIdUbicacion()));
+        UbicacionProyecto ubicacion = null;
+        if (request.getIdUbicacion() != null) {
+            ubicacion = ubicacionRepository.findById(request.getIdUbicacion())
+                    .orElse(null);
+        }
 
         if (request.getFechaEstimadaFin() != null
                 && request.getFechaEstimadaInicio() != null
@@ -59,7 +67,7 @@ public class ProyectoServiceImpl implements ProyectoService {
                 .ofertaTrabajo(request.getOfertaTrabajo())
                 .cliente(request.getCliente())
                 .ubicacion(ubicacion)
-                .municipioProyecto(request.getMunicipioProyecto())
+                .municipioProyecto(request.getLugarProyecto())
                 .estadoProyectoGeo(request.getEstadoProyectoGeo())
                 .fechaEstimadaInicio(request.getFechaEstimadaInicio())
                 .fechaEstimadaFin(request.getFechaEstimadaFin())
@@ -78,8 +86,10 @@ public class ProyectoServiceImpl implements ProyectoService {
     public ProyectoResponse update(Integer id, ProyectoRequest request) {
         Proyecto proyecto = getOrThrow(id);
 
-        UbicacionProyecto ubicacion = ubicacionRepository.findById(request.getIdUbicacion())
-                .orElseThrow(() -> new EntityNotFoundException("Ubicación no encontrada con id: " + request.getIdUbicacion()));
+        UbicacionProyecto ubicacion = null;
+        if (request.getIdUbicacion() != null) {
+            ubicacion = ubicacionRepository.findById(request.getIdUbicacion()).orElse(null);
+        }
 
         if (request.getFechaEstimadaFin() != null
                 && request.getFechaEstimadaInicio() != null
@@ -87,21 +97,27 @@ public class ProyectoServiceImpl implements ProyectoService {
             throw new IllegalArgumentException("La fecha de fin no puede ser anterior a la fecha de inicio.");
         }
 
-        proyecto.setNombreProyecto(request.getNombreProyecto());
-        proyecto.setTipoProyecto(request.getTipoProyecto());
-        proyecto.setOfertaTrabajo(request.getOfertaTrabajo());
-        proyecto.setCliente(request.getCliente());
-        proyecto.setUbicacion(ubicacion);
-        proyecto.setMunicipioProyecto(request.getMunicipioProyecto());
-        proyecto.setEstadoProyectoGeo(request.getEstadoProyectoGeo());
-        proyecto.setFechaEstimadaInicio(request.getFechaEstimadaInicio());
-        proyecto.setFechaEstimadaFin(request.getFechaEstimadaFin());
-        proyecto.setCalificacionProyecto(request.getCalificacionProyecto());
-        if (request.getEstatusProyecto() != null) {
-            proyecto.setEstatusProyecto(request.getEstatusProyecto());
-        }
-        proyecto.setDescripcionProyecto(request.getDescripcionProyecto());
+        if (request.getNombreProyecto() != null) proyecto.setNombreProyecto(request.getNombreProyecto());
+        if (request.getTipoProyecto() != null)   proyecto.setTipoProyecto(request.getTipoProyecto());
+        if (request.getOfertaTrabajo() != null)  proyecto.setOfertaTrabajo(request.getOfertaTrabajo());
+        if (request.getCliente() != null)        proyecto.setCliente(request.getCliente());
+        if (ubicacion != null)                   proyecto.setUbicacion(ubicacion);
+        if (request.getLugarProyecto() != null)  proyecto.setMunicipioProyecto(request.getLugarProyecto());
+        if (request.getEstadoProyectoGeo() != null) proyecto.setEstadoProyectoGeo(request.getEstadoProyectoGeo());
+        if (request.getFechaEstimadaInicio() != null) proyecto.setFechaEstimadaInicio(request.getFechaEstimadaInicio());
+        if (request.getFechaEstimadaFin() != null)    proyecto.setFechaEstimadaFin(request.getFechaEstimadaFin());
+        if (request.getCalificacionProyecto() != null) proyecto.setCalificacionProyecto(request.getCalificacionProyecto());
+        if (request.getEstatusProyecto() != null)     proyecto.setEstatusProyecto(request.getEstatusProyecto());
+        if (request.getDescripcionProyecto() != null) proyecto.setDescripcionProyecto(request.getDescripcionProyecto());
 
+        return ProyectoResponse.from(proyectoRepository.save(proyecto));
+    }
+
+    @Override
+    @Transactional
+    public ProyectoResponse cambiarEstatus(Integer id, Proyecto.EstatusProyecto estatus) {
+        Proyecto proyecto = getOrThrow(id);
+        proyecto.setEstatusProyecto(estatus);
         return ProyectoResponse.from(proyectoRepository.save(proyecto));
     }
 

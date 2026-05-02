@@ -1,7 +1,6 @@
-package com.indecsa.repository.impl;
+package com.example.demo.repository;
 
-import com.indecsa.model.Contratista;
-import com.indecsa.repository.ContratistaRepositoryCustom;
+import com.example.demo.model.Contratista;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -30,7 +29,6 @@ public class ContratistaRepositoryImpl implements ContratistaRepositoryCustom {
     ) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
-        // --- Query de datos ---
         CriteriaQuery<Contratista> query = cb.createQuery(Contratista.class);
         Root<Contratista> root = query.from(Contratista.class);
         List<Predicate> predicates = buildPredicates(cb, root, nombre, estado, ubicacion, calificacionMin);
@@ -41,7 +39,6 @@ public class ContratistaRepositoryImpl implements ContratistaRepositoryCustom {
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
 
-        // --- Query de conteo ---
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Contratista> countRoot = countQuery.from(Contratista.class);
         List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, estado, ubicacion, calificacionMin);

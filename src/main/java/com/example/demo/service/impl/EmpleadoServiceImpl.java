@@ -1,12 +1,12 @@
-package com.indecsa.service.impl;
+package com.example.demo.service.impl;
 
-import com.indecsa.dto.empleado.EmpleadoRequest;
-import com.indecsa.dto.empleado.EmpleadoResponse;
-import com.indecsa.model.Empleado;
-import com.indecsa.model.Rol;
-import com.indecsa.repository.EmpleadoRepository;
-import com.indecsa.repository.RolRepository;
-import com.indecsa.service.EmpleadoService;
+import com.example.demo.dto.empleado.EmpleadoRequest;
+import com.example.demo.dto.empleado.EmpleadoResponse;
+import com.example.demo.model.Empleado;
+import com.example.demo.model.Rol;
+import com.example.demo.repository.EmpleadoRepository;
+import com.example.demo.repository.RolRepository;
+import com.example.demo.service.EmpleadoService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +28,13 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     public List<EmpleadoResponse> findAll() {
         return empleadoRepository.findAll()
-                .stream()
-                .map(EmpleadoResponse::from)
-                .toList();
+                .stream().map(EmpleadoResponse::from).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<EmpleadoResponse> findByRol(Integer idRol) {
+        return empleadoRepository.findByRolIdRol(idRol)
+                .stream().map(EmpleadoResponse::from).collect(Collectors.toList());
     }
 
     @Override
@@ -40,10 +45,12 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     @Transactional
     public EmpleadoResponse create(EmpleadoRequest request) {
-        if (empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
+        if (request.getCorreoEmpleado() != null
+                && empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
-        if (empleadoRepository.existsByCurp(request.getCurp())) {
+        if (request.getCurp() != null
+                && empleadoRepository.existsByCurp(request.getCurp())) {
             throw new IllegalArgumentException("Ya existe un empleado con la CURP: " + request.getCurp());
         }
         Rol rol = rolRepository.findById(request.getIdRol())
@@ -51,7 +58,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
         Empleado empleado = Empleado.builder()
                 .nombreEmpleado(request.getNombreEmpleado())
-                .curp(request.getCurp())
+                .curp(request.getCurp() != null ? request.getCurp() : "")
                 .correoEmpleado(request.getCorreoEmpleado().toLowerCase().trim())
                 .contrasena(passwordEncoder.encode(request.getContrasena()))
                 .rol(rol)
@@ -64,7 +71,8 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     public EmpleadoResponse update(Integer id, EmpleadoRequest request) {
         Empleado empleado = getEmpleadoOrThrow(id);
 
-        if (!empleado.getCorreoEmpleado().equals(request.getCorreoEmpleado())
+        if (request.getCorreoEmpleado() != null
+                && !request.getCorreoEmpleado().equals(empleado.getCorreoEmpleado())
                 && empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
@@ -72,10 +80,10 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         Rol rol = rolRepository.findById(request.getIdRol())
                 .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con id: " + request.getIdRol()));
 
-        empleado.setNombreEmpleado(request.getNombreEmpleado());
-        empleado.setCurp(request.getCurp());
-        empleado.setCorreoEmpleado(request.getCorreoEmpleado().toLowerCase().trim());
-        empleado.setContrasena(passwordEncoder.encode(request.getContrasena()));
+        if (request.getNombreEmpleado() != null)  empleado.setNombreEmpleado(request.getNombreEmpleado());
+        if (request.getCurp() != null)             empleado.setCurp(request.getCurp());
+        if (request.getCorreoEmpleado() != null)   empleado.setCorreoEmpleado(request.getCorreoEmpleado().toLowerCase().trim());
+        if (request.getContrasena() != null)       empleado.setContrasena(passwordEncoder.encode(request.getContrasena()));
         empleado.setRol(rol);
 
         return EmpleadoResponse.from(empleadoRepository.save(empleado));

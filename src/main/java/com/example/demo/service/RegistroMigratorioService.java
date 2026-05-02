@@ -1,7 +1,7 @@
-package com.indecsa.service;
+package com.example.demo.service;
 
-import com.indecsa.dto.migratorio.RegistroMigratorioRequest;
-import com.indecsa.dto.migratorio.RegistroMigratorioResponse;
+import com.example.demo.dto.migratorio.RegistroMigratorioRequest;
+import com.example.demo.dto.migratorio.RegistroMigratorioResponse;
 
 import java.util.List;
 

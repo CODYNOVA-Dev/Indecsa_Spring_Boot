@@ -1,6 +1,6 @@
-package com.indecsa.repository;
+package com.example.demo.repository;
 
-import com.indecsa.model.AsignacionTrabajadorProyecto;
+import com.example.demo.model.AsignacionTrabajadorProyecto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

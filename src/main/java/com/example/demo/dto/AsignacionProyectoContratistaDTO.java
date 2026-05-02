@@ -1,6 +1,6 @@
-package com.indecsa.dto;
+package com.example.demo.dto;
 
-import com.indecsa.model.AsignacionProyectoContratista.EstatusContrato;
+import com.example.demo.model.AsignacionProyectoContratista.EstatusContrato;
 import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 

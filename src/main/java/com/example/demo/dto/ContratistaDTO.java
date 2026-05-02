@@ -1,7 +1,7 @@
-package com.indecsa.dto;
+package com.example.demo.dto;
 
-import com.indecsa.model.Contratista.EntidadFederativa;
-import com.indecsa.model.Contratista.EstadoContratista;
+import com.example.demo.model.Contratista.EntidadFederativa;
+import com.example.demo.model.Contratista.EstadoContratista;
 import jakarta.validation.constraints.*;
 
 public class ContratistaDTO {

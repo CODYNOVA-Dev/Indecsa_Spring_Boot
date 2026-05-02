@@ -1,7 +1,6 @@
-package com.indecsa.repository.impl;
+package com.example.demo.repository;
 
-import com.indecsa.model.Trabajador;
-import com.indecsa.repository.TrabajadorRepositoryCustom;
+import com.example.demo.model.Trabajador;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -31,7 +30,6 @@ public class TrabajadorRepositoryImpl implements TrabajadorRepositoryCustom {
     ) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
-        // --- Query de datos ---
         CriteriaQuery<Trabajador> query = cb.createQuery(Trabajador.class);
         Root<Trabajador> root = query.from(Trabajador.class);
         List<Predicate> predicates = buildPredicates(cb, root, nombre, estado, especialidad, puesto, calidadVida);
@@ -42,7 +40,6 @@ public class TrabajadorRepositoryImpl implements TrabajadorRepositoryCustom {
         typedQuery.setFirstResult((int) pageable.getOffset());
         typedQuery.setMaxResults(pageable.getPageSize());
 
-        // --- Query de conteo ---
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Trabajador> countRoot = countQuery.from(Trabajador.class);
         List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, estado, especialidad, puesto, calidadVida);

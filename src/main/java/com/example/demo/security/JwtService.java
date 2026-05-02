@@ -1,6 +1,6 @@
-package com.indecsa.security;
+package com.example.demo.security;
 
-import com.indecsa.model.Empleado;
+import com.example.demo.model.Empleado;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

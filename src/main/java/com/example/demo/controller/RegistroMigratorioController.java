@@ -1,8 +1,8 @@
-package com.indecsa.controller;
+package com.example.demo.controller;
 
-import com.indecsa.dto.migratorio.RegistroMigratorioRequest;
-import com.indecsa.dto.migratorio.RegistroMigratorioResponse;
-import com.indecsa.service.RegistroMigratorioService;
+import com.example.demo.dto.migratorio.RegistroMigratorioRequest;
+import com.example.demo.dto.migratorio.RegistroMigratorioResponse;
+import com.example.demo.service.RegistroMigratorioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

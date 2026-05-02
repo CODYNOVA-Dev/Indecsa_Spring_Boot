@@ -1,6 +1,6 @@
-package com.indecsa.dto;
+package com.example.demo.dto;
 
-import com.indecsa.model.UbicacionProyecto.EntidadFederativa;
+import com.example.demo.model.UbicacionProyecto.EntidadFederativa;
 import jakarta.validation.constraints.*;
 
 public class UbicacionProyectoDTO {

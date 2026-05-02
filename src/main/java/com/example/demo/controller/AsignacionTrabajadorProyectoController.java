@@ -1,8 +1,8 @@
-package com.indecsa.controller;
+package com.example.demo.controller;
 
-import com.indecsa.dto.asignacion.AsignacionTrabajadorProyectoRequest;
-import com.indecsa.dto.asignacion.AsignacionTrabajadorProyectoResponse;
-import com.indecsa.service.AsignacionTrabajadorProyectoService;
+import com.example.demo.dto.asignacion.AsignacionTrabajadorProyectoRequest;
+import com.example.demo.dto.asignacion.AsignacionTrabajadorProyectoResponse;
+import com.example.demo.service.AsignacionTrabajadorProyectoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,7 +1,7 @@
-package com.indecsa.security;
+package com.example.demo.service;
 
-import com.indecsa.model.Empleado;
-import com.indecsa.repository.EmpleadoRepository;
+import com.example.demo.model.Empleado;
+import com.example.demo.repository.EmpleadoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

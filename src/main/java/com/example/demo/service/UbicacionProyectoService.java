@@ -1,8 +1,8 @@
-package com.indecsa.service;
+package com.example.demo.service;
 
-import com.indecsa.dto.ubicacion.UbicacionProyectoRequest;
-import com.indecsa.dto.ubicacion.UbicacionProyectoResponse;
-import com.indecsa.model.UbicacionProyecto;
+import com.example.demo.dto.ubicacion.UbicacionProyectoRequest;
+import com.example.demo.dto.ubicacion.UbicacionProyectoResponse;
+import com.example.demo.model.UbicacionProyecto;
 
 import java.util.List;
 

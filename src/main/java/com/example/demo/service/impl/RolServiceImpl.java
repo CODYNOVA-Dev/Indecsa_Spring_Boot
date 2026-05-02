@@ -1,10 +1,10 @@
-package com.indecsa.service.impl;
+package com.example.demo.service.impl;
 
-import com.indecsa.dto.rol.RolRequest;
-import com.indecsa.dto.rol.RolResponse;
-import com.indecsa.model.Rol;
-import com.indecsa.repository.RolRepository;
-import com.indecsa.service.RolService;
+import com.example.demo.dto.rol.RolRequest;
+import com.example.demo.dto.rol.RolResponse;
+import com.example.demo.model.Rol;
+import com.example.demo.repository.RolRepository;
+import com.example.demo.service.RolService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

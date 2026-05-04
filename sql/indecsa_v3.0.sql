@@ -487,3 +487,81 @@ SELECT CONCAT('Exito: Rol actualizado de [', v_nombre_rol_act, '] a [', v_nombre
 END sp_asignar_rol //
 
 DELIMITER ;
+
+-- ============================================================
+--  MÓDULO RENDIMIENTO DE OBRA  (v1.0)
+-- ============================================================
+
+CREATE TABLE Cuadrilla (
+    id_cuadrilla      INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto       INT NOT NULL,
+    nombre_cuadrilla  VARCHAR(100) NOT NULL,
+    frente_trabajo    VARCHAR(200),
+    estatus_cuadrilla ENUM('ACTIVO','INACTIVO') NOT NULL DEFAULT 'ACTIVO',
+    observaciones     VARCHAR(500),
+    UNIQUE KEY uq_cuadrilla_proyecto (nombre_cuadrilla, id_proyecto),
+    FOREIGN KEY (id_proyecto)
+        REFERENCES Proyecto(id_proyecto) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE Estandar_Rendimiento (
+    id_estandar          INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_actividad     VARCHAR(100) NOT NULL,
+    unidad_medida        ENUM('m2','m3','ml','piezas','porcentaje') NOT NULL,
+    rendimiento_esperado DECIMAL(10,4) NOT NULL COMMENT 'unidades por hora-hombre',
+    descripcion          VARCHAR(255)
+);
+
+CREATE TABLE Registro_Horas (
+    id_registro          INT AUTO_INCREMENT PRIMARY KEY,
+    id_asignacion_tp     INT NOT NULL,
+    id_cuadrilla         INT NULL,
+    fecha_registro       DATE NOT NULL,
+    horas_trabajadas     DECIMAL(5,2) NOT NULL,
+    tipo_periodo         ENUM('DIARIO','SEMANAL') NOT NULL DEFAULT 'DIARIO',
+    observaciones        VARCHAR(500),
+    id_empleado_registro INT NOT NULL,
+    CONSTRAINT chk_horas CHECK (horas_trabajadas > 0 AND horas_trabajadas <= 24),
+    UNIQUE KEY uq_registro_fecha (id_asignacion_tp, fecha_registro),
+    FOREIGN KEY (id_asignacion_tp)
+        REFERENCES Asignacion_Trabajador_Proyecto(id_asignacion_tp)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_cuadrilla)
+        REFERENCES Cuadrilla(id_cuadrilla) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (id_empleado_registro)
+        REFERENCES Empleado(id_empleado) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Avance_Partida (
+    id_avance            INT AUTO_INCREMENT PRIMARY KEY,
+    id_proyecto          INT NOT NULL,
+    id_cuadrilla         INT NULL,
+    id_estandar          INT NULL,
+    nombre_partida       VARCHAR(200) NOT NULL,
+    fecha_registro       DATE NOT NULL,
+    cantidad_ejecutada   DECIMAL(12,4) NOT NULL,
+    unidad_medida        ENUM('m2','m3','ml','piezas','porcentaje') NOT NULL,
+    cantidad_programada  DECIMAL(12,4),
+    observaciones        VARCHAR(500),
+    id_empleado_registro INT NOT NULL,
+    CONSTRAINT chk_cantidad CHECK (cantidad_ejecutada > 0),
+    FOREIGN KEY (id_proyecto)
+        REFERENCES Proyecto(id_proyecto) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id_cuadrilla)
+        REFERENCES Cuadrilla(id_cuadrilla) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (id_estandar)
+        REFERENCES Estandar_Rendimiento(id_estandar) ON UPDATE CASCADE ON DELETE SET NULL,
+    FOREIGN KEY (id_empleado_registro)
+        REFERENCES Empleado(id_empleado) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+-- PERMISOS
+GRANT SELECT, INSERT, UPDATE, DELETE ON indecsa.Cuadrilla            TO 'ROL_ADMIN';
+GRANT SELECT, INSERT, UPDATE, DELETE ON indecsa.Estandar_Rendimiento TO 'ROL_ADMIN';
+GRANT SELECT, INSERT, UPDATE, DELETE ON indecsa.Registro_Horas       TO 'ROL_ADMIN';
+GRANT SELECT, INSERT, UPDATE, DELETE ON indecsa.Avance_Partida       TO 'ROL_ADMIN';
+
+GRANT SELECT, INSERT, UPDATE         ON indecsa.Cuadrilla            TO 'ROL_CAPITALHUMANO';
+GRANT SELECT                         ON indecsa.Estandar_Rendimiento TO 'ROL_CAPITALHUMANO';
+GRANT SELECT, INSERT, UPDATE         ON indecsa.Registro_Horas       TO 'ROL_CAPITALHUMANO';
+GRANT SELECT, INSERT, UPDATE         ON indecsa.Avance_Partida       TO 'ROL_CAPITALHUMANO';

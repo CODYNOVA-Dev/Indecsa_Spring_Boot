@@ -48,3 +48,37 @@ INSERT INTO Asignacion_Proyecto_Contratista (id_proyecto, id_contratista, numero
 INSERT INTO Asignacion_Trabajador_Proyecto (id_trabajador, id_proyecto, id_asignacion_pc, puesto_en_proyecto, fecha_inicio, fecha_fin_estimada, estatus_asignacion) VALUES
     (1, 1, 1, 'Supervisor A', '2026-04-01', '2027-04-01', 'ACTIVO'),
     (2, 2, 2, 'Instalador Jr', '2026-03-21', '2026-06-20', 'ACTIVO');
+
+-- ============================================================
+-- MÓDULO DE RENDIMIENTO Y REPORTES (v5.0)
+-- ============================================================
+
+-- 10. Cuadrillas por proyecto
+INSERT INTO Cuadrilla (id_proyecto, nombre_cuadrilla, frente_trabajo, estatus_cuadrilla) VALUES
+    (1, 'Cuadrilla A', 'Frente Norte - Estructura',        'ACTIVO'),
+    (1, 'Cuadrilla B', 'Frente Sur - Cimentación',         'ACTIVO'),
+    (2, 'Cuadrilla Única', 'Interior - Pintura y Mobiliario', 'ACTIVO');
+
+-- 11. Estándares de rendimiento por tipo de actividad
+INSERT INTO Estandar_Rendimiento (nombre_actividad, unidad_medida, rendimiento_esperado, descripcion) VALUES
+    ('Colado de losa',           'm3',       0.8500, 'Metros cúbicos de concreto colados por hora-hombre'),
+    ('Aplanado de muros',        'm2',       2.5000, 'Metros cuadrados de aplanado por hora-hombre'),
+    ('Colocación de tabique',    'piezas',  35.0000, 'Piezas de tabique colocadas por hora-hombre'),
+    ('Pintura de muros',         'm2',       4.0000, 'Metros cuadrados pintados por hora-hombre'),
+    ('Instalación de mobiliario','piezas',   0.5000, 'Piezas de mobiliario instaladas por hora-hombre');
+
+-- 12. Registro de horas trabajadas
+--     id_asignacion_tp 1 = Carlos Slim (trabajador 1) en proyecto 1, cuadrilla 1 (Cuadrilla A)
+--     id_asignacion_tp 2 = Jean Pierre (trabajador 2) en proyecto 2, cuadrilla 3 (Cuadrilla Única)
+INSERT INTO Registro_Horas (id_asignacion_tp, id_cuadrilla, fecha_registro, horas_trabajadas, tipo_periodo, id_empleado_registro) VALUES
+    (1, 1, '2026-04-01', 8.00, 'DIARIO', 1),
+    (1, 1, '2026-04-02', 8.00, 'DIARIO', 1),
+    (1, 1, '2026-04-03', 7.50, 'DIARIO', 1),
+    (2, 3, '2026-03-21', 8.00, 'DIARIO', 2),
+    (2, 3, '2026-03-22', 8.00, 'DIARIO', 2);
+
+-- 13. Avance de partidas ejecutadas
+--     id_estandar 1 = Colado de losa (m3), id_estandar 4 = Pintura de muros (m2)
+INSERT INTO Avance_Partida (id_proyecto, id_cuadrilla, id_estandar, nombre_partida, fecha_registro, cantidad_ejecutada, unidad_medida, cantidad_programada, id_empleado_registro) VALUES
+    (1, 1, 1, 'Colado de losa nivel 1',    '2026-04-03', 12.50, 'm3', 15.00, 1),
+    (2, 3, 4, 'Pintura interior oficina A','2026-03-22', 45.00, 'm2', 50.00, 2);

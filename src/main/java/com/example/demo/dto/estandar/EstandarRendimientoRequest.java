@@ -8,6 +8,7 @@ public class EstandarRendimientoRequest {
     private String unidadMedida;
     private BigDecimal rendimientoEsperado;
     private String descripcion;
+    private BigDecimal jornadaBaseHoras;
 
     public String getNombreActividad()              { return nombreActividad; }
     public void setNombreActividad(String v)        { this.nombreActividad = v; }
@@ -20,4 +21,7 @@ public class EstandarRendimientoRequest {
 
     public String getDescripcion()                  { return descripcion; }
     public void setDescripcion(String v)            { this.descripcion = v; }
+
+    public BigDecimal getJornadaBaseHoras()         { return jornadaBaseHoras; }
+    public void setJornadaBaseHoras(BigDecimal v)   { this.jornadaBaseHoras = v; }
 }

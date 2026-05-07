@@ -119,7 +119,7 @@ CREATE TABLE Trabajador (
     -- CORREGIDO: estatus_laboral no existe en MySQL → ENUM inline
     estado_trabajador       ENUM('DESCANSO','VACACIONES','INCAPACIDAD','ACTIVO','INACTIVO','BAJA','BOLETINADO') NOT NULL DEFAULT 'ACTIVO',
     -- Otros Datos
-    descripcion_trabajador  TEXT         DEFAULT 'Sin descripcion',
+    descripcion_trabajador  VARCHAR(1000)         DEFAULT 'Sin descripcion',
     evaluacion_trabajador   TINYINT      CHECK (evaluacion_trabajador BETWEEN 1 AND 5),
     fecha_ingreso           DATE         NOT NULL,
     -- CORREGIDO: tipo_entidad_fede no existe en MySQL → ENUM inline

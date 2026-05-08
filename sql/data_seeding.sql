@@ -14,11 +14,12 @@ INSERT INTO Rol (nombre_rol, descripcion_rol) VALUES
 -- ─────────────────────────────────────────────────────────────
 -- 2. EMPLEADOS (4)
 -- ─────────────────────────────────────────────────────────────
+-- Contraseñas: admin123 (ADMIN), caphum123 (CAPITAL_HUMANO)
 INSERT INTO Empleado (nombre_empleado, curp, correo_empleado, contrasena, id_rol) VALUES
-('Juan Pérez Ruiz',    'PERJ800101HDFRRN01', 'JUAN.PEREZ@INDECSA.COM',   'hash_admin_001', 1),
-('Ana García López',   'GARA900202MDFRRN02', 'ana.garcia@indecsa.com',   'hash_rh_002',   2),
-('Carlos Mendez Vega', 'MEVC850303HDFRRN03', 'carlos.mendez@indecsa.com','hash_rh_003',   2),
-('Rosa Ortiz Moreno',  'ORMR780404MDFRRN04', 'rosa.ortiz@indecsa.com',   'hash_rh_004',   2);
+('Juan Pérez Ruiz',    'PERJ800101HDFRRN01', 'JUAN.PEREZ@INDECSA.COM',   '$2a$10$yfCUy87CpqVuZn20OcOGeOZfs6wsZ4I6sFkgh5rncFc/Rw14Vdwzy', 1),
+('Ana García López',   'GARA900202MDFRRN02', 'ana.garcia@indecsa.com',   '$2a$10$nStXp4BlHU9vy1eDeNBVOeKgOYeHDhXZaULEj.BZ6G3Ory6yyOYGS',   2),
+('Carlos Mendez Vega', 'MEVC850303HDFRRN03', 'carlos.mendez@indecsa.com','$2a$10$nStXp4BlHU9vy1eDeNBVOeKgOYeHDhXZaULEj.BZ6G3Ory6yyOYGS',   2),
+('Rosa Ortiz Moreno',  'ORMR780404MDFRRN04', 'rosa.ortiz@indecsa.com',   '$2a$10$nStXp4BlHU9vy1eDeNBVOeKgOYeHDhXZaULEj.BZ6G3Ory6yyOYGS',   2);
 
 -- ─────────────────────────────────────────────────────────────
 -- 3. REGISTROS MIGRATORIOS (5)

@@ -26,7 +26,7 @@ public class Proyecto {
     @Column(name = "oferta_trabajo", length = 200)
     private String ofertaTrabajo;
 
-    @Column(name = "cliente", length = 200)
+    @Column(name = "cliente", nullable = false, length = 200)
     private String cliente;
 
     @ManyToOne(fetch = FetchType.LAZY)

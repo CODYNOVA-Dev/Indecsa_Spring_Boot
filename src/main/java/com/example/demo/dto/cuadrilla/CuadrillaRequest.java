@@ -1,10 +1,20 @@
 package com.example.demo.dto.cuadrilla;
 
+import jakarta.validation.constraints.*;
+
 public class CuadrillaRequest {
 
+    @NotNull
     private Integer idProyecto;
+
+    @NotBlank
+    @Size(max = 100)
     private String nombreCuadrilla;
+
+    @Size(max = 200)
     private String frenteTrabajo;
+
+    @Size(max = 500)
     private String observaciones;
 
     public Integer getIdProyecto()              { return idProyecto; }

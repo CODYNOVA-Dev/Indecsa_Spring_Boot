@@ -9,6 +9,8 @@ import com.example.demo.repository.UbicacionProyectoRepository;
 import com.example.demo.service.ProyectoService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +26,8 @@ public class ProyectoServiceImpl implements ProyectoService {
     private final UbicacionProyectoRepository ubicacionRepository;
 
     @Override
-    public List<ProyectoResponse> findAll() {
-        return proyectoRepository.findAll()
-                .stream().map(ProyectoResponse::from).collect(Collectors.toList());
+    public Page<ProyectoResponse> findAll(Pageable pageable) {
+        return proyectoRepository.findAll(pageable).map(ProyectoResponse::from);
     }
 
     @Override

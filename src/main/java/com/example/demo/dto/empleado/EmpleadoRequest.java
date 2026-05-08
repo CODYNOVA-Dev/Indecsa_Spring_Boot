@@ -1,11 +1,27 @@
 package com.example.demo.dto.empleado;
 
+import jakarta.validation.constraints.*;
+
 public class EmpleadoRequest {
 
+    @NotBlank
+    @Size(max = 100)
     private String nombreEmpleado;
+
+    @NotBlank
+    @Size(min = 18, max = 18)
     private String curp;
+
+    @NotBlank
+    @Email
+    @Size(max = 100)
     private String correoEmpleado;
+
+    @NotBlank
+    @Size(min = 8, max = 255)
     private String contrasena;
+
+    @NotNull
     private Integer idRol;
 
     public String getNombreEmpleado()        { return nombreEmpleado; }

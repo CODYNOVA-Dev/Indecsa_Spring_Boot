@@ -4,7 +4,11 @@ import com.example.demo.dto.contratista.ContratistaRequest;
 import com.example.demo.dto.contratista.ContratistaResponse;
 import com.example.demo.model.Contratista;
 import com.example.demo.service.ContratistaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +23,9 @@ public class ContratistaController {
     private final ContratistaService contratistaService;
 
     @GetMapping
-    public ResponseEntity<List<ContratistaResponse>> findAll() {
-        return ResponseEntity.ok(contratistaService.findAll());
+    public ResponseEntity<Page<ContratistaResponse>> findAll(
+            @PageableDefault(size = 20, sort = "idContratista") Pageable pageable) {
+        return ResponseEntity.ok(contratistaService.findAll(pageable));
     }
 
     @GetMapping("/estado/{estado}")
@@ -35,13 +40,13 @@ public class ContratistaController {
     }
 
     @PostMapping
-    public ResponseEntity<ContratistaResponse> create(@RequestBody ContratistaRequest request) {
+    public ResponseEntity<ContratistaResponse> create(@Valid @RequestBody ContratistaRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(contratistaService.create(request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ContratistaResponse> update(@PathVariable Integer id,
-                                                       @RequestBody ContratistaRequest request) {
+                                                       @Valid @RequestBody ContratistaRequest request) {
         return ResponseEntity.ok(contratistaService.update(id, request));
     }
 

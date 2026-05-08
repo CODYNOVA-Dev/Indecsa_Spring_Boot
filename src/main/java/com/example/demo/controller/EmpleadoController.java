@@ -6,6 +6,7 @@ import com.example.demo.dto.empleado.EmpleadoRequest;
 import com.example.demo.dto.empleado.EmpleadoResponse;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.EmpleadoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,13 +43,13 @@ public class EmpleadoController {
     }
 
     @PostMapping
-    public ResponseEntity<EmpleadoResponse> create(@RequestBody EmpleadoRequest request) {
+    public ResponseEntity<EmpleadoResponse> create(@Valid @RequestBody EmpleadoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(empleadoService.create(request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<EmpleadoResponse> update(@PathVariable Integer id,
-                                                    @RequestBody EmpleadoRequest request) {
+                                                    @Valid @RequestBody EmpleadoRequest request) {
         return ResponseEntity.ok(empleadoService.update(id, request));
     }
 

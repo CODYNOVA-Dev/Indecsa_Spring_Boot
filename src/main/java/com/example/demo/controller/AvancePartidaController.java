@@ -6,6 +6,7 @@ import com.example.demo.model.Empleado;
 import com.example.demo.repository.EmpleadoRepository;
 import com.example.demo.service.AvancePartidaService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -37,7 +38,7 @@ public class AvancePartidaController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<AvancePartidaResponse> registrar(@RequestBody AvancePartidaRequest request) {
+    public ResponseEntity<AvancePartidaResponse> registrar(@Valid @RequestBody AvancePartidaRequest request) {
         Integer idEmpleado = getEmpleadoAutenticado().getIdEmpleado();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(avancePartidaService.registrar(request, idEmpleado));
@@ -47,7 +48,7 @@ public class AvancePartidaController {
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
     public ResponseEntity<AvancePartidaResponse> actualizar(
             @PathVariable Integer id,
-            @RequestBody AvancePartidaRequest request) {
+            @Valid @RequestBody AvancePartidaRequest request) {
         return ResponseEntity.ok(avancePartidaService.actualizar(id, request));
     }
 

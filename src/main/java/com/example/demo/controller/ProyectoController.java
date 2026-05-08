@@ -4,7 +4,11 @@ import com.example.demo.dto.proyecto.ProyectoRequest;
 import com.example.demo.dto.proyecto.ProyectoResponse;
 import com.example.demo.model.Proyecto;
 import com.example.demo.service.ProyectoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +23,9 @@ public class ProyectoController {
     private final ProyectoService proyectoService;
 
     @GetMapping
-    public ResponseEntity<List<ProyectoResponse>> findAll() {
-        return ResponseEntity.ok(proyectoService.findAll());
+    public ResponseEntity<Page<ProyectoResponse>> findAll(
+            @PageableDefault(size = 20, sort = "idProyecto") Pageable pageable) {
+        return ResponseEntity.ok(proyectoService.findAll(pageable));
     }
 
     @GetMapping("/estatus/{estatus}")
@@ -41,13 +46,13 @@ public class ProyectoController {
     }
 
     @PostMapping
-    public ResponseEntity<ProyectoResponse> create(@RequestBody ProyectoRequest request) {
+    public ResponseEntity<ProyectoResponse> create(@Valid @RequestBody ProyectoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(proyectoService.create(request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProyectoResponse> update(@PathVariable Integer id,
-                                                    @RequestBody ProyectoRequest request) {
+                                                    @Valid @RequestBody ProyectoRequest request) {
         return ResponseEntity.ok(proyectoService.update(id, request));
     }
 

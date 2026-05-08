@@ -9,6 +9,8 @@ import com.example.demo.repository.TrabajadorRepository;
 import com.example.demo.service.TrabajadorService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +26,8 @@ public class TrabajadorServiceImpl implements TrabajadorService {
     private final RegistroMigratorioRepository migratorioRepository;
 
     @Override
-    public List<TrabajadorResponse> findAll() {
-        return trabajadorRepository.findAll()
-                .stream().map(TrabajadorResponse::from).collect(Collectors.toList());
+    public Page<TrabajadorResponse> findAll(Pageable pageable) {
+        return trabajadorRepository.findAll(pageable).map(TrabajadorResponse::from);
     }
 
     @Override

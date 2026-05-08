@@ -25,7 +25,7 @@ INSERT INTO Rol (id_rol, nombre_rol, descripcion_rol) VALUES
 (2, 'CAPITAL_HUMANO', 'Gestión de personal y asignaciones');
 
 INSERT INTO Empleado (id_empleado, nombre_empleado, curp, correo_empleado, contrasena, id_rol) VALUES
-(1, 'Juan Pérez', 'PERJ800101HDFRRN01', 'juan.perez@indecsa.com', 'hash_admin_123', 1),
+(1, 'Juan Pérez', 'PERJ800101HDFRRN01', 'juan.perez@indecsa.com', '$2a$10$yfCUy87CpqVuZn20OcOGeOZfs6wsZ4I6sFkgh5rncFc/Rw14Vdwzy', 1),
 (2, 'Ana García', 'GARA900202MDFRRN02', 'ana.garcia@indecsa.com', '$2a$10$nStXp4BlHU9vy1eDeNBVOeKgOYeHDhXZaULEj.BZ6G3Ory6yyOYGS', 2);
 
 -- 3. UBICACIONES

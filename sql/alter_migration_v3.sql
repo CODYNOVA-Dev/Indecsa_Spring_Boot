@@ -7,16 +7,12 @@ USE indecsa;
 SET SQL_SAFE_UPDATES = 0;
 
 -- ─────────────────────────────────────────────────────────────
--- 1. LIMPIEZA PREVIA DE ENUMs INCOMPATIBLES
---    Hibernate usa el nombre exacto del enum Java (con guiones bajos).
---    Si hay filas con los valores viejos, el MODIFY falla.
 -- ─────────────────────────────────────────────────────────────
 UPDATE Proyecto SET tipo_proyecto = 'Venta_mobiliaria'        WHERE tipo_proyecto = 'Venta mobiliaria';
 UPDATE Proyecto SET tipo_proyecto = 'Instalacion_de_mobiliario' WHERE tipo_proyecto = 'Instalacion de mobiliario';
 UPDATE Proyecto SET estatus_proyecto = 'PAUSADO'              WHERE estatus_proyecto = 'PENDIENTE';
 
 -- ─────────────────────────────────────────────────────────────
--- 2. PROYECTO
 -- ─────────────────────────────────────────────────────────────
 -- 2a. MODIFY sólo (MySQL no permite mezclar MODIFY + ADD IF NOT EXISTS)
 ALTER TABLE Proyecto

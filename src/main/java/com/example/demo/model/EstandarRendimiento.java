@@ -29,6 +29,9 @@ public class EstandarRendimiento {
     @Column(name = "descripcion", length = 255)
     private String descripcion;
 
+    @Column(name = "jornada_base_horas", nullable = false, precision = 5, scale = 2)
+    private BigDecimal jornadaBaseHoras;
+
     public enum UnidadMedida {
         m2, m3, ml, piezas, porcentaje
     }

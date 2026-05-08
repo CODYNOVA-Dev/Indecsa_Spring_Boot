@@ -76,7 +76,7 @@ CREATE TABLE Ubicacion_Proyecto (
 CREATE TABLE Proyecto (
     id_proyecto           INT AUTO_INCREMENT PRIMARY KEY,
     nombre_proyecto       VARCHAR(150) NOT NULL,
-    tipo_proyecto         ENUM('Construccion','Remodelacion','Venta mobiliaria','Instalacion de mobiliario'),
+    tipo_proyecto         ENUM('Construccion','Remodelacion','Venta_mobiliaria','Instalacion_de_mobiliario'),
     oferta_trabajo        VARCHAR(200),
     cliente               VARCHAR(200) NOT NULL,
     id_ubicacion          INT NOT NULL,

@@ -10,6 +10,7 @@ public class EstandarRendimientoResponse {
     private String unidadMedida;
     private BigDecimal rendimientoEsperado;
     private String descripcion;
+    private BigDecimal jornadaBaseHoras;
 
     public static EstandarRendimientoResponse from(EstandarRendimiento e) {
         EstandarRendimientoResponse r = new EstandarRendimientoResponse();
@@ -18,6 +19,7 @@ public class EstandarRendimientoResponse {
         r.unidadMedida        = e.getUnidadMedida() != null ? e.getUnidadMedida().name() : null;
         r.rendimientoEsperado = e.getRendimientoEsperado();
         r.descripcion         = e.getDescripcion();
+        r.jornadaBaseHoras    = e.getJornadaBaseHoras();
         return r;
     }
 
@@ -26,4 +28,5 @@ public class EstandarRendimientoResponse {
     public String getUnidadMedida()             { return unidadMedida; }
     public BigDecimal getRendimientoEsperado()  { return rendimientoEsperado; }
     public String getDescripcion()              { return descripcion; }
+    public BigDecimal getJornadaBaseHoras()     { return jornadaBaseHoras; }
 }

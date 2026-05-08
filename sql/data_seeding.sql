@@ -1,392 +1,342 @@
 -- ============================================================
--- SEEDING DE DATOS PARA INDECSA v3.0
--- 400 trabajadores · 10 proyectos · 20 contratistas
+-- SCRIPT DE CARGA MASIVA · INDECSA v4.0 (CORREGIDO Y ENLAZADO)
 -- ============================================================
 USE indecsa;
+SET FOREIGN_KEY_CHECKS = 0; -- Desactivar para carga limpia
 
--- ─────────────────────────────────────────────────────────────
--- 1. ROLES
--- ─────────────────────────────────────────────────────────────
-INSERT INTO Rol (nombre_rol, descripcion_rol) VALUES
-('ADMIN',          'Administrador total del sistema y base de datos'),
-('CAPITAL_HUMANO', 'Gestión de personal, contratistas y asignaciones');
+-- 1. LIMPIEZA
+TRUNCATE TABLE Avance_Partida;
+TRUNCATE TABLE Registro_Horas;
+TRUNCATE TABLE Estandar_Rendimiento;
+TRUNCATE TABLE Cuadrilla;
+TRUNCATE TABLE Asignacion_Trabajador_Proyecto;
+TRUNCATE TABLE Asignacion_Proyecto_Contratista;
+TRUNCATE TABLE Trabajador;
+TRUNCATE TABLE registros_migratorios;
+TRUNCATE TABLE Proyecto;
+TRUNCATE TABLE Contratista;
+TRUNCATE TABLE Ubicacion_Proyecto;
+TRUNCATE TABLE Empleado;
+TRUNCATE TABLE Rol;
 
--- ─────────────────────────────────────────────────────────────
--- 2. EMPLEADOS (4)
--- ─────────────────────────────────────────────────────────────
--- Contraseñas: admin123 (ADMIN), caphum123 (CAPITAL_HUMANO)
-INSERT INTO Empleado (nombre_empleado, curp, correo_empleado, contrasena, id_rol) VALUES
-('Juan Pérez Ruiz',    'PERJ800101HDFRRN01', 'JUAN.PEREZ@INDECSA.COM',   '$2a$10$yfCUy87CpqVuZn20OcOGeOZfs6wsZ4I6sFkgh5rncFc/Rw14Vdwzy', 1),
-('Ana García López',   'GARA900202MDFRRN02', 'ana.garcia@indecsa.com',   '$2a$10$nStXp4BlHU9vy1eDeNBVOeKgOYeHDhXZaULEj.BZ6G3Ory6yyOYGS',   2),
-('Carlos Mendez Vega', 'MEVC850303HDFRRN03', 'carlos.mendez@indecsa.com','$2a$10$nStXp4BlHU9vy1eDeNBVOeKgOYeHDhXZaULEj.BZ6G3Ory6yyOYGS',   2),
-('Rosa Ortiz Moreno',  'ORMR780404MDFRRN04', 'rosa.ortiz@indecsa.com',   '$2a$10$nStXp4BlHU9vy1eDeNBVOeKgOYeHDhXZaULEj.BZ6G3Ory6yyOYGS',   2);
+-- 2. ROLES Y EMPLEADOS
+INSERT INTO Rol (id_rol, nombre_rol, descripcion_rol) VALUES
+(1, 'ADMIN', 'Administrador total del sistema'),
+(2, 'CAPITAL_HUMANO', 'Gestión de personal y asignaciones');
 
--- ─────────────────────────────────────────────────────────────
--- 3. REGISTROS MIGRATORIOS (5)
--- ─────────────────────────────────────────────────────────────
-INSERT INTO registros_migratorios (folio_documento, categoria, fecha_emision, dias_vigencia, fecha_vencimiento, permiso_trabajo, activo) VALUES
-('FM3-2025-00001', 'actividades_remuneradas', '2025-01-15', 365, '2026-01-15', 1, 1),
-('FM3-2025-00002', 'actividades_remuneradas', '2025-03-10', 730, '2027-03-10', 1, 1),
-('FM2-2025-00003', 'negocios',                '2025-06-01', 180, '2025-12-01', 0, 1),
-('FM3-2024-00004', 'actividades_remuneradas', '2024-09-20', 365, '2025-09-20', 1, 1),
-('FM2-2025-00005', 'transito',                '2025-11-01',  90, '2026-01-29', 0, 1);
+INSERT INTO Empleado (id_empleado, nombre_empleado, curp, correo_empleado, contrasena, id_rol) VALUES
+(1, 'Juan Pérez', 'PERJ800101HDFRRN01', 'juan.perez@indecsa.com', '$2a$10$yfCUy87CpqVuZn20OcOGeOZfs6wsZ4I6sFkgh5rncFc/Rw14Vdwzy', 1),
+(2, 'Ana García', 'GARA900202MDFRRN02', 'ana.garcia@indecsa.com', '$2a$10$nStXp4BlHU9vy1eDeNBVOeKgOYeHDhXZaULEj.BZ6G3Ory6yyOYGS', 2);
 
--- ─────────────────────────────────────────────────────────────
--- 4. UBICACIONES (10, una por proyecto)
--- ─────────────────────────────────────────────────────────────
-INSERT INTO Ubicacion_Proyecto (calle, num_ext, num_int, colonia, cod_post, mun_alc, estado) VALUES
-('Paseo de la Reforma',    '450', NULL,     'Cuauhtémoc',           06500, 'Cuauhtémoc',    'CDMX'),
-('Av. Juárez',             '100', NULL,     'Centro',               42000, 'Pachuca',       'Hidalgo'),
-('Blvd. del Niño Poblano', '1000','A',      'Rincón de la Arborada',72197, 'Puebla',        'Puebla'),
-('Insurgentes Sur',        '1500', NULL,    'Del Valle',            03100, 'Benito Juárez', 'CDMX'),
-('Av. Tizayuca',           '200', NULL,     'Industrial',           43800, 'Tizayuca',      'Hidalgo'),
-('Av. Chapultepec',        '300', 'Piso 5', 'Juárez',               06600, 'Cuauhtémoc',    'CDMX'),
-('Carretera Federal 150',  'KM5', NULL,     'Parque Industrial',    72730, 'Cuautlancingo', 'Puebla'),
-('Av. Juárez',             '200', NULL,     'Centro Histórico',     42001, 'Pachuca',       'Hidalgo'),
-('Paseo de la Reforma',    '200', NULL,     'Tabacalera',           06030, 'Cuauhtémoc',    'CDMX'),
-('Av. 14 Sur',             '4321',NULL,     'Rancho Colorado',      72050, 'Puebla',        'Puebla');
+-- 3. UBICACIONES
+INSERT INTO Ubicacion_Proyecto (id_ubicacion, calle, num_ext, num_int, colonia, cod_post, mun_alc, estado) VALUES 
+(1, 'Paseo de la Reforma', '505', 'Piso 12', 'Cuauhtémoc', 06500, 'Cuauhtémoc', 'CDMX'),
+(2, 'Vía Dorada', '100', NULL, 'Zona Plateada', 42084, 'Pachuca', 'Hidalgo'),
+(3, 'Av. Juárez', '15', 'Local A', 'Centro Historico', 06000, 'Cuauhtémoc', 'CDMX'),
+(4, 'Blvd. Hermanos Serdán', '200', 'B-10', 'Real del Monte', 72000, 'Puebla', 'Puebla');
 
--- ─────────────────────────────────────────────────────────────
--- 5. PROYECTOS (10)
--- FIX: tipo_proyecto usa guion bajo (Venta_mobiliaria, Instalacion_de_mobiliario)
--- FIX: estatus usa PAUSADO en lugar de PENDIENTE
--- ─────────────────────────────────────────────────────────────
-INSERT INTO Proyecto (nombre_proyecto, tipo_proyecto, oferta_trabajo, cliente, id_ubicacion, municipio_proyecto, estado_proyecto_geo, fecha_estimada_inicio, fecha_estimada_fin, calificacion_proyecto, estatus_proyecto, descripcion_proyecto) VALUES
-('Torre Corporativa Reforma',      'Construccion',          'Albañilería y Estructura', 'Grupo Inmobiliario TRC',  1, 'Cuauhtémoc',    'CDMX',    '2026-03-01', '2027-06-30', 5, 'EN_CURSO',   'Edificio corporativo 25 pisos zona financiera'),
-('Remodelación Palacio Hidalgo',   'Remodelacion',          'Pintura y Mobiliario',     'Gobierno de Hidalgo',    2, 'Pachuca',       'Hidalgo', '2026-04-15', '2026-10-15', 4, 'EN_CURSO',   'Modernización de inmueble histórico del estado'),
-('Plaza Comercial Puebla Centro',  'Construccion',          'Acabados y Estructura',    'Desarrollos del Sur SA', 3, 'Puebla',        'Puebla',  '2026-05-01', '2027-12-31', NULL,'EN_CURSO',  'Centro comercial 3 niveles zona sur'),
-('Oficinas Insurgentes Sur',       'Remodelacion',          'Instalaciones y Pintura',  'Banco del Trabajo',      4, 'Benito Juárez', 'CDMX',    '2026-01-10', '2026-07-10', 4, 'FINALIZADO', 'Remodelación integral de 8 pisos de oficinas'),
-('Centro Logístico Tizayuca',      'Construccion',          'Obra Civil',               'LogiMex SA de CV',       5, 'Tizayuca',      'Hidalgo', '2026-06-01', '2027-09-30', NULL,'PLANEACION','Bodega y centro de distribución 12,000 m2'),
-('Residencial Las Torres CDMX',    'Construccion',          'Estructura y Acabados',    'Inmobiliaria Azteca SA', 6, 'Cuauhtémoc',    'CDMX',    '2026-02-20', '2027-08-20', 3, 'EN_CURSO',   'Conjunto habitacional 4 torres 120 depto'),
-('Bodega Industrial Puebla Norte', 'Construccion',          'Acero y Concreto',         'Industrial PU SA',       7, 'Cuautlancingo', 'Puebla',  '2026-05-15', '2027-03-15', NULL,'EN_CURSO',  'Nave industrial 8,500 m2 con andén de carga'),
-('Remodelación Museo Pachuca',     'Remodelacion',          'Restauración y Pintura',   'INAH Hidalgo',           8, 'Pachuca',       'Hidalgo', '2025-11-01', '2026-05-01', 5, 'FINALIZADO', 'Restauración y modernización de salas'),
-('Instalación Mobiliario BBVA',    'Instalacion_de_mobiliario','Amueblado Corporativo', 'BBVA México SA',         9, 'Cuauhtémoc',    'CDMX',    '2026-03-10', '2026-06-10', 4, 'EN_CURSO',   'Amueblado completo de sucursal corporativa'),
-('Ampliación Hospital Puebla',     'Construccion',          'Obra Civil y Sanitaria',   'Secretaría de Salud PU',10, 'Puebla',        'Puebla',  '2026-07-01', '2027-12-31', NULL,'PLANEACION','Nueva ala de urgencias y consultorios');
+-- 4. CONTRATISTAS
+INSERT INTO Contratista (id_contratista, nombre_contratista, curp, rfc_contratista, telefono_contratista, correo_contratista, descripcion_contratista, estado_contratista, ubicacion_contratista) VALUES
+(1, 'Constructora Alpha S.A.', 'CALP700101HDFXYZ01', 'CALP700101ABC', '5512345678', 'contacto@alpha.com', 'Estructuras metálicas', 'ACTIVO', 'CDMX'),
+(2, 'Instalaciones Bravo', 'IBRA850505HDFXYZ02', 'IBRA850505DEF', '7719876543', 'ventas@bravo.mx', 'Mobiliario y acabados', 'ACTIVO', 'Hidalgo');
 
--- ─────────────────────────────────────────────────────────────
--- 6. CONTRATISTAS (20)
--- FIX: agregados curp, descripcion_contratista, experiencia, calificacion_contratista
--- FIX: ubicacion_contratista en lugar de ubicacion_base
--- ─────────────────────────────────────────────────────────────
-INSERT INTO Contratista (nombre_contratista, curp, rfc_contratista, telefono_contratista, correo_contratista, descripcion_contratista, experiencia, calificacion_contratista, estado_contratista, ubicacion_contratista) VALUES
-('Constructora Alfa SA',           'CTRT700101HDFTRN01', 'CALF700101AB1', '5512340001', 'contacto@construalfa.mx',  'Expertos en estructuras de concreto y acero',    '15 años en obra civil',          5, 'ACTIVO', 'CDMX'),
-('Ingeniería Bravo SC',            'CTRT700201HDFTRN02', 'BRAV760606AB2', '7712340002', 'info@ingbravo.mx',         'Especialistas en instalaciones MEP',             '8 años en proyectos corporativos',4, 'ACTIVO', 'Hidalgo'),
-('Edificaciones Delta SA',         'CTRT700301HDFTRN03', 'EDEL790909AB3', '2212340003', 'delta@edif.mx',            'Construcción de plazas comerciales',             '12 años en sector comercial',    4, 'ACTIVO', 'Puebla'),
-('Acabados Premier SA',            'CTRT700401HDFTRN04', 'PREM810212AB4', '5512340004', 'premier@acabados.mx',      'Pintura, yeso y acabados finos',                 '10 años en acabados de lujo',    5, 'ACTIVO', 'CDMX'),
-('Estructuras del Norte SC',       'CTRT700501HDFTRN05', 'ENOR720414AB5', '7712340005', 'norte@estructuras.mx',     'Diseño y montaje de estructuras metálicas',      '18 años en estructuras',         5, 'ACTIVO', 'Hidalgo'),
-('Plomería Industrial SA',         'CTRT700601HDFTRN06', 'PISA830707AB6', '2212340006', 'pisa@plomeria.mx',         'Redes hidráulicas y sanitarias industriales',    '9 años en plomería industrial',  3, 'ACTIVO', 'Puebla'),
-('Electra Servicios SA',           'CTRT700701HDFTRN07', 'ELEC740808AB7', '5512340007', 'electra@servicios.mx',     'Instalaciones eléctricas de alta y baja tensión','20 años en instalaciones',       5, 'ACTIVO', 'CDMX'),
-('Pinturas y Acabados MX SA',      'CTRT700801HDFTRN08', 'PAMY920303AB8', '7712340008', 'pam@pinturas.mx',          'Pintura industrial, comercial y residencial',    '6 años en sector pinturas',      3, 'ACTIVO', 'Hidalgo'),
-('Carpintería Fina SA',            'CTRT700901HDFTRN09', 'CFSA861010AB9', '2212340009', 'cfsa@carpinteria.mx',      'Muebles y herrería arquitectónica a medida',     '14 años en carpintería fina',    4, 'ACTIVO', 'Puebla'),
-('Montajes Estructurales SC',      'CTRT701001HDFTRN10', 'MEST910111AC1', '5512340010', 'mest@montajes.mx',         'Montaje de estructuras y cubiertas metálicas',   '11 años en montajes',            4, 'ACTIVO', 'CDMX'),
-('Herrerías Unidas SA',            'CTRT701101HDFTRN11', 'HEUN680808AC2', '7712340011', 'heun@herreria.mx',         'Herrería estructural y decorativa',              '22 años en el sector',           5, 'ACTIVO', 'Hidalgo'),
-('Impermeabilizaciones Plus SA',   'CTRT701201HDFTRN12', 'IMPL840404AC3', '2212340012', 'impl@impermeab.mx',        'Sistemas de impermeabilización y techos verdes', '7 años en impermeabilización',   3, 'ACTIVO', 'Puebla'),
-('Techos y Cubiertas SA',          'CTRT710101HDFTRN13', 'TCSA780616AC4', '5512340013', 'tcsa@techos.mx',           'Cubiertas metálicas y de PVC para naves',        '16 años en sistemas de techo',   4, 'ACTIVO', 'CDMX'),
-('Soluciones Técnicas MX SC',      'CTRT710201HDFTRN14', 'STMX820929AC5', '7712340014', 'stmx@solucion.mx',         'Consultoría técnica y supervisión de obra',      '13 años en supervisión',         4, 'ACTIVO', 'Hidalgo'),
-('Urbanización Integral SA',       'CTRT710301HDFTRN15', 'URIN730303AC6', '2212340015', 'urin@urbaniza.mx',         'Obra pública, urbanización y pavimentación',     '19 años en obra pública',        5, 'ACTIVO', 'Puebla'),
-('Cerrajerías del Sur SA',         'CTRT710401HDFTRN16', 'CDSU950605AC7', '5512340016', 'cds@cerrajeria.mx',         'Sistemas de seguridad y cerrajería industrial',  '5 años en el sector',            3, 'ACTIVO', 'CDMX'),
-('Refacciones Industriales SC',    'CTRT710501HDFTRN17', 'REIN770202AC8', '7712340017', 'rein@refacc.mx',            'Mantenimiento y refaccionamiento de maquinaria', '17 años en mantenimiento',       4, 'ACTIVO', 'Hidalgo'),
-('Diseño y Construcción PU SA',    'CTRT710601HDFTRN18', 'DCPU880112AC9', '2212340018', 'dcpu@diseno.mx',            'Diseño arquitectónico y construcción residencial','10 años en diseño y obra',      4, 'ACTIVO', 'Puebla'),
-('Grupo Constructor Azteca SA',    'CTRT710701HDFTRN19', 'GCAZ760808AD1', '5512340019', 'gcaz@azteca.mx',            'Constructor general de proyectos de gran escala','25 años de trayectoria',        5, 'ACTIVO', 'CDMX'),
-('Servicios Integrales HI SC',     'CTRT710801HDFTRN20', 'SIHI850515AD2', '7712340020', 'sihi@servicios.mx',         'Servicios de limpieza, acabados y mantenimiento','8 años en servicios integrales', 3, 'ACTIVO', 'Hidalgo');
+-- 5. REGISTROS MIGRATORIOS (20 FOLIADOS)
+INSERT INTO registros_migratorios (id_migratorio, folio_documento, categoria, fecha_emision, dias_vigencia, fecha_vencimiento, permiso_trabajo, activo) VALUES 
+(1, 'MIG-2026-001', 'actividades_remuneradas', '2025-05-01', 365, '2026-05-01', 1, 1),
+(2, 'MIG-2026-002', 'actividades_remuneradas', '2025-06-15', 365, '2026-06-15', 1, 1),
+(3, 'MIG-2026-003', 'actividades_remuneradas', '2025-07-20', 365, '2026-07-20', 1, 1),
+(4, 'MIG-2026-004', 'negocios', '2025-08-10', 180, '2026-02-10', 1, 1),
+(5, 'MIG-2026-005', 'actividades_remuneradas', '2025-01-10', 730, '2027-01-10', 1, 1),
+(6, 'MIG-2026-006', 'actividades_remuneradas', '2025-03-25', 365, '2026-03-25', 1, 1),
+(7, 'MIG-2026-007', 'razones_humanitarias', '2025-11-01', 365, '2026-11-01', 1, 1),
+(8, 'MIG-2026-008', 'actividades_remuneradas', '2025-12-12', 365, '2026-12-12', 1, 1),
+(9, 'MIG-2026-009', 'actividades_remuneradas', '2025-09-05', 365, '2026-09-05', 1, 1),
+(10, 'MIG-2026-010', 'negocios', '2026-01-20', 180, '2026-07-20', 1, 1),
+(11, 'MIG-2026-011', 'actividades_remuneradas', '2025-02-14', 365, '2026-02-14', 1, 1),
+(12, 'MIG-2026-012', 'actividades_remuneradas', '2025-04-30', 365, '2026-04-30', 1, 1),
+(13, 'MIG-2026-013', 'actividades_remuneradas', '2025-08-22', 730, '2027-08-22', 1, 1),
+(14, 'MIG-2026-014', 'actividades_remuneradas', '2025-10-10', 365, '2026-10-10', 1, 1),
+(15, 'MIG-2026-015', 'razones_humanitarias', '2025-05-05', 365, '2026-05-05', 1, 1),
+(16, 'MIG-2026-016', 'actividades_remuneradas', '2025-06-01', 365, '2026-06-01', 1, 1),
+(17, 'MIG-2026-017', 'actividades_remuneradas', '2025-07-07', 365, '2026-07-07', 1, 1),
+(18, 'MIG-2026-018', 'negocios', '2025-09-15', 180, '2026-03-15', 1, 1),
+(19, 'MIG-2026-019', 'actividades_remuneradas', '2025-11-20', 365, '2026-11-20', 1, 1),
+(20, 'MIG-2026-020', 'actividades_remuneradas', '2025-12-31', 365, '2026-12-31', 1, 1);
 
--- ─────────────────────────────────────────────────────────────
--- 7. ASIGNACIONES PROYECTO-CONTRATISTA (20 = 2 por proyecto)
--- FIX: agregados numero_contrato, fecha_fin_estimada, personal_asignado
--- ─────────────────────────────────────────────────────────────
-INSERT INTO Asignacion_Proyecto_Contratista (id_proyecto, id_contratista, numero_contrato, fecha_inicio, fecha_fin_estimada, personal_asignado, puestos_requeridos, estatus_contrato) VALUES
-(1,  1,  'CONT-2026-001', '2026-03-01', '2027-06-30', 50, 'Albañiles, Fierreros, Soldadores',       'VIGENTE'),
-(1,  2,  'CONT-2026-002', '2026-03-01', '2027-06-30', 15, 'Electricistas, Plomeros',                'VIGENTE'),
-(2,  3,  'CONT-2026-003', '2026-04-15', '2026-10-15', 20, 'Carpinteros, Pintores',                  'VIGENTE'),
-(2,  4,  'CONT-2026-004', '2026-04-15', '2026-10-15', 10, 'Instaladores de mobiliario',             'VIGENTE'),
-(3,  5,  'CONT-2026-005', '2026-05-01', '2027-12-31', 60, 'Estructura y cimentación',               'VIGENTE'),
-(3,  6,  'CONT-2026-006', '2026-05-01', '2027-12-31', 20, 'Plomeros, Sanitarios',                   'VIGENTE'),
-(4,  7,  'CONT-2026-007', '2026-01-10', '2026-07-10', 18, 'Electricistas, Instaladores',            'FINALIZADO'),
-(4,  8,  'CONT-2026-008', '2026-01-10', '2026-07-10', 12, 'Pintores, Carpinteros',                  'FINALIZADO'),
-(5,  9,  'CONT-2026-009', '2026-06-01', '2027-09-30', 45, 'Obra civil general',                     'VIGENTE'),
-(5,  10, 'CONT-2026-010', '2026-06-01', '2027-09-30', 20, 'Montajistas, Fierreros',                 'VIGENTE'),
-(6,  11, 'CONT-2026-011', '2026-02-20', '2027-08-20', 55, 'Albañiles, Carpinteros, Pintores',       'VIGENTE'),
-(6,  12, 'CONT-2026-012', '2026-02-20', '2027-08-20', 15, 'Impermeabilizadores, Técnicos',          'VIGENTE'),
-(7,  13, 'CONT-2026-013', '2026-05-15', '2027-03-15', 40, 'Montajistas de estructura metálica',     'VIGENTE'),
-(7,  14, 'CONT-2026-014', '2026-05-15', '2027-03-15', 20, 'Soldadores, Herreros',                   'VIGENTE'),
-(8,  15, 'CONT-2026-015', '2025-11-01', '2026-05-01', 25, 'Restauradores, Pintores de arte',        'FINALIZADO'),
-(8,  16, 'CONT-2026-016', '2025-11-01', '2026-05-01', 10, 'Técnicos en iluminación',                'FINALIZADO'),
-(9,  17, 'CONT-2026-017', '2026-03-10', '2026-06-10', 12, 'Instaladores de mobiliario BBVA',        'VIGENTE'),
-(9,  18, 'CONT-2026-018', '2026-03-10', '2026-06-10',  8, 'Cerrajeros, Técnicos de seguridad',      'VIGENTE'),
-(10, 19, 'CONT-2026-019', '2026-07-01', '2027-12-31', 70, 'Obra civil, hospitalaria y sanitaria',   'VIGENTE'),
-(10, 20, 'CONT-2026-020', '2026-07-01', '2027-12-31', 20, 'Plomeros sanitarios, Instaladores MEP',  'VIGENTE');
+-- 6. PROYECTOS (Valores ENUM alineados)
+INSERT INTO Proyecto (id_proyecto, nombre_proyecto, tipo_proyecto, oferta_trabajo, cliente, id_ubicacion, municipio_proyecto, estado_proyecto_geo, estatus_proyecto) VALUES
+(1, 'Torre Reforma IV', 'Construccion', 'Estructura', 'Corporativo Reforma S.A.', 1, 'Cuauhtémoc', 'CDMX', 'EN_CURSO'),
+(2, 'Plaza Pachuca Dorada', 'Remodelacion', 'Acabados', 'Grupo Inmobiliario Plata', 2, 'Pachuca', 'Hidalgo', 'EN_CURSO'),
+(3, 'Restaurante Centro', 'Instalacion_de_mobiliario', 'Cocina', 'Chef Global Mx', 3, 'Cuauhtémoc', 'CDMX', 'FINALIZADO'),
+(4, 'Cedis Puebla', 'Construccion', 'Nave', 'Logística Express', 4, 'Puebla', 'Puebla', 'PLANEACION');
 
--- ─────────────────────────────────────────────────────────────
--- 8. TRABAJADORES (400 vía stored procedure)
---
---    CURP: TRAB + YY + MM + 01 + H/M + DFTRN01  (18 chars, único)
---      · 1-200  → H (masculino), índice 0-199 → fechas año 70-86, mes 01-12
---      · 201-400 → M (femenino), mismo ciclo de fechas
---    RFC:  TRABWRKR + ZZZZ + A  (13 chars, único por secuencia)
---    NSS:  secuencial de 11 dígitos
--- ─────────────────────────────────────────────────────────────
-DELIMITER //
+-- 7. CONTRATOS (Asignacion_Proyecto_Contratista)
+INSERT INTO Asignacion_Proyecto_Contratista (id_asignacion_pc, id_proyecto, id_contratista, numero_contrato, personal_asignado, estatus_contrato) VALUES
+(1, 1, 1, 'CONT-REF-001', 50, 'VIGENTE'),
+(2, 2, 2, 'CONT-PAC-002', 50, 'VIGENTE');
 
-CREATE PROCEDURE seed_trabajadores()
-BEGIN
-    DECLARE i       INT DEFAULT 1;
-    DECLARE v_idx   INT;
-    DECLARE v_year  INT;
-    DECLARE v_month INT;
-    DECLARE v_sex   CHAR(1);
-    DECLARE v_curp             VARCHAR(18);
-    DECLARE v_rfc              VARCHAR(13);
-    DECLARE v_nss              VARCHAR(11);
-    DECLARE v_nombre           VARCHAR(100);
-    DECLARE v_puesto           VARCHAR(100);
-    DECLARE v_desc_puesto      VARCHAR(500);
-    DECLARE v_especialidad     VARCHAR(100);
-    DECLARE v_escolaridad      VARCHAR(100);
-    DECLARE v_telefono         VARCHAR(15);
-    DECLARE v_correo           VARCHAR(100);
-    DECLARE v_contratacion     VARCHAR(200);
-    DECLARE v_jornada          VARCHAR(200);
-    DECLARE v_calle            VARCHAR(100);
-    DECLARE v_colonia          VARCHAR(100);
-    DECLARE v_mun_alc          VARCHAR(100);
-    DECLARE v_estado_addr      VARCHAR(100);
-    DECLARE v_calidad          VARCHAR(10);
-    DECLARE v_ingreso          DATE;
+-- 8. TRABAJADORES (BLOQUE 100)
+-- (Debes incluir los 100 inserts de trabajadores aquí, asegurando que id_trabajador sea del 1 al 100)
+INSERT INTO Trabajador (id_trabajador, nombre_trabajador, curp, rfc, nss_trabajador, nacionalidad, id_migratorio, calle, num_ext, colonia, cod_post, mun_alc, estado, puesto, desc_puesto, especialidad_trabajador, escolaridad, experiencia, telefono_trabajador, correo_trabajador, contratacion, jornada, estado_trabajador, fecha_ingreso, calidad_vida, sexo) VALUES 
+-- EXTRANJEROS (1-20)
+(1,'Pierre Node','CURP001EXT','RFC001EXT','NSS001','Haitiana',1,'Reforma','101','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550001','p1@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(2,'Jean Valjean','CURP002EXT','RFC002EXT','NSS002','Francesa',2,'Juarez','102','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','3 años','550002','p2@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(3,'Hans Muller','CURP003EXT','RFC003EXT','NSS003','Alemana',3,'Hidalgo','103','Centro',06000,'Cuauhtémoc','CDMX','Soldador','Estructura metálica','Soldadura','Técnico','5 años','550003','p3@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(4,'John Doe','CURP004EXT','RFC004EXT','NSS004','Estadounidense',4,'Mina','104','Guerrero',06300,'Cuauhtémoc','CDMX','Ayudante','Limpieza','General','Secundaria','1 año','550004','p4@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(5,'Ali Khan','CURP005EXT','RFC005EXT','NSS005','Paquistaní',5,'Insurgentes','105','Roma',06700,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550005','p5@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(6,'Luca Rossi','CURP006EXT','RFC006EXT','NSS006','Italiana',6,'Orizaba','106','Roma',06700,'Cuauhtémoc','CDMX','Cabo','Mando de obra','Obra Civil','Bachiller','8 años','550006','p6@indecsa.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(7,'Mateo Silva','CURP007EXT','RFC007EXT','NSS007','Brasileña',7,'Colima','107','Roma',06700,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550007','p7@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(8,'Chen Wei','CURP008EXT','RFC008EXT','NSS008','China',8,'Puebla','108','Roma',06700,'Cuauhtémoc','CDMX','Ayudante','Instalación','Eléctrica','Técnico','3 años','550008','p8@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(9,'Ivan Petrov','CURP009EXT','RFC009EXT','NSS009','Rusa',9,'Durango','109','Roma',06700,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550009','p9@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(10,'Sven Berg','CURP010EXT','RFC010EXT','NSS010','Sueca',10,'Mazatlán','110','Condesa',06140,'Cuauhtémoc','CDMX','Soldador','Estructura metálica','Soldadura','Técnico','6 años','550010','p10@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(11,'Lars Olaf','CURP011EXT','RFC011EXT','NSS011','Noruega',11,'Michoacán','111','Condesa',06140,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550011','p11@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(12,'Kofi Mensah','CURP012EXT','RFC012EXT','NSS012','Ghanesa',12,'Tamaulipas','112','Condesa',06140,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550012','p12@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(13,'Kim Min','CURP133EXT','RFC133EXT','NSS013','Coreana',13,'Amsterdam','113','Condesa',06140,'Cuauhtémoc','CDMX','Cabo','Mando de obra','Acabados','Bachiller','7 años','550013','p13@indecsa.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Femenino'),
+(14,'Yuki Sato','CURP144EXT','RFC144EXT','NSS014','Japonesa',14,'Nuevo León','114','Condesa',06140,'Cuauhtémoc','CDMX','Ayudante','Instalación','Mobiliario','Secundaria','3 años','550014','p14@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(15,'Amir Hadad','CURP155EXT','RFC155EXT','NSS015','Egipcia',15,'Baja California','115','Roma Sur',06760,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550015','p15@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(16,'Stefan Novak','CURP166EXT','RFC166EXT','NSS016','Polaca',16,'Monterrey','116','Roma Sur',06760,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550016','p16@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(17,'Carlos Ruiz','CURP177EXT','RFC177EXT','NSS017','Española',17,'Tlaxcala','117','Roma Sur',06760,'Cuauhtémoc','CDMX','Cabo','Mando de obra','Albañilería','Bachiller','10 años','550017','p17@indecsa.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(18,'Dimitri G.','CURP188EXT','RFC188EXT','NSS018','Griega',18,'Chiapas','118','Roma Sur',06760,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550018','p18@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(19,'Bao Nguyen','CURP199EXT','RFC199EXT','NSS019','Vietnamita',19,'Tehuantepec','119','Roma Sur',06760,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550019','p19@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(20,'Aarav Gupta','CURP200EXT','RFC200EXT','NSS020','India',20,'Bajio','120','Roma Sur',06760,'Cuauhtémoc','CDMX','Ayudante','Carga de obra','General','Secundaria','2 años','550020','p20@indecsa.mx','Temporal','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+-- MEXICANOS (21-100)
+(21,'Aaron Lopez','CURP021MX','RFC021MX','NSS021','Mexicana',NULL,'Calle 21','21','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','3 años','550021','p21@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(22,'Abelardo Ruiz','CURP022MX','RFC022MX','NSS022','Mexicana',NULL,'Calle 22','22','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550022','p22@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(23,'Abraham Solis','CURP023MX','RFC023MX','NSS023','Mexicana',NULL,'Calle 23','23','Centro',06000,'Cuauhtémoc','CDMX','Soldador','Obra negra','Gral','Técnico','5 años','550023','p23@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(24,'Adan Torres','CURP024MX','RFC024MX','NSS024','Mexicana',NULL,'Calle 24','24','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','1 año','550024','p24@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(25,'Adrian Lara','CURP025MX','RFC025MX','NSS025','Mexicana',NULL,'Calle 25','25','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','4 años','550025','p25@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(26,'Agustin Mora','CURP026MX','RFC026MX','NSS026','Mexicana',NULL,'Calle 26','26','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550026','p26@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(27,'Alberto Galarza','CURP027MX','RFC027MX','NSS027','Mexicana',NULL,'Calle 27','27','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra negra','Gral','Bachiller','9 años','550027','p27@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(28,'Aldo Diaz','CURP028MX','RFC028MX','NSS028','Mexicana',NULL,'Calle 28','28','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550028','p28@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(29,'Alejandro Perea','CURP029MX','RFC029MX','NSS029','Mexicana',NULL,'Calle 29','29','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','3 años','550029','p29@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(30,'Alfonso Rivas','CURP030MX','RFC030MX','NSS030','Mexicana',NULL,'Calle 30','30','Centro',06000,'Cuauhtémoc','CDMX','Soldador','Obra negra','Gral','Técnico','6 años','550030','p30@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(31,'Alfredo Meza','CURP031MX','RFC031MX','NSS031','Mexicana',NULL,'Calle 31','31','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550031','p31@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(32,'Alvaro Ortiz','CURP032MX','RFC032MX','NSS032','Mexicana',NULL,'Calle 32','32','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550032','p32@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(33,'Amado Ruiz','CURP033MX','RFC033MX','NSS033','Mexicana',NULL,'Calle 33','33','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra negra','Gral','Bachiller','8 años','550033','p33@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(34,'Andres Cano','CURP034MX','RFC034MX','NSS034','Mexicana',NULL,'Calle 34','34','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','4 años','550034','p34@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(35,'Angel Nava','CURP035MX','RFC035MX','NSS035','Mexicana',NULL,'Calle 35','35','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550035','p35@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(36,'Anselmo Garcia','CURP036MX','RFC036MX','NSS036','Mexicana',NULL,'Calle 36','36','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550036','p36@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(37,'Antonio Hernandez','CURP037MX','RFC037MX','NSS037','Mexicana',NULL,'Calle 37','37','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra negra','Gral','Bachiller','10 años','550037','p37@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(38,'Apolo Diaz','CURP038MX','RFC038MX','NSS038','Mexicana',NULL,'Calle 38','38','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550038','p38@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(39,'Armando Vaca','CURP039MX','RFC039MX','NSS039','Mexicana',NULL,'Calle 39','39','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','3 años','550039','p39@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(40,'Artemio Luna','CURP040MX','RFC040MX','NSS040','Mexicana',NULL,'Calle 40','40','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550040','p40@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(41,'Arturo Peña','CURP041MX','RFC041MX','NSS041','Mexicana',NULL,'Calle 41','41','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra negra','Gral','Bachiller','12 años','550041','p41@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(42,'Baldomero Sosa','CURP042MX','RFC042MX','NSS042','Mexicana',NULL,'Calle 42','42','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550042','p42@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(43,'Bartolo Meza','CURP043MX','RFC043MX','NSS043','Mexicana',NULL,'Calle 43','43','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','1 año','550043','p43@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(44,'Basilio Rios','CURP044MX','RFC044MX','NSS044','Mexicana',NULL,'Calle 44','44','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','3 años','550044','p44@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(45,'Benito Juarez','CURP045MX','RFC045MX','NSS045','Mexicana',NULL,'Calle 45','45','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550045','p45@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(46,'Bernardo Silva','CURP046MX','RFC046MX','NSS046','Mexicana',NULL,'Calle 46','46','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550046','p46@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(47,'Blas Luna','CURP047MX','RFC047MX','NSS047','Mexicana',NULL,'Calle 47','47','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra negra','Gral','Bachiller','8 años','550047','p47@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(48,'Bonifacio Peña','CURP048MX','RFC048MX','NSS048','Mexicana',NULL,'Calle 48','48','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550048','p48@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(49,'Braulio Castro','CURP049MX','RFC049MX','NSS049','Mexicana',NULL,'Calle 49','49','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','3 años','550049','p49@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(50,'Bruno Diaz','CURP050MX','RFC050MX','NSS050','Mexicana',NULL,'Calle 50','50','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra negra','Gral','Secundaria','2 años','550050','p50@mx.mx','Planta','Completa','ACTIVO','2026-01-01','CDMX','Masculino'),
+(51,'Calixto Rivas','CURP051MX','RFC051MX','NSS051','Mexicana',NULL,'Calle 51','51','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550051','p51@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(52,'Camilo Sosa','CURP052MX','RFC052MX','NSS052','Mexicana',NULL,'Calle 52','52','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550052','p52@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(53,'Carlos Meza','CURP053MX','RFC053MX','NSS053','Mexicana',NULL,'Calle 53','53','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','4 años','550053','p53@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(54,'Casimiro Peña','CURP054MX','RFC054MX','NSS054','Mexicana',NULL,'Calle 54','54','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','1 año','550054','p54@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(55,'Cayetano Rios','CURP055MX','RFC055MX','NSS055','Mexicana',NULL,'Calle 55','55','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550055','p55@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(56,'Cecilio Silva','CURP056MX','RFC056MX','NSS056','Mexicana',NULL,'Calle 56','56','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550056','p56@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(57,'Celestino Luna','CURP057MX','RFC057MX','NSS057','Mexicana',NULL,'Calle 57','57','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra','Gral','Bachiller','11 años','550057','p57@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(58,'Cesar Ruiz','CURP058MX','RFC058MX','NSS058','Mexicana',NULL,'Calle 58','58','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550058','p58@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(59,'Christian Vaca','CURP059MX','RFC059MX','NSS059','Mexicana',NULL,'Calle 59','59','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550059','p59@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(60,'Claudio Perea','CURP060MX','RFC060MX','NSS060','Mexicana',NULL,'Calle 60','60','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550060','p60@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(61,'Clemente Rivas','CURP061MX','RFC061MX','NSS061','Mexicana',NULL,'Calle 61','61','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550061','p61@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(62,'Conrado Sosa','CURP062MX','RFC062MX','NSS062','Mexicana',NULL,'Calle 62','62','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550062','p62@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(63,'Crispin Mora','CURP063MX','RFC063MX','NSS063','Mexicana',NULL,'Calle 63','63','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','4 años','550063','p63@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(64,'Cristobal Peña','CURP064MX','RFC064MX','NSS064','Mexicana',NULL,'Calle 64','64','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','1 año','550064','p64@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(65,'Cuauhtemoc Rios','CURP065MX','RFC065MX','NSS065','Mexicana',NULL,'Calle 65','65','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550065','p65@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(66,'Damián Silva','CURP066MX','RFC066MX','NSS066','Mexicana',NULL,'Calle 66','66','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550066','p66@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(67,'Daniel Luna','CURP067MX','RFC067MX','NSS067','Mexicana',NULL,'Calle 67','67','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra','Gral','Bachiller','8 años','550067','p67@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(68,'Dario Peña','CURP068MX','RFC068MX','NSS068','Mexicana',NULL,'Calle 68','68','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550068','p68@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(69,'David Castro','CURP069MX','RFC069MX','NSS069','Mexicana',NULL,'Calle 69','69','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550069','p69@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(70,'Demetrio Diaz','CURP070MX','RFC070MX','NSS070','Mexicana',NULL,'Calle 70','70','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550070','p70@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(71,'Diego Rivas','CURP071MX','RFC071MX','NSS071','Mexicana',NULL,'Calle 71','71','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550071','p71@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(72,'Dionisio Sosa','CURP072MX','RFC072MX','NSS072','Mexicana',NULL,'Calle 72','72','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550072','p72@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(73,'Domingo Meza','CURP073MX','RFC073MX','NSS073','Mexicana',NULL,'Calle 73','73','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','4 años','550073','p73@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(74,'Donato Peña','CURP074MX','RFC074MX','NSS074','Mexicana',NULL,'Calle 74','74','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','1 año','550074','p74@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(75,'Edgar Rios','CURP075MX','RFC075MX','NSS075','Mexicana',NULL,'Calle 75','75','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550075','p75@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(76,'Edmundo Silva','CURP076MX','RFC076MX','NSS076','Mexicana',NULL,'Calle 76','76','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550076','p76@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(77,'Eduardo Luna','CURP077MX','RFC077MX','NSS077','Mexicana',NULL,'Calle 77','77','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra','Gral','Bachiller','9 años','550077','p77@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(78,'Efrain Ruiz','CURP078MX','RFC078MX','NSS078','Mexicana',NULL,'Calle 78','78','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550078','p78@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(79,'Elias Vaca','CURP079MX','RFC079MX','NSS079','Mexicana',NULL,'Calle 79','79','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550079','p79@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(80,'Eloy Peña','CURP080MX','RFC080MX','NSS080','Mexicana',NULL,'Calle 80','80','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550080','p80@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(81,'Emilio Rivas','CURP081MX','RFC081MX','NSS081','Mexicana',NULL,'Calle 81','81','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550081','p81@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(82,'Enrique Sosa','CURP082MX','RFC082MX','NSS082','Mexicana',NULL,'Calle 82','82','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550082','p82@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(83,'Erasmo Meza','CURP083MX','RFC083MX','NSS083','Mexicana',NULL,'Calle 83','83','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','4 años','550083','p83@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(84,'Ernesto Peña','CURP084MX','RFC084MX','NSS084','Mexicana',NULL,'Calle 84','84','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','1 año','550084','p84@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(85,'Esteban Rios','CURP085MX','RFC085MX','NSS085','Mexicana',NULL,'Calle 85','85','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550085','p85@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(86,'Eugenio Silva','CURP086MX','RFC086MX','NSS086','Mexicana',NULL,'Calle 86','86','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550086','p86@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(87,'Eusebio Luna','CURP087MX','RFC087MX','NSS087','Mexicana',NULL,'Calle 87','87','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra','Gral','Bachiller','8 años','550087','p87@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(88,'Eustaquio Peña','CURP088MX','RFC088MX','NSS088','Mexicana',NULL,'Calle 88','88','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550088','p88@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(89,'Evaristo Castro','CURP089MX','RFC089MX','NSS089','Mexicana',NULL,'Calle 89','89','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550089','p89@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(90,'Ezra Diaz','CURP090MX','RFC090MX','NSS090','Mexicana',NULL,'Calle 90','90','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550090','p90@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(91,'Fabian Rivas','CURP091MX','RFC091MX','NSS091','Mexicana',NULL,'Calle 91','91','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550091','p91@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(92,'Fausto Sosa','CURP092MX','RFC092MX','NSS092','Mexicana',NULL,'Calle 92','92','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550092','p92@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(93,'Federico Meza','CURP093MX','RFC093MX','NSS093','Mexicana',NULL,'Calle 93','93','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','4 años','550093','p93@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(94,'Felipe Peña','CURP094MX','RFC094MX','NSS094','Mexicana',NULL,'Calle 94','94','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','1 año','550094','p94@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(95,'Felix Rios','CURP095MX','RFC095MX','NSS095','Mexicana',NULL,'Calle 95','95','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550095','p95@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(96,'Fermin Silva','CURP096MX','RFC096MX','NSS096','Mexicana',NULL,'Calle 96','96','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550096','p96@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(97,'Fernando Luna','CURP097MX','RFC097MX','NSS097','Mexicana',NULL,'Calle 97','97','Centro',06000,'Cuauhtémoc','CDMX','Cabo','Obra','Gral','Bachiller','10 años','550097','p97@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(98,'Fidel Peña','CURP098MX','RFC098MX','NSS098','Mexicana',NULL,'Calle 98','98','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550098','p98@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(99,'Flavio Castro','CURP099MX','RFC099MX','NSS099','Mexicana',NULL,'Calle 99','99','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','3 años','550099','p99@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino'),
+(100,'Froylan Diaz','CURP100MX','RFC100MX','NSS100','Mexicana',NULL,'Calle 100','100','Centro',06000,'Cuauhtémoc','CDMX','Ayudante','Obra','Gral','Secundaria','2 años','550100','p100@mx.mx','Planta','Diurna','ACTIVO','2026-01-01','CDMX','Masculino');
+-- 9. ASIGNACIONES TP (PUENTE)
+-- Bloque 1: Trabajadores 1-50 al Proyecto 1
+-- (Debes incluir los 50 inserts del bloque 1...)
+-- Bloque 2: Trabajadores 51-100 al Proyecto 2
+-- (Debes incluir los 50 inserts del bloque 2...)
+INSERT INTO Asignacion_Trabajador_Proyecto (id_asignacion_tp, id_trabajador, id_proyecto, id_asignacion_pc, puesto_en_proyecto, fecha_inicio, estatus_asignacion) VALUES 
+(1, 1, 1, 1, 'Supervisor de Obra', '2026-04-01', 'ACTIVO'),
+(2, 2, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(3, 3, 1, 1, 'Soldador Especializado', '2026-04-01', 'ACTIVO'),
+(4, 4, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(5, 5, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(6, 6, 1, 1, 'Cabo de Cuadrilla', '2026-04-01', 'ACTIVO'),
+(7, 7, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(8, 8, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(9, 9, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(10, 10, 1, 1, 'Soldador Especializado', '2026-04-01', 'ACTIVO'),
+(11, 11, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(12, 12, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(13, 13, 1, 1, 'Cabo de Cuadrilla', '2026-04-01', 'ACTIVO'),
+(14, 14, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(15, 15, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(16, 16, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(17, 17, 1, 1, 'Cabo de Cuadrilla', '2026-04-01', 'ACTIVO'),
+(18, 18, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(19, 19, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(20, 20, 1, 1, 'Ayudante General', '2026-04-01', 'ACTIVO'),
+(21, 21, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(22, 22, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(23, 23, 1, 1, 'Soldador', '2026-04-01', 'ACTIVO'),
+(24, 24, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(25, 25, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(26, 26, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(27, 27, 1, 1, 'Cabo', '2026-04-01', 'ACTIVO'),
+(28, 28, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(29, 29, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(30, 30, 1, 1, 'Soldador', '2026-04-01', 'ACTIVO'),
+(31, 31, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(32, 32, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(33, 33, 1, 1, 'Cabo', '2026-04-01', 'ACTIVO'),
+(34, 34, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(35, 35, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(36, 36, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(37, 37, 1, 1, 'Cabo', '2026-04-01', 'ACTIVO'),
+(38, 38, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(39, 39, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(40, 40, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(41, 41, 1, 1, 'Cabo', '2026-04-01', 'ACTIVO'),
+(42, 42, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(43, 43, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(44, 44, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(45, 45, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(46, 46, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(47, 47, 1, 1, 'Cabo', '2026-04-01', 'ACTIVO'),
+(48, 48, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(49, 49, 1, 1, 'Peón', '2026-04-01', 'ACTIVO'),
+(50, 50, 1, 1, 'Peón', '2026-04-01', 'ACTIVO');
 
-    WHILE i <= 400 DO
-        SET v_idx   = IF(i <= 200, i - 1, i - 201);
-        SET v_year  = 70 + (v_idx DIV 12);
-        SET v_month = (v_idx MOD 12) + 1;
-        SET v_sex   = IF(i <= 200, 'H', 'M');
+-- Bloque 2: Trabajadores 51-100 al Proyecto 2 (Contrato Bravo id_apc=2)
+INSERT INTO Asignacion_Trabajador_Proyecto (id_asignacion_tp, id_trabajador, id_proyecto, id_asignacion_pc, puesto_en_proyecto, fecha_inicio, estatus_asignacion) VALUES 
+(51, 51, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(52, 52, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(53, 53, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(54, 54, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(55, 55, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(56, 56, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(57, 57, 2, 2, 'Cabo', '2026-03-20', 'ACTIVO'),
+(58, 58, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(59, 59, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(60, 60, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(61, 61, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(62, 62, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(63, 63, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(64, 64, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(65, 65, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(66, 66, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(67, 67, 2, 2, 'Cabo de Acabados', '2026-03-20', 'ACTIVO'),
+(68, 68, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(69, 69, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(70, 70, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(71, 71, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(72, 72, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(73, 73, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(74, 74, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(75, 75, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(76, 76, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(77, 77, 2, 2, 'Cabo', '2026-03-20', 'ACTIVO'),
+(78, 78, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(79, 79, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(80, 80, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(81, 81, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(82, 82, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(83, 83, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(84, 84, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(85, 85, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(86, 86, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(87, 87, 2, 2, 'Cabo', '2026-03-20', 'ACTIVO'),
+(88, 88, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(89, 89, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(90, 90, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(91, 91, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(92, 92, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(93, 93, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(94, 94, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(95, 95, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(96, 96, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(97, 97, 2, 2, 'Cabo', '2026-03-20', 'ACTIVO'),
+(98, 98, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(99, 99, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO'),
+(100, 100, 2, 2, 'Ayudante', '2026-03-20', 'ACTIVO');
 
-        SET v_curp  = CONCAT('TRAB', LPAD(v_year, 2, '0'), LPAD(v_month, 2, '0'),
-                             '01', v_sex, 'DFTRN01');
-        SET v_rfc   = CONCAT('TRABWRKR', LPAD(i, 4, '0'), 'A');
-        SET v_nss   = LPAD(i, 11, '0');
-        SET v_nombre = CONCAT('Trabajador ', LPAD(i, 3, '0'));
+-- 10. CUADRILLAS
+INSERT INTO Cuadrilla (id_cuadrilla, id_proyecto, nombre_cuadrilla, frente_trabajo, estatus_cuadrilla) VALUES
+(1, 1, 'Cuadrilla Cimentación', 'Norte', 'ACTIVO'),
+(2, 1, 'Cuadrilla Acero', 'Torre Principal', 'ACTIVO'),
+(3, 2, 'Cuadrilla Acabados', 'Pisos 1-4', 'ACTIVO'),
+(4, 2, 'Cuadrilla Eléctrica', 'General', 'ACTIVO'),
+(5, 1, 'Cuadrilla Logística', 'Todo el sitio', 'ACTIVO');
 
-        SET v_puesto = ELT(((i-1) MOD 10) + 1,
-            'Albañil','Electricista','Plomero','Carpintero','Pintor',
-            'Soldador','Fierrero','Ayudante General','Supervisor','Oficial de Primera');
+-- 11. ESTÁNDARES
+INSERT INTO Estandar_Rendimiento (id_estandar, nombre_actividad, unidad_medida, rendimiento_esperado) VALUES
+(1, 'Pintura Vinílica', 'm2', 5.5),
+(2, 'Instalación Piso', 'm2', 2.2),
+(5, 'Armado Estructura', 'ml', 1.8),
+(6, 'Muro de Block', 'm2', 1.2),
+(8, 'Colado de Losa', 'm3', 0.85);
 
-        SET v_desc_puesto = ELT(((i-1) MOD 5) + 1,
-            'Oficial de primera categoría','Oficial de segunda categoría',
-            'Ayudante de piso','Jefe de cuadrilla','Operador de maquinaria');
+-- 12. REGISTRO DE HORAS (Los 100 registros que generamos)
+-- (Debes pegar aquí el bloque de Registro_Horas del paso anterior)
+INSERT INTO Registro_Horas (id_asignacion_tp, id_cuadrilla, fecha_registro, horas_trabajadas, tipo_periodo, id_empleado_registro) VALUES 
+(1,1,'2026-05-01',8.0,'DIARIO',2),(2,1,'2026-05-01',8.0,'DIARIO',2),(3,2,'2026-05-01',8.0,'DIARIO',2),(4,2,'2026-05-01',8.0,'DIARIO',2),(5,5,'2026-05-01',8.0,'DIARIO',2),
+(6,1,'2026-05-01',8.0,'DIARIO',2),(7,1,'2026-05-01',8.0,'DIARIO',2),(8,2,'2026-05-01',8.0,'DIARIO',2),(9,2,'2026-05-01',8.0,'DIARIO',2),(10,5,'2026-05-01',8.0,'DIARIO',2),
+(11,1,'2026-05-01',8.0,'DIARIO',2),(12,1,'2026-05-01',8.0,'DIARIO',2),(13,2,'2026-05-01',8.0,'DIARIO',2),(14,2,'2026-05-01',8.0,'DIARIO',2),(15,5,'2026-05-01',8.0,'DIARIO',2),
+(16,1,'2026-05-01',8.0,'DIARIO',2),(17,1,'2026-05-01',8.0,'DIARIO',2),(18,2,'2026-05-01',8.0,'DIARIO',2),(19,2,'2026-05-01',8.0,'DIARIO',2),(20,5,'2026-05-01',8.0,'DIARIO',2),
+(21,1,'2026-05-01',8.0,'DIARIO',2),(22,1,'2026-05-01',8.0,'DIARIO',2),(23,2,'2026-05-01',8.0,'DIARIO',2),(24,2,'2026-05-01',8.0,'DIARIO',2),(25,5,'2026-05-01',8.0,'DIARIO',2),
+(26,1,'2026-05-01',8.0,'DIARIO',2),(27,1,'2026-05-01',8.0,'DIARIO',2),(28,2,'2026-05-01',8.0,'DIARIO',2),(29,2,'2026-05-01',8.0,'DIARIO',2),(30,5,'2026-05-01',8.0,'DIARIO',2),
+(31,1,'2026-05-01',8.0,'DIARIO',2),(32,1,'2026-05-01',8.0,'DIARIO',2),(33,2,'2026-05-01',8.0,'DIARIO',2),(34,2,'2026-05-01',8.0,'DIARIO',2),(35,5,'2026-05-01',8.0,'DIARIO',2),
+(36,1,'2026-05-01',8.0,'DIARIO',2),(37,1,'2026-05-01',8.0,'DIARIO',2),(38,2,'2026-05-01',8.0,'DIARIO',2),(39,2,'2026-05-01',8.0,'DIARIO',2),(40,5,'2026-05-01',8.0,'DIARIO',2),
+(41,1,'2026-05-01',8.0,'DIARIO',2),(42,1,'2026-05-01',8.0,'DIARIO',2),(43,2,'2026-05-01',8.0,'DIARIO',2),(44,2,'2026-05-01',8.0,'DIARIO',2),(45,5,'2026-05-01',8.0,'DIARIO',2),
+(46,1,'2026-05-01',8.0,'DIARIO',2),(47,1,'2026-05-01',8.0,'DIARIO',2),(48,2,'2026-05-01',8.0,'DIARIO',2),(49,2,'2026-05-01',8.0,'DIARIO',2),(50,5,'2026-05-01',8.0,'DIARIO',2);
 
-        SET v_especialidad = ELT(((i-1) MOD 10) + 1,
-            'Obra civil','Instalaciones eléctricas','Plomería','Carpintería','Pintura',
-            'Soldadura','Fierrería','Instalación general','Supervisión de obra','Acabados');
+-- PROYECTO 2: PLAZA PACHUCA DORADA (Asignaciones 51-100)
+-- Distribución balanceada en Cuadrillas 3 (Acabados) y 4 (Eléctrica)
+INSERT INTO Registro_Horas (id_asignacion_tp, id_cuadrilla, fecha_registro, horas_trabajadas, tipo_periodo, id_empleado_registro) VALUES 
+(51,3,'2026-05-01',8.0,'DIARIO',2),(52,4,'2026-05-01',8.0,'DIARIO',2),(53,3,'2026-05-01',8.0,'DIARIO',2),(54,4,'2026-05-01',8.0,'DIARIO',2),(55,3,'2026-05-01',8.0,'DIARIO',2),
+(56,4,'2026-05-01',8.0,'DIARIO',2),(57,3,'2026-05-01',8.0,'DIARIO',2),(58,4,'2026-05-01',8.0,'DIARIO',2),(59,3,'2026-05-01',8.0,'DIARIO',2),(60,4,'2026-05-01',8.0,'DIARIO',2),
+(61,3,'2026-05-01',8.0,'DIARIO',2),(62,4,'2026-05-01',8.0,'DIARIO',2),(63,3,'2026-05-01',8.0,'DIARIO',2),(64,4,'2026-05-01',8.0,'DIARIO',2),(65,3,'2026-05-01',8.0,'DIARIO',2),
+(66,4,'2026-05-01',8.0,'DIARIO',2),(67,3,'2026-05-01',8.0,'DIARIO',2),(68,4,'2026-05-01',8.0,'DIARIO',2),(69,3,'2026-05-01',8.0,'DIARIO',2),(70,4,'2026-05-01',8.0,'DIARIO',2),
+(71,3,'2026-05-01',8.0,'DIARIO',2),(72,4,'2026-05-01',8.0,'DIARIO',2),(73,3,'2026-05-01',8.0,'DIARIO',2),(74,4,'2026-05-01',8.0,'DIARIO',2),(75,3,'2026-05-01',8.0,'DIARIO',2),
+(76,4,'2026-05-01',8.0,'DIARIO',2),(77,3,'2026-05-01',8.0,'DIARIO',2),(78,4,'2026-05-01',8.0,'DIARIO',2),(79,3,'2026-05-01',8.0,'DIARIO',2),(80,4,'2026-05-01',8.0,'DIARIO',2),
+(81,3,'2026-05-01',8.0,'DIARIO',2),(82,4,'2026-05-01',8.0,'DIARIO',2),(83,3,'2026-05-01',8.0,'DIARIO',2),(84,4,'2026-05-01',8.0,'DIARIO',2),(85,3,'2026-05-01',8.0,'DIARIO',2),
+(86,4,'2026-05-01',8.0,'DIARIO',2),(87,3,'2026-05-01',8.0,'DIARIO',2),(88,4,'2026-05-01',8.0,'DIARIO',2),(89,3,'2026-05-01',8.0,'DIARIO',2),(90,4,'2026-05-01',8.0,'DIARIO',2),
+(91,3,'2026-05-01',8.0,'DIARIO',2),(92,4,'2026-05-01',8.0,'DIARIO',2),(93,3,'2026-05-01',8.0,'DIARIO',2),(94,4,'2026-05-01',8.0,'DIARIO',2),(95,3,'2026-05-01',8.0,'DIARIO',2),
+(96,4,'2026-05-01',8.0,'DIARIO',2),(97,3,'2026-05-01',8.0,'DIARIO',2),(98,4,'2026-05-01',8.0,'DIARIO',2),(99,3,'2026-05-01',8.0,'DIARIO',2),(100,4,'2026-05-01',8.0,'DIARIO',2);
 
-        SET v_escolaridad = ELT(((i-1) MOD 4) + 1,
-            'Primaria','Secundaria','Preparatoria','Técnico');
+-- 13. AVANCES
+INSERT INTO Avance_Partida (id_proyecto, id_cuadrilla, id_estandar, nombre_partida, fecha_registro, cantidad_ejecutada, unidad_medida, id_empleado_registro) VALUES
+(1, 1, 6, 'Muro de sótano', '2026-05-01', 45.0, 'm2', 2),
+(2, 3, 1, 'Pintura locales', '2026-05-01', 150.0, 'm2', 2);
 
-        SET v_telefono     = CONCAT('55', LPAD(i, 8, '0'));
-        SET v_correo       = CONCAT('trabajador.', LPAD(i, 3, '0'), '@indecsa.mx');
-        SET v_contratacion = IF(i MOD 3 = 0, 'Temporal', 'Planta');
-        SET v_jornada      = IF(i MOD 4 = 0, 'Parcial', 'Completa');
-
-        SET v_calle    = CONCAT('Calle ', ELT(((i-1) MOD 5) + 1,
-                         'Norte','Sur','Oriente','Poniente','Central'), ' ', ((i-1) MOD 20) + 1);
-        SET v_colonia  = ELT(((i-1) MOD 5) + 1,
-                         'Obrera','Industrial','Centro','Del Valle','Guerrero');
-        SET v_mun_alc  = ELT(((i-1) MOD 5) + 1,
-                         'Cuauhtémoc','Azcapotzalco','Pachuca','Puebla','Tizayuca');
-        SET v_estado_addr = ELT(((i-1) MOD 3) + 1,
-                            'Ciudad de México','Hidalgo','Puebla');
-        SET v_calidad  = ELT(((i-1) MOD 3) + 1, 'CDMX','Hidalgo','Puebla');
-
-        SET v_ingreso = DATE_ADD('2018-01-01', INTERVAL ((i * 7) MOD 2920) DAY);
-
-        INSERT INTO Trabajador (
-            nombre_trabajador, curp, rfc, nss_trabajador, nacionalidad, id_migratorio,
-            calle, num_ext, colonia, cod_post, mun_alc, estado,
-            puesto, desc_puesto, especialidad_trabajador, escolaridad,
-            telefono_trabajador, correo_trabajador, contratacion, jornada,
-            estado_trabajador, fecha_ingreso, calidad_vida
-        ) VALUES (
-            v_nombre, v_curp, v_rfc, v_nss, 'Mexicana', NULL,
-            v_calle, LPAD(i, 3, '0'), v_colonia,
-            6000 + ((i-1) MOD 100) * 100, v_mun_alc, v_estado_addr,
-            v_puesto, v_desc_puesto, v_especialidad, v_escolaridad,
-            v_telefono, v_correo, v_contratacion, v_jornada,
-            'ACTIVO', v_ingreso, v_calidad
-        );
-
-        SET i = i + 1;
-    END WHILE;
-END //
-
-DELIMITER ;
-
-CALL seed_trabajadores();
-DROP PROCEDURE seed_trabajadores;
-
--- ─────────────────────────────────────────────────────────────
--- 9. ASIGNACIONES TRABAJADOR-PROYECTO (400 vía stored procedure)
---    Distribución: 40 trabajadores por proyecto
---    FIX: agregados puesto_en_proyecto y fecha_inicio
--- ─────────────────────────────────────────────────────────────
-DELIMITER //
-
-CREATE PROCEDURE seed_asignaciones_tp()
-BEGIN
-    DECLARE i            INT DEFAULT 1;
-    DECLARE v_proyecto   INT;
-    DECLARE v_asignacion INT;
-    DECLARE v_estatus    VARCHAR(20);
-    DECLARE v_puesto_proy VARCHAR(100);
-    DECLARE v_fecha_ini  DATE;
-
-    WHILE i <= 400 DO
-        SET v_proyecto   = ((i - 1) DIV 40) + 1;
-        SET v_asignacion = (v_proyecto - 1) * 2 + 1;
-
-        SET v_estatus = IF(v_proyecto IN (4, 8), 'FINALIZADO', 'ACTIVO');
-
-        SET v_puesto_proy = ELT(((i-1) MOD 10) + 1,
-            'Albañil','Electricista','Plomero','Carpintero','Pintor',
-            'Soldador','Fierrero','Ayudante','Supervisor de cuadrilla','Oficial');
-
-        SET v_fecha_ini = DATE_ADD('2026-01-01',
-                            INTERVAL (v_proyecto - 1) * 15 DAY);
-
-        INSERT INTO Asignacion_Trabajador_Proyecto
-            (id_trabajador, id_proyecto, id_asignacion_pc,
-             puesto_en_proyecto, fecha_inicio, estatus_asignacion)
-        VALUES
-            (i, v_proyecto, v_asignacion,
-             v_puesto_proy, v_fecha_ini, v_estatus);
-
-        SET i = i + 1;
-    END WHILE;
-END //
-
-DELIMITER ;
-
-CALL seed_asignaciones_tp();
-DROP PROCEDURE seed_asignaciones_tp;
-
--- ─────────────────────────────────────────────────────────────
--- 10. ESTÁNDARES DE RENDIMIENTO (10)
--- FIX: agregada columna descripcion
--- ─────────────────────────────────────────────────────────────
-INSERT INTO Estandar_Rendimiento (nombre_actividad, unidad_medida, rendimiento_esperado, descripcion, jornada_base_horas) VALUES
-('Colado de losa',             'm3',      6.8000, 'Metros cúbicos de concreto colados por jornada de 8h',       8.00),
-('Aplanado de muros',          'm2',     20.0000, 'Metros cuadrados de aplanado fino por jornada de 8h',        8.00),
-('Colocación de tabique',      'piezas', 280.000, 'Piezas de tabique colocadas y pegadas por jornada de 8h',    8.00),
-('Pintura de muros',           'm2',     32.0000, 'Metros cuadrados pintados (2 manos) por jornada de 8h',      8.00),
-('Instalación de mobiliario',  'piezas',  4.0000, 'Piezas de mobiliario instaladas y aseguradas por jornada',   8.00),
-('Colocación de azulejo',      'm2',     12.5000, 'Metros cuadrados de azulejo colocado por jornada de 8h',     8.00),
-('Colocación de duela',        'm2',     10.0000, 'Metros cuadrados de duela instalada por jornada de 8h',      8.00),
-('Impermeabilización',         'm2',     30.0000, 'Metros cuadrados impermeabilizados por jornada de 8h',       8.00),
-('Instalación de tubería',     'ml',     20.0000, 'Metros lineales de tubería instalada por jornada de 8h',     8.00),
-('Fierro de refuerzo',         'ml',     40.0000, 'Metros lineales de fierro habilitado por jornada de 8h',     8.00);
-
--- ─────────────────────────────────────────────────────────────
--- 11. CUADRILLAS (20 = 2 por proyecto)
--- ─────────────────────────────────────────────────────────────
-INSERT INTO Cuadrilla (id_proyecto, nombre_cuadrilla, frente_trabajo, estatus_cuadrilla) VALUES
-(1,  'Cuadrilla A - Reforma',        'Frente Norte – Estructura y Cimentación', 'ACTIVO'),
-(1,  'Cuadrilla B - Reforma',        'Frente Sur – Acabados y Fachada',         'ACTIVO'),
-(2,  'Cuadrilla A - Hidalgo',        'Planta Baja – Pintura y Yeso',            'ACTIVO'),
-(2,  'Cuadrilla B - Hidalgo',        'Pisos 1-3 – Mobiliario y Acabados',       'ACTIVO'),
-(3,  'Cuadrilla A - Puebla',         'Nivel 0 – Cimentación',                   'ACTIVO'),
-(3,  'Cuadrilla B - Puebla',         'Nivel 1 – Estructura',                    'ACTIVO'),
-(4,  'Cuadrilla A - Insurgentes',    'Pisos 1-4 – Eléctrico',                   'INACTIVO'),
-(4,  'Cuadrilla B - Insurgentes',    'Pisos 5-8 – Acabados',                    'INACTIVO'),
-(5,  'Cuadrilla A - Tizayuca',       'Zona A – Obra Civil',                     'ACTIVO'),
-(5,  'Cuadrilla B - Tizayuca',       'Zona B – Estructura Metálica',            'ACTIVO'),
-(6,  'Cuadrilla A - Las Torres',     'Torre 1 y 2 – Estructura',                'ACTIVO'),
-(6,  'Cuadrilla B - Las Torres',     'Torre 3 y 4 – Acabados',                  'ACTIVO'),
-(7,  'Cuadrilla A - Bodega',         'Nave Principal – Acero',                  'ACTIVO'),
-(7,  'Cuadrilla B - Bodega',         'Andén de Carga – Concreto',               'ACTIVO'),
-(8,  'Cuadrilla A - Museo',          'Sala Principal – Restauración',           'INACTIVO'),
-(8,  'Cuadrilla B - Museo',          'Accesos – Pintura y Iluminación',         'INACTIVO'),
-(9,  'Cuadrilla A - BBVA',           'Piso 1 – Mobiliario de Escritorios',      'ACTIVO'),
-(9,  'Cuadrilla B - BBVA',           'Piso 2 – Mobiliario de Salas',            'ACTIVO'),
-(10, 'Cuadrilla A - Hospital',       'Ala Nueva – Obra Gris',                   'ACTIVO'),
-(10, 'Cuadrilla B - Hospital',       'Ala Nueva – Instalaciones Sanitarias',    'ACTIVO');
-
--- ─────────────────────────────────────────────────────────────
--- 12. REGISTRO DE HORAS (200 registros vía stored procedure)
---     Un registro diario por cada uno de los primeros 200 trabajadores.
---     id_cuadrilla: primera cuadrilla del proyecto del trabajador
---       Proyecto N → cuadrilla id = (N-1)*2 + 1
--- ─────────────────────────────────────────────────────────────
-DELIMITER //
-
-CREATE PROCEDURE seed_registro_horas()
-BEGIN
-    DECLARE i           INT DEFAULT 1;
-    DECLARE v_proyecto  INT;
-    DECLARE v_cuadrilla INT;
-    DECLARE v_fecha     DATE;
-    DECLARE v_empleado  INT;
-    DECLARE v_horas     DECIMAL(5,2);
-
-    WHILE i <= 200 DO
-        SET v_proyecto  = ((i - 1) DIV 40) + 1;
-        SET v_cuadrilla = (v_proyecto - 1) * 2 + 1;
-        SET v_fecha     = DATE_ADD('2026-01-10', INTERVAL ((i - 1) MOD 90) DAY);
-        SET v_empleado  = ((i - 1) MOD 4) + 1;
-        SET v_horas     = IF(i MOD 5 = 0, 7.50, 8.00);
-
-        INSERT INTO Registro_Horas
-            (id_asignacion_tp, id_cuadrilla, fecha_registro,
-             horas_trabajadas, tipo_periodo, id_empleado_registro)
-        VALUES
-            (i, v_cuadrilla, v_fecha, v_horas, 'DIARIO', v_empleado);
-
-        SET i = i + 1;
-    END WHILE;
-END //
-
-DELIMITER ;
-
-CALL seed_registro_horas();
-DROP PROCEDURE seed_registro_horas;
-
--- ─────────────────────────────────────────────────────────────
--- 13. AVANCES DE PARTIDA (30 registros = 3 por proyecto)
--- ─────────────────────────────────────────────────────────────
-INSERT INTO Avance_Partida (id_proyecto, id_cuadrilla, id_estandar, nombre_partida, fecha_registro, cantidad_ejecutada, unidad_medida, cantidad_programada, id_empleado_registro) VALUES
--- Proyecto 1 – Torre Reforma
-(1, 1, 1, 'Colado de losa nivel 1',         '2026-03-15', 48.50,  'm3',     60.00, 1),
-(1, 1, 2, 'Aplanado muros lobby',            '2026-04-01', 180.00, 'm2',    200.00, 1),
-(1, 2, 4, 'Pintura fachada sur',             '2026-04-20', 250.00, 'm2',    300.00, 2),
--- Proyecto 2 – Palacio Hidalgo
-(2, 3, 4, 'Pintura sala principal',          '2026-04-20', 120.00, 'm2',    150.00, 2),
-(2, 3, 5, 'Instalación mobiliario recepción','2026-05-01',  8.00,  'piezas', 10.00, 2),
-(2, 4, 2, 'Aplanado pisos 1-3',              '2026-05-10', 400.00, 'm2',    450.00, 3),
--- Proyecto 3 – Plaza Puebla
-(3, 5, 1, 'Colado de losa nivel 0',         '2026-05-10', 120.00, 'm3',    150.00, 1),
-(3, 5, 3, 'Colocación tabique muro norte',  '2026-05-20', 8400.0, 'piezas',9000.0, 3),
-(3, 6, 9, 'Tubería red hidráulica nivel 0', '2026-06-01', 180.00, 'ml',    220.00, 4),
--- Proyecto 4 – Insurgentes (FINALIZADO)
-(4, 7, 4, 'Pintura pisos 1-4',              '2026-02-15', 640.00, 'm2',    640.00, 1),
-(4, 7, 7, 'Duela madera pisos 5-8',         '2026-03-01', 520.00, 'm2',    520.00, 2),
-(4, 8, 5, 'Mobiliario oficinas A-H',        '2026-03-20', 48.00,  'piezas', 48.00, 3),
--- Proyecto 5 – Tizayuca
-(5, 9, 1, 'Cimentación zona A',             '2026-06-15', 85.00,  'm3',    120.00, 1),
-(5, 9,10, 'Fierro de refuerzo zona A',      '2026-06-20', 800.00, 'ml',   1000.00, 2),
-(5,10, 3, 'Tabique muros bodega',           '2026-07-01', 5600.0, 'piezas',7000.0, 3),
--- Proyecto 6 – Las Torres
-(6,11, 1, 'Colado de losa torre 1',        '2026-03-10', 95.00,  'm3',    110.00, 4),
-(6,11, 2, 'Aplanado tower 1-2',            '2026-04-05', 600.00, 'm2',    720.00, 1),
-(6,12, 8, 'Impermeabilización azotea T1',  '2026-05-01', 450.00, 'm2',    500.00, 2),
--- Proyecto 7 – Bodega
-(7,13, 1, 'Colado de piso nave principal', '2026-06-01', 200.00, 'm3',    250.00, 3),
-(7,13,10, 'Fierro estructura nave',        '2026-06-10', 1200.0, 'ml',   1500.00, 4),
-(7,14, 9, 'Tubería pluvial andén',         '2026-07-01', 240.00, 'ml',    280.00, 1),
--- Proyecto 8 – Museo (FINALIZADO)
-(8,15, 4, 'Pintura sala temporal',         '2025-12-01', 280.00, 'm2',    280.00, 2),
-(8,15, 6, 'Azulejo acceso principal',      '2025-12-15', 45.00,  'm2',     45.00, 3),
-(8,16, 8, 'Impermeabilización cubierta',   '2026-01-10', 180.00, 'm2',    180.00, 4),
--- Proyecto 9 – BBVA
-(9,17, 5, 'Mobiliario escritorios piso 1', '2026-03-15', 24.00,  'piezas', 30.00, 1),
-(9,17, 5, 'Mobiliario salas de juntas',    '2026-04-01', 12.00,  'piezas', 15.00, 2),
-(9,18, 6, 'Azulejo baños piso 2',          '2026-04-10', 18.00,  'm2',     20.00, 3),
--- Proyecto 10 – Hospital
-(10,19, 1, 'Colado de cimentación ala',   '2026-07-15', 65.00,  'm3',    100.00, 4),
-(10,19, 9, 'Red sanitaria zona urgencias','2026-08-01', 150.00, 'ml',    200.00, 1),
-(10,20, 3, 'Tabique muros consultorios',  '2026-08-15', 4200.0, 'piezas',6000.0, 2);
+SET FOREIGN_KEY_CHECKS = 1;

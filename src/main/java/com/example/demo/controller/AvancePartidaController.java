@@ -6,6 +6,7 @@ import com.example.demo.model.Empleado;
 import com.example.demo.repository.EmpleadoRepository;
 import com.example.demo.service.AvancePartidaService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;

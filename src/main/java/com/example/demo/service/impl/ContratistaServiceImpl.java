@@ -7,6 +7,8 @@ import com.example.demo.repository.ContratistaRepository;
 import com.example.demo.service.ContratistaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,9 +23,8 @@ public class ContratistaServiceImpl implements ContratistaService {
     private final ContratistaRepository contratistaRepository;
 
     @Override
-    public List<ContratistaResponse> findAll() {
-        return contratistaRepository.findAll()
-                .stream().map(ContratistaResponse::from).collect(Collectors.toList());
+    public Page<ContratistaResponse> findAll(Pageable pageable) {
+        return contratistaRepository.findAll(pageable).map(ContratistaResponse::from);
     }
 
     @Override

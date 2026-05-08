@@ -18,11 +18,15 @@ UPDATE Proyecto SET estatus_proyecto = 'PAUSADO'              WHERE estatus_proy
 -- ─────────────────────────────────────────────────────────────
 -- 2. PROYECTO
 -- ─────────────────────────────────────────────────────────────
+-- 2a. MODIFY sólo (MySQL no permite mezclar MODIFY + ADD IF NOT EXISTS)
 ALTER TABLE Proyecto
     MODIFY COLUMN tipo_proyecto
         ENUM('Construccion','Remodelacion','Venta_mobiliaria','Instalacion_de_mobiliario'),
     MODIFY COLUMN estatus_proyecto
-        ENUM('PLANEACION','EN_CURSO','PAUSADO','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'PLANEACION',
+        ENUM('PLANEACION','EN_CURSO','PAUSADO','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'PLANEACION';
+
+-- 2b. ADD columnas nuevas
+ALTER TABLE Proyecto
     ADD COLUMN IF NOT EXISTS oferta_trabajo      VARCHAR(200) NULL,
     ADD COLUMN IF NOT EXISTS cliente             VARCHAR(200) NULL,
     ADD COLUMN IF NOT EXISTS municipio_proyecto  VARCHAR(100) NULL,
@@ -38,8 +42,12 @@ SET @sql = IF(@col_old > 0,
     'SELECT 1');
 PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
 
+-- 3b. MODIFY sólo
 ALTER TABLE Contratista
-    MODIFY COLUMN rfc_contratista        VARCHAR(13)  NOT NULL,
+    MODIFY COLUMN rfc_contratista VARCHAR(13) NOT NULL;
+
+-- 3c. ADD columnas nuevas
+ALTER TABLE Contratista
     ADD COLUMN IF NOT EXISTS curp                    VARCHAR(18)  NOT NULL DEFAULT 'SINREGISTRO000000A',
     ADD COLUMN IF NOT EXISTS descripcion_contratista VARCHAR(255) NOT NULL DEFAULT 'Sin descripcion',
     ADD COLUMN IF NOT EXISTS experiencia             VARCHAR(200) NULL,
@@ -120,9 +128,13 @@ ALTER TABLE Trabajador
 --    Hibernate falla al arrancar porque busca estas columnas
 --    y no las encuentra en la BD de Railway.
 -- ─────────────────────────────────────────────────────────────
+-- 6a. MODIFY sólo
 ALTER TABLE Asignacion_Proyecto_Contratista
     MODIFY COLUMN estatus_contrato
-        ENUM('ACTIVO','VIGENTE','SUSPENDIDO','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'VIGENTE',
+        ENUM('ACTIVO','VIGENTE','SUSPENDIDO','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'VIGENTE';
+
+-- 6b. ADD columnas nuevas
+ALTER TABLE Asignacion_Proyecto_Contratista
     ADD COLUMN IF NOT EXISTS numero_contrato    VARCHAR(50)  NULL,
     ADD COLUMN IF NOT EXISTS fecha_fin_estimada DATE         NULL,
     ADD COLUMN IF NOT EXISTS personal_asignado  INT          NOT NULL DEFAULT 1,

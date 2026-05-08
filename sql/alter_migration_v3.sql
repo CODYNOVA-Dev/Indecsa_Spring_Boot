@@ -7,16 +7,25 @@ USE indecsa;
 SET SQL_SAFE_UPDATES = 0;
 
 -- ─────────────────────────────────────────────────────────────
--- 1. LIMPIEZA PREVIA DE ENUMs INCOMPATIBLES
---    Hibernate usa el nombre exacto del enum Java (con guiones bajos).
---    Si hay filas con los valores viejos, el MODIFY falla.
+-- 1. PROYECTO — ENUM MODIFY primero, UPDATE después
+--    MySQL no permite asignar un valor que no está en el ENUM actual.
+--    Se amplía el ENUM para incluir valores nuevos y viejos, luego
+--    se migran los datos, luego se deja solo los valores nuevos.
 -- ─────────────────────────────────────────────────────────────
-UPDATE Proyecto SET tipo_proyecto = 'Venta_mobiliaria'        WHERE tipo_proyecto = 'Venta mobiliaria';
-UPDATE Proyecto SET tipo_proyecto = 'Instalacion_de_mobiliario' WHERE tipo_proyecto = 'Instalacion de mobiliario';
-UPDATE Proyecto SET estatus_proyecto = 'PAUSADO'              WHERE estatus_proyecto = 'PENDIENTE';
+-- 1a. Ampliar ENUM para incluir valores viejos Y nuevos (necesario para el UPDATE)
+ALTER TABLE Proyecto
+    MODIFY COLUMN tipo_proyecto
+        ENUM('Construccion','Remodelacion','Venta mobiliaria','Venta_mobiliaria','Instalacion de mobiliario','Instalacion_de_mobiliario'),
+    MODIFY COLUMN estatus_proyecto
+        ENUM('PLANEACION','EN_CURSO','PENDIENTE','PAUSADO','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'PLANEACION';
+
+-- 1b. Migrar valores viejos a nuevos
+UPDATE Proyecto SET tipo_proyecto   = 'Venta_mobiliaria'          WHERE tipo_proyecto   = 'Venta mobiliaria';
+UPDATE Proyecto SET tipo_proyecto   = 'Instalacion_de_mobiliario'  WHERE tipo_proyecto   = 'Instalacion de mobiliario';
+UPDATE Proyecto SET estatus_proyecto = 'PAUSADO'                   WHERE estatus_proyecto = 'PENDIENTE';
 
 -- ─────────────────────────────────────────────────────────────
--- 2. PROYECTO
+-- 2. PROYECTO — MODIFY final dejando solo valores válidos
 -- ─────────────────────────────────────────────────────────────
 -- 2a. MODIFY sólo (MySQL no permite mezclar MODIFY + ADD IF NOT EXISTS)
 ALTER TABLE Proyecto

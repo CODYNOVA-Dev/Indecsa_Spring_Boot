@@ -67,7 +67,7 @@ INSERT INTO registros_migratorios (id_migratorio, folio_documento, categoria, fe
 INSERT INTO Proyecto (id_proyecto, nombre_proyecto, tipo_proyecto, oferta_trabajo, cliente, id_ubicacion, municipio_proyecto, estado_proyecto_geo, estatus_proyecto) VALUES
 (1, 'Torre Reforma IV', 'Construccion', 'Estructura', 'Corporativo Reforma S.A.', 1, 'Cuauhtémoc', 'CDMX', 'EN_CURSO'),
 (2, 'Plaza Pachuca Dorada', 'Remodelacion', 'Acabados', 'Grupo Inmobiliario Plata', 2, 'Pachuca', 'Hidalgo', 'EN_CURSO'),
-(3, 'Restaurante Centro', 'Instalacion de mobiliario', 'Cocina', 'Chef Global Mx', 3, 'Cuauhtémoc', 'CDMX', 'FINALIZADO'),
+(3, 'Restaurante Centro', 'Instalacion_de_mobiliario', 'Cocina', 'Chef Global Mx', 3, 'Cuauhtémoc', 'CDMX', 'FINALIZADO'),
 (4, 'Cedis Puebla', 'Construccion', 'Nave', 'Logística Express', 4, 'Puebla', 'Puebla', 'PLANEACION');
 
 -- 7. CONTRATOS (Asignacion_Proyecto_Contratista)

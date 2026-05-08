@@ -2,43 +2,127 @@ package com.example.demo.dto.trabajador;
 
 import com.example.demo.model.Trabajador.EntidadFederativa;
 import com.example.demo.model.Trabajador.EstadoTrabajador;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public class TrabajadorRequest {
 
+    @NotBlank
+    @Size(max = 100)
     private String nombreTrabajador;
+
+    @NotBlank
+    @Size(min = 18, max = 18)
     private String curp;
+
+    @NotBlank
+    @Size(min = 12, max = 13)
     private String rfc;
+
+    @Size(max = 11)
     private String nssTrabajador;
+
+    @NotBlank
+    @Size(max = 100)
     private String nacionalidad;
+
     private Integer idMigratorio;
+
+    @NotBlank
+    @Size(max = 100)
     private String calle;
+
+    @NotBlank
+    @Size(max = 10)
     private String numExt;
+
+    @Size(max = 10)
     private String numInt;
+
+    @NotBlank
+    @Size(max = 100)
     private String colonia;
+
+    @NotNull
     private Integer codPost;
+
+    @NotBlank
+    @Size(max = 100)
     private String munAlc;
+
+    @NotBlank
+    @Size(max = 100)
     private String estado;
+
+    @NotBlank
+    @Size(max = 100)
     private String puesto;
+
+    @NotBlank
+    @Size(max = 500)
     private String descPuesto;
+
+    @NotBlank
+    @Size(max = 100)
     private String especialidadTrabajador;
+
+    @NotBlank
+    @Size(max = 100)
     private String escolaridad;
+
+    @Size(max = 200)
     private String experiencia;
+
+    @NotBlank
+    @Size(max = 15)
     private String telefonoTrabajador;
+
+    @NotBlank
+    @Email
+    @Size(max = 100)
     private String correoTrabajador;
+
+    @NotBlank
+    @Size(max = 200)
     private String contratacion;
+
+    @NotBlank
+    @Size(max = 200)
     private String jornada;
+
+    @NotNull
     private EstadoTrabajador estadoTrabajador;
+
     private String descripcionTrabajador;
+
+    @Min(1) @Max(5)
     private Byte evaluacionTrabajador;
+
+    @NotNull
     private LocalDate fechaIngreso;
+
+    @NotNull
     private EntidadFederativa calidadVida;
+
+    @Size(max = 500)
     private String antPenal;
+
+    @Size(max = 500)
     private String deudorAlim;
+
+    @Size(max = 20)
     private String folioLicCond;
+
+    @Size(max = 50)
     private String estadoCivil;
+
+    @Size(max = 200)
     private String idiomas;
+
+    @Size(max = 100)
     private String lenguaIndigena;
+
+    @Size(max = 50)
     private String sexo;
 
     public String getNombreTrabajador()        { return nombreTrabajador; }

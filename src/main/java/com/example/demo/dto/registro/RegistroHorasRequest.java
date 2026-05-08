@@ -1,15 +1,28 @@
 package com.example.demo.dto.registro;
 
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class RegistroHorasRequest {
 
+    @NotNull
     private Integer idAsignacionTp;
+
     private Integer idCuadrilla;
+
+    @NotNull
     private LocalDate fechaRegistro;
+
+    @NotNull
+    @DecimalMin("0.01")
+    @DecimalMax("24.0")
     private BigDecimal horasTrabajadas;
+
+    @NotBlank
     private String tipoPeriodo;
+
+    @Size(max = 500)
     private String observaciones;
 
     public Integer getIdAsignacionTp()          { return idAsignacionTp; }

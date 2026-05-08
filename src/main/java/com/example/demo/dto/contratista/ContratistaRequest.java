@@ -2,18 +2,44 @@ package com.example.demo.dto.contratista;
 
 import com.example.demo.model.Contratista.EntidadFederativa;
 import com.example.demo.model.Contratista.EstadoContratista;
+import jakarta.validation.constraints.*;
 
 public class ContratistaRequest {
 
+    @NotBlank
+    @Size(max = 100)
     private String nombreContratista;
+
+    @NotBlank
+    @Size(min = 18, max = 18)
     private String curp;
+
+    @NotBlank
+    @Size(min = 12, max = 13)
     private String rfcContratista;
+
+    @NotBlank
+    @Size(max = 15)
     private String telefonoContratista;
+
+    @NotBlank
+    @Email
+    @Size(max = 100)
     private String correoContratista;
+
+    @Size(max = 500)
     private String descripcionContratista;
+
+    @Size(max = 200)
     private String experiencia;
+
+    @Min(1) @Max(5)
     private Byte calificacionContratista;
+
+    @NotNull
     private EstadoContratista estadoContratista;
+
+    @NotNull
     private EntidadFederativa ubicacionContratista;
 
     public String getNombreContratista()            { return nombreContratista; }

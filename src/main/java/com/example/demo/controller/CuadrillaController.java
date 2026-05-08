@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.cuadrilla.CuadrillaRequest;
 import com.example.demo.dto.cuadrilla.CuadrillaResponse;
 import com.example.demo.service.CuadrillaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class CuadrillaController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CuadrillaResponse> crear(@RequestBody CuadrillaRequest request) {
+    public ResponseEntity<CuadrillaResponse> crear(@Valid @RequestBody CuadrillaRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(cuadrillaService.crear(request));
     }
 
@@ -34,7 +35,7 @@ public class CuadrillaController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CuadrillaResponse> actualizar(
             @PathVariable Integer id,
-            @RequestBody CuadrillaRequest request) {
+            @Valid @RequestBody CuadrillaRequest request) {
         return ResponseEntity.ok(cuadrillaService.actualizar(id, request));
     }
 

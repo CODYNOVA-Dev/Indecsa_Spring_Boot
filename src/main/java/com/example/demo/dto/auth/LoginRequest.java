@@ -1,7 +1,14 @@
 package com.example.demo.dto.auth;
 
+import jakarta.validation.constraints.*;
+
 public class LoginRequest {
+
+    @NotBlank
+    @Email
     private String correoEmpleado;
+
+    @NotBlank
     private String contrasena;
 
     public LoginRequest() {}

@@ -3,21 +3,40 @@ package com.example.demo.dto.proyecto;
 import com.example.demo.model.Proyecto.EntidadFederativa;
 import com.example.demo.model.Proyecto.EstatusProyecto;
 import com.example.demo.model.Proyecto.TipoProyecto;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
 
 public class ProyectoRequest {
 
+    @NotBlank
+    @Size(max = 150)
     private String nombreProyecto;
+
+    @NotNull
     private TipoProyecto tipoProyecto;
+
+    @Size(max = 200)
     private String ofertaTrabajo;
+
+    @NotBlank
+    @Size(max = 200)
     private String cliente;
+
     private Integer idUbicacion;
     private String lugarProyecto;
+
+    @NotNull
     private EntidadFederativa estadoProyectoGeo;
+
     private LocalDate fechaEstimadaInicio;
     private LocalDate fechaEstimadaFin;
+
+    @Min(1) @Max(5)
     private Byte calificacionProyecto;
+
     private EstatusProyecto estatusProyecto;
+
+    @Size(max = 500)
     private String descripcionProyecto;
 
     public String getNombreProyecto()              { return nombreProyecto; }

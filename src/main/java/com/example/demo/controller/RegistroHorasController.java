@@ -44,7 +44,7 @@ public class RegistroHorasController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<RegistroHorasResponse> registrar(@RequestBody RegistroHorasRequest request) {
+    public ResponseEntity<RegistroHorasResponse> registrar(@Valid @RequestBody RegistroHorasRequest request) {
         Integer idEmpleado = getEmpleadoAutenticado().getIdEmpleado();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(registroHorasService.registrar(request, idEmpleado));
@@ -54,7 +54,7 @@ public class RegistroHorasController {
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
     public ResponseEntity<RegistroHorasResponse> actualizar(
             @PathVariable Integer id,
-            @RequestBody RegistroHorasRequest request) {
+            @Valid @RequestBody RegistroHorasRequest request) {
         return ResponseEntity.ok(registroHorasService.actualizar(id, request));
     }
 

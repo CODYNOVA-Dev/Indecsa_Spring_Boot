@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.dto.estandar.EstandarRendimientoRequest;
 import com.example.demo.dto.estandar.EstandarRendimientoResponse;
 import com.example.demo.service.EstandarRendimientoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class EstandarRendimientoController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EstandarRendimientoResponse> crear(@RequestBody EstandarRendimientoRequest request) {
+    public ResponseEntity<EstandarRendimientoResponse> crear(@Valid @RequestBody EstandarRendimientoRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(estandarService.crear(request));
     }
 
@@ -40,7 +41,7 @@ public class EstandarRendimientoController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EstandarRendimientoResponse> actualizar(
             @PathVariable Integer id,
-            @RequestBody EstandarRendimientoRequest request) {
+            @Valid @RequestBody EstandarRendimientoRequest request) {
         return ResponseEntity.ok(estandarService.actualizar(id, request));
     }
 

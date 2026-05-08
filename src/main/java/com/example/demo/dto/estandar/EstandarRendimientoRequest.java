@@ -1,13 +1,27 @@
 package com.example.demo.dto.estandar;
 
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 public class EstandarRendimientoRequest {
 
+    @NotBlank
+    @Size(max = 200)
     private String nombreActividad;
+
+    @NotBlank
     private String unidadMedida;
+
+    @NotNull
+    @DecimalMin("0.01")
     private BigDecimal rendimientoEsperado;
+
+    @Size(max = 500)
     private String descripcion;
+
+    @NotNull
+    @DecimalMin("0.01")
+    @DecimalMax("24.0")
     private BigDecimal jornadaBaseHoras;
 
     public String getNombreActividad()              { return nombreActividad; }

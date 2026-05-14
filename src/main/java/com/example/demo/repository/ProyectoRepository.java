@@ -6,11 +6,11 @@ import com.example.demo.model.Proyecto.TipoProyecto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface ProyectoRepository extends JpaRepository<Proyecto, Integer> {
+public interface ProyectoRepository extends JpaRepository<Proyecto, Integer>,
+        ProyectoRepositoryCustom {
 
     List<Proyecto> findByEstatusProyecto(EstatusProyecto estatusProyecto);
 

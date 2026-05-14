@@ -1,9 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.request.EmpleadoRequestDTO;
-import com.example.demo.dto.response.EmpleadoResponseDTO;
-import com.example.demo.dto.response.LoginResponseDTO;
-import com.example.demo.dto.response.RolResponseDTO;
+import com.example.demo.dto.empleado.EmpleadoRequest;
+import com.example.demo.dto.empleado.EmpleadoResponse;
 import com.example.demo.model.Empleado;
 import com.example.demo.model.Rol;
 import com.example.demo.repository.EmpleadoRepository;
@@ -20,49 +18,36 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class EmpleadoServiceImpl implements EmpleadoService {
 
     private final EmpleadoRepository empleadoRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
 
-    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<EmpleadoResponseDTO> findAll() {
+    public List<EmpleadoResponse> findAll() {
         return empleadoRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .stream().map(EmpleadoResponse::from).collect(Collectors.toList());
     }
 
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public EmpleadoResponseDTO findById(Integer id) {
-        return toResponse(getEmpleadoOrThrow(id));
+    public List<EmpleadoResponse> findByRol(Integer idRol) {
+        return empleadoRepository.findByRolIdRol(idRol)
+                .stream().map(EmpleadoResponse::from).collect(Collectors.toList());
     }
 
-    // ─── FIND BY ROL ──────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<EmpleadoResponseDTO> findByRol(Integer idRol) {
-        if (!rolRepository.existsById(idRol)) {
-            throw new EntityNotFoundException("Rol no encontrado con id: " + idRol);
-        }
-        return empleadoRepository.findByRol_IdRol(idRol)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public EmpleadoResponse findById(Integer id) {
+        return EmpleadoResponse.from(getEmpleadoOrThrow(id));
     }
 
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public EmpleadoResponseDTO create(EmpleadoRequestDTO dto) {
-        if (empleadoRepository.existsByCorreoEmpleado(dto.getCorreoEmpleado())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un empleado con el correo: " + dto.getCorreoEmpleado());
+    public EmpleadoResponse create(EmpleadoRequest request) {
+        if (request.getCorreoEmpleado() != null
+                && empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
+            throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
         if (empleadoRepository.existsByCurp(dto.getCurp())) {
             throw new IllegalArgumentException(
@@ -81,16 +66,15 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         return toResponse(empleadoRepository.save(empleado));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public EmpleadoResponseDTO update(Integer id, EmpleadoRequestDTO dto) {
+    public EmpleadoResponse update(Integer id, EmpleadoRequest request) {
         Empleado empleado = getEmpleadoOrThrow(id);
 
-        if (!empleado.getCorreoEmpleado().equals(dto.getCorreoEmpleado())
-                && empleadoRepository.existsByCorreoEmpleado(dto.getCorreoEmpleado())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un empleado con el correo: " + dto.getCorreoEmpleado());
+        if (request.getCorreoEmpleado() != null
+                && !request.getCorreoEmpleado().equals(empleado.getCorreoEmpleado())
+                && empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
+            throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
         if (!empleado.getCurp().equals(dto.getCurp())
                 && empleadoRepository.existsByCurp(dto.getCurp())) {
@@ -106,16 +90,14 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
         empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
         empleado.setRol(rol);
-        return toResponse(empleadoRepository.save(empleado));
+
+        return EmpleadoResponse.from(empleadoRepository.save(empleado));
     }
 
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!empleadoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Empleado no encontrado con id: " + id);
-        }
+        getEmpleadoOrThrow(id);
         empleadoRepository.deleteById(id);
     }
 
@@ -142,8 +124,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     // ─── HELPERS ──────────────────────────────────────────────────────────────
     private Empleado getEmpleadoOrThrow(Integer id) {
         return empleadoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Empleado no encontrado con id: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con id: " + id));
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────

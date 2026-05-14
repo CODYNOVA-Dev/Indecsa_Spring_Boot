@@ -9,9 +9,12 @@ import com.example.demo.model.Proyecto.EstatusProyecto;
 import com.example.demo.model.Proyecto.TipoProyecto;
 import com.example.demo.repository.DomicilioRepository;
 import com.example.demo.repository.ProyectoRepository;
+import com.example.demo.repository.UbicacionProyectoRepository;
 import com.example.demo.service.ProyectoService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,36 +23,21 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProyectoServiceImpl implements ProyectoService {
 
     private final ProyectoRepository proyectoRepository;
     private final DomicilioRepository domicilioRepository;
 
-    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<ProyectoResponseDTO> findAll() {
-        return proyectoRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<ProyectoResponse> findAll(Pageable pageable) {
+        return proyectoRepository.findAll(pageable).map(ProyectoResponse::from);
     }
 
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public ProyectoResponseDTO findById(Integer id) {
-        return toResponse(getProyectoOrThrow(id));
-    }
-
-    // ─── FIND BY ESTATUS ──────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProyectoResponseDTO> findByEstatus(EstatusProyecto estatus) {
+    public List<ProyectoResponse> findByEstatus(Proyecto.EstatusProyecto estatus) {
         return proyectoRepository.findByEstatusProyecto(estatus)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .stream().map(ProyectoResponse::from).collect(Collectors.toList());
     }
 
     // ─── FIND BY TIPO ─────────────────────────────────────────────────────────
@@ -72,7 +60,6 @@ public class ProyectoServiceImpl implements ProyectoService {
                 .collect(Collectors.toList());
     }
 
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public ProyectoResponseDTO create(ProyectoRequestDTO dto) {
@@ -84,7 +71,6 @@ public class ProyectoServiceImpl implements ProyectoService {
         return toResponse(proyectoRepository.save(proyecto));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public ProyectoResponseDTO update(Integer id, ProyectoRequestDTO dto) {
@@ -95,27 +81,22 @@ public class ProyectoServiceImpl implements ProyectoService {
         return toResponse(proyectoRepository.save(proyecto));
     }
 
-    // ─── CAMBIAR ESTATUS ──────────────────────────────────────────────────────
     @Override
     @Transactional
-    public ProyectoResponseDTO cambiarEstatus(Integer id, EstatusProyecto estatus) {
-        Proyecto proyecto = getProyectoOrThrow(id);
+    public ProyectoResponse cambiarEstatus(Integer id, Proyecto.EstatusProyecto estatus) {
+        Proyecto proyecto = getOrThrow(id);
         proyecto.setEstatusProyecto(estatus);
-        return toResponse(proyectoRepository.save(proyecto));
+        return ProyectoResponse.from(proyectoRepository.save(proyecto));
     }
 
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!proyectoRepository.existsById(id)) {
-            throw new EntityNotFoundException("Proyecto no encontrado con id: " + id);
-        }
+        getOrThrow(id);
         proyectoRepository.deleteById(id);
     }
 
-    // ─── HELPERS ──────────────────────────────────────────────────────────────
-    private Proyecto getProyectoOrThrow(Integer id) {
+    private Proyecto getOrThrow(Integer id) {
         return proyectoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Proyecto no encontrado con id: " + id));

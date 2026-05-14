@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.request.ContratistaRequestDTO;
-import com.example.demo.dto.response.ContratistaResponseDTO;
+import com.example.demo.dto.contratista.ContratistaRequest;
+import com.example.demo.dto.contratista.ContratistaResponse;
 import com.example.demo.model.Contratista;
 import com.example.demo.model.Contratista.EstadoContratista;
 import com.example.demo.model.Estado;
@@ -9,6 +9,8 @@ import com.example.demo.repository.ContratistaRepository;
 import com.example.demo.service.ContratistaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ContratistaServiceImpl implements ContratistaService {
 
     private final ContratistaRepository contratistaRepository;
@@ -24,32 +27,16 @@ public class ContratistaServiceImpl implements ContratistaService {
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<ContratistaResponseDTO> findAll() {
-        return contratistaRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<ContratistaResponse> findAll(Pageable pageable) {
+        return contratistaRepository.findAll(pageable).map(ContratistaResponse::from);
     }
 
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public ContratistaResponseDTO findById(Integer id) {
-        return toResponse(getContratistaOrThrow(id));
-    }
-
-    // ─── FIND BY ESTADO ───────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<ContratistaResponseDTO> findByEstado(EstadoContratista estado) {
+    public List<ContratistaResponse> findByEstado(Contratista.EstadoContratista estado) {
         return contratistaRepository.findByEstadoContratista(estado)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .stream().map(ContratistaResponse::from).collect(Collectors.toList());
     }
 
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public ContratistaResponseDTO create(ContratistaRequestDTO dto) {
@@ -68,11 +55,17 @@ public class ContratistaServiceImpl implements ContratistaService {
         return toResponse(contratistaRepository.save(contratista));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public ContratistaResponseDTO update(Integer id, ContratistaRequestDTO dto) {
-        Contratista contratista = getContratistaOrThrow(id);
+    public ContratistaResponse create(ContratistaRequest request) {
+        if (request.getRfcContratista() != null
+                && contratistaRepository.existsByRfcContratista(request.getRfcContratista())) {
+            throw new IllegalArgumentException("Ya existe un contratista con el RFC: " + request.getRfcContratista());
+        }
+        if (request.getCorreoContratista() != null
+                && contratistaRepository.existsByCorreoContratista(request.getCorreoContratista())) {
+            throw new IllegalArgumentException("Ya existe un contratista con el correo: " + request.getCorreoContratista());
+        }
 
         if (!contratista.getCorreoContratista().equals(dto.getCorreoContratista())
                 && contratistaRepository.existsByCorreoContratista(dto.getCorreoContratista())) {
@@ -89,27 +82,52 @@ public class ContratistaServiceImpl implements ContratistaService {
         return toResponse(contratistaRepository.save(contratista));
     }
 
-    // ─── CAMBIAR ESTADO ───────────────────────────────────────────────────────
     @Override
     @Transactional
-    public ContratistaResponseDTO cambiarEstado(Integer id, EstadoContratista estado) {
-        Contratista contratista = getContratistaOrThrow(id);
-        contratista.setEstadoContratista(estado);
-        return toResponse(contratistaRepository.save(contratista));
+    public ContratistaResponse update(Integer id, ContratistaRequest request) {
+        Contratista contratista = getOrThrow(id);
+
+        if (request.getRfcContratista() != null
+                && !request.getRfcContratista().equals(contratista.getRfcContratista())
+                && contratistaRepository.existsByRfcContratista(request.getRfcContratista())) {
+            throw new IllegalArgumentException("Ya existe un contratista con el RFC: " + request.getRfcContratista());
+        }
+        if (request.getCorreoContratista() != null
+                && !request.getCorreoContratista().equals(contratista.getCorreoContratista())
+                && contratistaRepository.existsByCorreoContratista(request.getCorreoContratista())) {
+            throw new IllegalArgumentException("Ya existe un contratista con el correo: " + request.getCorreoContratista());
+        }
+
+        if (request.getNombreContratista() != null)     contratista.setNombreContratista(request.getNombreContratista());
+        if (request.getCurp() != null)                  contratista.setCurp(request.getCurp());
+        if (request.getRfcContratista() != null)        contratista.setRfcContratista(request.getRfcContratista());
+        if (request.getTelefonoContratista() != null)   contratista.setTelefonoContratista(request.getTelefonoContratista());
+        if (request.getCorreoContratista() != null)     contratista.setCorreoContratista(request.getCorreoContratista());
+        if (request.getDescripcionContratista() != null)contratista.setDescripcionContratista(request.getDescripcionContratista());
+        if (request.getExperiencia() != null)           contratista.setExperiencia(request.getExperiencia());
+        if (request.getCalificacionContratista() != null) contratista.setCalificacionContratista(request.getCalificacionContratista());
+        if (request.getEstadoContratista() != null)     contratista.setEstadoContratista(request.getEstadoContratista());
+        if (request.getUbicacionContratista() != null)  contratista.setUbicacionContratista(request.getUbicacionContratista());
+
+        return ContratistaResponse.from(contratistaRepository.save(contratista));
     }
 
-    // ─── DELETE ───────────────────────────────────────────────────────────────
+    @Override
+    @Transactional
+    public ContratistaResponse cambiarEstado(Integer id, Contratista.EstadoContratista estado) {
+        Contratista contratista = getOrThrow(id);
+        contratista.setEstadoContratista(estado);
+        return ContratistaResponse.from(contratistaRepository.save(contratista));
+    }
+
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!contratistaRepository.existsById(id)) {
-            throw new EntityNotFoundException("Contratista no encontrado con id: " + id);
-        }
+        getOrThrow(id);
         contratistaRepository.deleteById(id);
     }
 
-    // ─── HELPERS ──────────────────────────────────────────────────────────────
-    private Contratista getContratistaOrThrow(Integer id) {
+    private Contratista getOrThrow(Integer id) {
         return contratistaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Contratista no encontrado con id: " + id));

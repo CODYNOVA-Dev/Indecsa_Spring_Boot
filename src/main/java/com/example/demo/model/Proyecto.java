@@ -1,17 +1,14 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "Proyecto")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Proyecto {
 
     @Id
@@ -49,7 +46,7 @@ public class Proyecto {
     @Column(name = "estatus_proyecto", nullable = false, columnDefinition = "ENUM('PLANEACION','EN_CURSO','PENDIENTE','FINALIZADO','CANCELADO') DEFAULT 'PLANEACION'")
     private EstatusProyecto estatusProyecto = EstatusProyecto.PLANEACION;
 
-    @Column(name = "descripcion_proyecto", length = 500, columnDefinition = "VARCHAR(500) DEFAULT 'Sin descripcion'")
+    @Column(name = "descripcion_proyecto", length = 500)
     private String descripcionProyecto;
 
     public enum TipoProyecto {

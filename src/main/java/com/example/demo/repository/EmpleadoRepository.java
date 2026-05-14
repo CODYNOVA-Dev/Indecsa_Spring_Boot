@@ -10,9 +10,7 @@ import java.util.Optional;
 
 @Repository
 public interface EmpleadoRepository extends JpaRepository<Empleado, Integer> {
-
     Optional<Empleado> findByCorreoEmpleado(String correoEmpleado);
-
     boolean existsByCorreoEmpleado(String correoEmpleado);
 
     boolean existsByCurp(String curp);

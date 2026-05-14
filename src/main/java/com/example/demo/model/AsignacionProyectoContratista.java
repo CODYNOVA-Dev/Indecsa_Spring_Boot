@@ -10,13 +10,14 @@ import java.time.LocalDate;
 @Entity
 @Table(
     name = "Asignacion_Proyecto_Contratista",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uq_proyecto_contratista", columnNames = {"id_proyecto", "id_contratista"})
-    }
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_proyecto_contratista",
+        columnNames = {"id_proyecto", "id_contratista"}
+    )
 )
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class AsignacionProyectoContratista {
 
     @Id

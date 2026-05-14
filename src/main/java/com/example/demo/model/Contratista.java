@@ -1,15 +1,13 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "Contratista")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Contratista {
 
     @Id
@@ -42,16 +40,14 @@ public class Contratista {
     private Byte calificacionContratista;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_contratista", nullable = false, columnDefinition = "ENUM('ACTIVO','INACTIVO','SUSPENDIDO') DEFAULT 'ACTIVO'")
-    private EstadoContratista estadoContratista = EstadoContratista.ACTIVO;
+    @Column(name = "estado_contratista", nullable = false)
+    private EstadoContratista estadoContratista;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_estado_operacion", nullable = false)
     private Estado estadoOperacion;
 
     public enum EstadoContratista {
-        ACTIVO,
-        INACTIVO,
-        SUSPENDIDO
+        ACTIVO, INACTIVO, SUSPENDIDO
     }
 }

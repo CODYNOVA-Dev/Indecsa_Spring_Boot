@@ -64,12 +64,17 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             throw new IllegalArgumentException(
                     "Ya existe un empleado con el correo: " + dto.getCorreoEmpleado());
         }
+        if (empleadoRepository.existsByCurp(dto.getCurp())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un empleado con la CURP: " + dto.getCurp());
+        }
         Rol rol = rolRepository.findById(dto.getIdRol())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Rol no encontrado con id: " + dto.getIdRol()));
 
         Empleado empleado = new Empleado();
         empleado.setNombreEmpleado(dto.getNombreEmpleado());
+        empleado.setCurp(dto.getCurp());
         empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
         empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
         empleado.setRol(rol);
@@ -87,11 +92,17 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             throw new IllegalArgumentException(
                     "Ya existe un empleado con el correo: " + dto.getCorreoEmpleado());
         }
+        if (!empleado.getCurp().equals(dto.getCurp())
+                && empleadoRepository.existsByCurp(dto.getCurp())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un empleado con la CURP: " + dto.getCurp());
+        }
         Rol rol = rolRepository.findById(dto.getIdRol())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Rol no encontrado con id: " + dto.getIdRol()));
 
         empleado.setNombreEmpleado(dto.getNombreEmpleado());
+        empleado.setCurp(dto.getCurp());
         empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
         empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
         empleado.setRol(rol);
@@ -112,12 +123,10 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     @Transactional(readOnly = true)
     public LoginResponseDTO login(String correo, String contrasena) {
-        // Buscar empleado por correo (ignorando mayúsculas y espacios)
         Empleado empleado = empleadoRepository
                 .findByCorreoEmpleado(correo.toLowerCase().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas"));
 
-        // Verificar contraseña con BCrypt
         if (!passwordEncoder.matches(contrasena, empleado.getContrasena())) {
             throw new IllegalArgumentException("Credenciales incorrectas");
         }
@@ -148,6 +157,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         return EmpleadoResponseDTO.builder()
                 .idEmpleado(empleado.getIdEmpleado())
                 .nombreEmpleado(empleado.getNombreEmpleado())
+                .curp(empleado.getCurp())
                 .correoEmpleado(empleado.getCorreoEmpleado())
                 .rol(rolDTO)
                 .build();

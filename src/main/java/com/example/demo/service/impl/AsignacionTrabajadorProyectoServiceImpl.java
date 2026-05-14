@@ -1,13 +1,13 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.response.AsignacionProyectoContratistaResponseDTO;
 import com.example.demo.dto.request.AsignacionTrabajadorProyectoRequestDTO;
+import com.example.demo.dto.response.AsignacionProyectoContratistaResponseDTO;
 import com.example.demo.dto.response.AsignacionTrabajadorProyectoResponseDTO;
-import com.example.demo.dto.response.ContratistaResponseDTO;
-import com.example.demo.dto.response.ProyectoResponseDTO;
-import com.example.demo.dto.response.TrabajadorResponseDTO;
-import com.example.demo.model.*;
+import com.example.demo.model.AsignacionProyectoContratista;
+import com.example.demo.model.AsignacionTrabajadorProyecto;
 import com.example.demo.model.AsignacionTrabajadorProyecto.EstatusAsignacion;
+import com.example.demo.model.Proyecto;
+import com.example.demo.model.Trabajador;
 import com.example.demo.repository.AsignacionProyectoContratistaRepository;
 import com.example.demo.repository.AsignacionTrabajadorProyectoRepository;
 import com.example.demo.repository.ProyectoRepository;
@@ -29,6 +29,9 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
     private final TrabajadorRepository trabajadorRepository;
     private final ProyectoRepository proyectoRepository;
     private final AsignacionProyectoContratistaRepository asignacionPcRepository;
+    private final TrabajadorServiceImpl trabajadorService;
+    private final ProyectoServiceImpl proyectoService;
+    private final AsignacionProyectoContratistaServiceImpl asignacionPcService;
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
@@ -111,8 +114,7 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
 
         if (asignacionRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
                 dto.getIdTrabajador(), dto.getIdProyecto())) {
-            throw new IllegalArgumentException(
-                    "El trabajador ya está asignado a este proyecto.");
+            throw new IllegalArgumentException("El trabajador ya está asignado a este proyecto.");
         }
 
         AsignacionTrabajadorProyecto asignacion = new AsignacionTrabajadorProyecto();
@@ -127,7 +129,8 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
     // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public AsignacionTrabajadorProyectoResponseDTO update(Integer id, AsignacionTrabajadorProyectoRequestDTO dto) {
+    public AsignacionTrabajadorProyectoResponseDTO update(Integer id,
+                                                          AsignacionTrabajadorProyectoRequestDTO dto) {
         AsignacionTrabajadorProyecto asignacion = getAsignacionOrThrow(id);
 
         Trabajador trabajador = trabajadorRepository.findById(dto.getIdTrabajador())
@@ -153,8 +156,7 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
 
         if (cambioRelacion && asignacionRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
                 dto.getIdTrabajador(), dto.getIdProyecto())) {
-            throw new IllegalArgumentException(
-                    "El trabajador ya está asignado a este proyecto.");
+            throw new IllegalArgumentException("El trabajador ya está asignado a este proyecto.");
         }
 
         asignacion.setTrabajador(trabajador);
@@ -192,85 +194,25 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
 
     private void mapDtoToEntity(AsignacionTrabajadorProyectoRequestDTO dto,
                                 AsignacionTrabajadorProyecto asignacion) {
-        asignacion.setRolEnProyecto(dto.getRolEnProyecto());
+        asignacion.setPuestoEnProyecto(dto.getPuestoEnProyecto());
         asignacion.setFechaInicio(dto.getFechaInicio());
         asignacion.setFechaFinEstimada(dto.getFechaFinEstimada());
-        asignacion.setObservaciones(dto.getObservaciones());
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────
     private AsignacionTrabajadorProyectoResponseDTO toResponse(AsignacionTrabajadorProyecto a) {
-        Trabajador t = a.getTrabajador();
-        Proyecto p = a.getProyecto();
-        AsignacionProyectoContratista apc = a.getAsignacionProyectoContratista();
-        Contratista c = apc.getContratista();
-
-        TrabajadorResponseDTO trabajadorDTO = TrabajadorResponseDTO.builder()
-                .idTrabajador(t.getIdTrabajador())
-                .nombreTrabajador(t.getNombreTrabajador())
-                .nssTrabajador(t.getNssTrabajador())
-                .experiencia(t.getExperiencia())
-                .telefonoTrabajador(t.getTelefonoTrabajador())
-                .correoTrabajador(t.getCorreoTrabajador())
-                .especialidadTrabajador(t.getEspecialidadTrabajador())
-                .estadoTrabajador(t.getEstadoTrabajador())
-                .descripcionTrabajador(t.getDescripcionTrabajador())
-                .calificacionTrabajador(t.getCalificacionTrabajador())
-                .fechaIngreso(t.getFechaIngreso())
-                // Agregado: ubicacionTrabajador existe en la BD
-                .ubicacionTrabajador(t.getUbicacionTrabajador())
-                .build();
-
-        ProyectoResponseDTO proyectoDTO = ProyectoResponseDTO.builder()
-                .idProyecto(p.getIdProyecto())
-                .nombreProyecto(p.getNombreProyecto())
-                .tipoProyecto(p.getTipoProyecto())
-                .lugarProyecto(p.getLugarProyecto())
-                .municipioProyecto(p.getMunicipioProyecto())
-                .estadoProyectoGeo(p.getEstadoProyectoGeo())
-                .fechaEstimadaInicio(p.getFechaEstimadaInicio())
-                .fechaEstimadaFin(p.getFechaEstimadaFin())
-                .calificacionProyecto(p.getCalificacionProyecto())
-                .estatusProyecto(p.getEstatusProyecto())
-                .descripcionProyecto(p.getDescripcionProyecto())
-                .build();
-
-        ContratistaResponseDTO contratistaDTO = ContratistaResponseDTO.builder()
-                .idContratista(c.getIdContratista())
-                // Agregados: nombreContratista y ubicacionContratista existen en la BD
-                .nombreContratista(c.getNombreContratista())
-                .rfcContratista(c.getRfcContratista())
-                .telefonoContratista(c.getTelefonoContratista())
-                .correoContratista(c.getCorreoContratista())
-                .descripcionContratista(c.getDescripcionContratista())
-                .experiencia(c.getExperiencia())
-                .calificacionContratista(c.getCalificacionContratista())
-                .estadoContratista(c.getEstadoContratista())
-                .ubicacionContratista(c.getUbicacionContratista())
-                .build();
-
-        AsignacionProyectoContratistaResponseDTO apcDTO = AsignacionProyectoContratistaResponseDTO.builder()
-                .idAsignacionPc(apc.getIdAsignacionPc())
-                .proyecto(proyectoDTO)
-                .contratista(contratistaDTO)
-                .numeroContrato(apc.getNumeroContrato())
-                .fechaInicio(apc.getFechaInicio())
-                .fechaFinEstimada(apc.getFechaFinEstimada())
-                .montoContratado(apc.getMontoContratado())
-                .estatusContrato(apc.getEstatusContrato())
-                .observaciones(apc.getObservaciones())
-                .build();
+        AsignacionProyectoContratistaResponseDTO apcDTO =
+                asignacionPcService.toResponse(a.getAsignacionProyectoContratista());
 
         return AsignacionTrabajadorProyectoResponseDTO.builder()
                 .idAsignacionTp(a.getIdAsignacionTp())
-                .trabajador(trabajadorDTO)
-                .proyecto(proyectoDTO)
+                .trabajador(trabajadorService.toResponse(a.getTrabajador()))
+                .proyecto(proyectoService.toResponse(a.getProyecto()))
                 .asignacionProyectoContratista(apcDTO)
-                .rolEnProyecto(a.getRolEnProyecto())
+                .puestoEnProyecto(a.getPuestoEnProyecto())
                 .fechaInicio(a.getFechaInicio())
                 .fechaFinEstimada(a.getFechaFinEstimada())
                 .estatusAsignacion(a.getEstatusAsignacion())
-                .observaciones(a.getObservaciones())
                 .build();
     }
 }

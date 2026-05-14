@@ -17,9 +17,11 @@ public class Contratista {
     @Column(name = "id_contratista")
     private Integer idContratista;
 
-    // Campo agregado: existe en la BD pero faltaba en el modelo
     @Column(name = "nombre_contratista", nullable = false, length = 100)
     private String nombreContratista;
+
+    @Column(name = "curp", nullable = false, length = 18)
+    private String curp;
 
     @Column(name = "rfc_contratista", nullable = false, unique = true, length = 15)
     private String rfcContratista;
@@ -29,9 +31,6 @@ public class Contratista {
 
     @Column(name = "correo_contratista", nullable = false, unique = true, length = 100)
     private String correoContratista;
-
-    // Campo eliminado: contrasenia_contratista no existe en la BD
-    // private String contraseniaContratista;
 
     @Column(name = "descripcion_contratista", nullable = false, length = 255)
     private String descripcionContratista;
@@ -46,20 +45,13 @@ public class Contratista {
     @Column(name = "estado_contratista", nullable = false, columnDefinition = "ENUM('ACTIVO','INACTIVO','SUSPENDIDO') DEFAULT 'ACTIVO'")
     private EstadoContratista estadoContratista = EstadoContratista.ACTIVO;
 
-    // Campo agregado: existe en la BD pero faltaba en el modelo
-    @Enumerated(EnumType.STRING)
-    @Column(name = "ubicacion_contratista", nullable = false)
-    private Ubicacion ubicacionContratista;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_estado_operacion", nullable = false)
+    private Estado estadoOperacion;
 
     public enum EstadoContratista {
         ACTIVO,
         INACTIVO,
         SUSPENDIDO
-    }
-
-    public enum Ubicacion {
-        CDMX,
-        Hidalgo,
-        Puebla
     }
 }

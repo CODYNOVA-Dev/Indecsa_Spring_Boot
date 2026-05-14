@@ -1,7 +1,7 @@
 package com.example.demo.dto.response;
 
 import com.example.demo.model.Trabajador.EstadoTrabajador;
-import com.example.demo.model.Trabajador.Ubicacion;
+import com.example.demo.model.enums.Sexo;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,16 +13,31 @@ public class TrabajadorResponseDTO {
 
     private Integer idTrabajador;
     private String nombreTrabajador;
+    private String curp;
+    private String rfc;
     private String nssTrabajador;
+    private String nacionalidad;
+    private Integer idMigratorio;
+    private DomicilioResponseDTO domicilio;
+    private String puesto;
+    private String descPuesto;
+    private String especialidadTrabajador;
+    private String escolaridad;
     private String experiencia;
     private String telefonoTrabajador;
     private String correoTrabajador;
-    // La contraseña nunca se expone en el response
-    private String especialidadTrabajador;
+    private String contratacion;
+    private String jornada;
     private EstadoTrabajador estadoTrabajador;
-    private String descripcionTrabajador;
-    private Byte calificacionTrabajador;
+    private Byte evaluacionTrabajador;
     private LocalDate fechaIngreso;
-    // Campo agregado: ubicacion_trabajador existe en la BD
-    private Ubicacion ubicacionTrabajador;
+    private Integer idEstadoCalidadVida;
+    private String nombreEstadoCalidadVida;
+    private Sexo sexo;
+    private String antPenal;
+    private String deudorAlim;
+    private String folioLicCond;
+    private String estadoCivil;
+    private String idiomas;
+    private String lenguaIndigena;
 }

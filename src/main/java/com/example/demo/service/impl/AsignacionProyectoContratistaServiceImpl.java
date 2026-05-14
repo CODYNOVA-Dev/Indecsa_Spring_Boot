@@ -2,8 +2,6 @@ package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.AsignacionProyectoContratistaRequestDTO;
 import com.example.demo.dto.response.AsignacionProyectoContratistaResponseDTO;
-import com.example.demo.dto.response.ContratistaResponseDTO;
-import com.example.demo.dto.response.ProyectoResponseDTO;
 import com.example.demo.model.AsignacionProyectoContratista;
 import com.example.demo.model.AsignacionProyectoContratista.EstatusContrato;
 import com.example.demo.model.Contratista;
@@ -27,6 +25,8 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
     private final AsignacionProyectoContratistaRepository asignacionRepository;
     private final ProyectoRepository proyectoRepository;
     private final ContratistaRepository contratistaRepository;
+    private final ProyectoServiceImpl proyectoService;
+    private final ContratistaServiceImpl contratistaService;
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
@@ -89,8 +89,7 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
 
         if (asignacionRepository.existsByProyecto_IdProyectoAndContratista_IdContratista(
                 dto.getIdProyecto(), dto.getIdContratista())) {
-            throw new IllegalArgumentException(
-                    "El contratista ya está asignado a este proyecto.");
+            throw new IllegalArgumentException("El contratista ya está asignado a este proyecto.");
         }
 
         validarFechas(dto);
@@ -99,14 +98,15 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
         asignacion.setProyecto(proyecto);
         asignacion.setContratista(contratista);
         mapDtoToEntity(dto, asignacion);
-        asignacion.setEstatusContrato(EstatusContrato.ACTIVO);
+        asignacion.setEstatusContrato(EstatusContrato.VIGENTE);
         return toResponse(asignacionRepository.save(asignacion));
     }
 
     // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
-    public AsignacionProyectoContratistaResponseDTO update(Integer id, AsignacionProyectoContratistaRequestDTO dto) {
+    public AsignacionProyectoContratistaResponseDTO update(Integer id,
+                                                           AsignacionProyectoContratistaRequestDTO dto) {
         AsignacionProyectoContratista asignacion = getAsignacionOrThrow(id);
 
         Proyecto proyecto = proyectoRepository.findById(dto.getIdProyecto())
@@ -122,8 +122,7 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
 
         if (cambioRelacion && asignacionRepository.existsByProyecto_IdProyectoAndContratista_IdContratista(
                 dto.getIdProyecto(), dto.getIdContratista())) {
-            throw new IllegalArgumentException(
-                    "El contratista ya está asignado a este proyecto.");
+            throw new IllegalArgumentException("El contratista ya está asignado a este proyecto.");
         }
 
         validarFechas(dto);
@@ -172,51 +171,20 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
         asignacion.setNumeroContrato(dto.getNumeroContrato());
         asignacion.setFechaInicio(dto.getFechaInicio());
         asignacion.setFechaFinEstimada(dto.getFechaFinEstimada());
-        asignacion.setMontoContratado(dto.getMontoContratado());
+        asignacion.setPersonalAsignado(dto.getPersonalAsignado());
         asignacion.setObservaciones(dto.getObservaciones());
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private AsignacionProyectoContratistaResponseDTO toResponse(AsignacionProyectoContratista a) {
-        Proyecto p = a.getProyecto();
-        Contratista c = a.getContratista();
-
-        ProyectoResponseDTO proyectoDTO = ProyectoResponseDTO.builder()
-                .idProyecto(p.getIdProyecto())
-                .nombreProyecto(p.getNombreProyecto())
-                .tipoProyecto(p.getTipoProyecto())
-                .lugarProyecto(p.getLugarProyecto())
-                .municipioProyecto(p.getMunicipioProyecto())
-                .estadoProyectoGeo(p.getEstadoProyectoGeo())
-                .fechaEstimadaInicio(p.getFechaEstimadaInicio())
-                .fechaEstimadaFin(p.getFechaEstimadaFin())
-                .calificacionProyecto(p.getCalificacionProyecto())
-                .estatusProyecto(p.getEstatusProyecto())
-                .descripcionProyecto(p.getDescripcionProyecto())
-                .build();
-
-        ContratistaResponseDTO contratistaDTO = ContratistaResponseDTO.builder()
-                .idContratista(c.getIdContratista())
-                // Agregados: nombreContratista y ubicacionContratista existen en la BD
-                .nombreContratista(c.getNombreContratista())
-                .rfcContratista(c.getRfcContratista())
-                .telefonoContratista(c.getTelefonoContratista())
-                .correoContratista(c.getCorreoContratista())
-                .descripcionContratista(c.getDescripcionContratista())
-                .experiencia(c.getExperiencia())
-                .calificacionContratista(c.getCalificacionContratista())
-                .estadoContratista(c.getEstadoContratista())
-                .ubicacionContratista(c.getUbicacionContratista())
-                .build();
-
+    public AsignacionProyectoContratistaResponseDTO toResponse(AsignacionProyectoContratista a) {
         return AsignacionProyectoContratistaResponseDTO.builder()
                 .idAsignacionPc(a.getIdAsignacionPc())
-                .proyecto(proyectoDTO)
-                .contratista(contratistaDTO)
+                .proyecto(proyectoService.toResponse(a.getProyecto()))
+                .contratista(contratistaService.toResponse(a.getContratista()))
                 .numeroContrato(a.getNumeroContrato())
                 .fechaInicio(a.getFechaInicio())
                 .fechaFinEstimada(a.getFechaFinEstimada())
-                .montoContratado(a.getMontoContratado())
+                .personalAsignado(a.getPersonalAsignado())
                 .estatusContrato(a.getEstatusContrato())
                 .observaciones(a.getObservaciones())
                 .build();

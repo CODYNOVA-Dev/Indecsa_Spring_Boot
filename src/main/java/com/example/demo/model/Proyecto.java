@@ -22,19 +22,19 @@ public class Proyecto {
     @Column(name = "nombre_proyecto", nullable = false, length = 150)
     private String nombreProyecto;
 
-    @Column(name = "tipo_proyecto", length = 80)
-    private String tipoProyecto;
-
-    @Column(name = "lugar_proyecto", length = 200)
-    private String lugarProyecto;
-
-    @Column(name = "municipio_proyecto", length = 100)
-    private String municipioProyecto;
-
-    // Corregido: en la BD es ENUM('CDMX','Hidalgo','Puebla') NOT NULL, no VARCHAR
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_proyecto_geo", nullable = false)
-    private UbicacionGeo estadoProyectoGeo;
+    @Column(name = "tipo_proyecto")
+    private TipoProyecto tipoProyecto;
+
+    @Column(name = "oferta_trabajo", length = 200)
+    private String ofertaTrabajo;
+
+    @Column(name = "cliente", nullable = false, length = 200)
+    private String cliente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_domicilio", nullable = false)
+    private Domicilio domicilio;
 
     @Column(name = "fecha_estimada_inicio")
     private LocalDate fechaEstimadaInicio;
@@ -46,23 +46,24 @@ public class Proyecto {
     private Byte calificacionProyecto;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_proyecto", nullable = false, columnDefinition = "ENUM('PLANEACION','EN_CURSO','PAUSADO','FINALIZADO','CANCELADO') DEFAULT 'PLANEACION'")
+    @Column(name = "estatus_proyecto", nullable = false, columnDefinition = "ENUM('PLANEACION','EN_CURSO','PENDIENTE','FINALIZADO','CANCELADO') DEFAULT 'PLANEACION'")
     private EstatusProyecto estatusProyecto = EstatusProyecto.PLANEACION;
 
     @Column(name = "descripcion_proyecto", length = 500, columnDefinition = "VARCHAR(500) DEFAULT 'Sin descripcion'")
     private String descripcionProyecto;
 
+    public enum TipoProyecto {
+        Construccion,
+        Remodelacion,
+        Venta_mobiliaria,
+        Instalacion_de_mobiliario
+    }
+
     public enum EstatusProyecto {
         PLANEACION,
         EN_CURSO,
-        PAUSADO,
+        PENDIENTE,
         FINALIZADO,
         CANCELADO
-    }
-
-    public enum UbicacionGeo {
-        CDMX,
-        Hidalgo,
-        Puebla
     }
 }

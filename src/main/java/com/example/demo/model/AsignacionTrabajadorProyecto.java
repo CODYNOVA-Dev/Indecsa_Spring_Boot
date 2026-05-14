@@ -36,8 +36,8 @@ public class AsignacionTrabajadorProyecto {
     @JoinColumn(name = "id_asignacion_pc", nullable = false)
     private AsignacionProyectoContratista asignacionProyectoContratista;
 
-    @Column(name = "rol_en_proyecto", length = 100)
-    private String rolEnProyecto;
+    @Column(name = "puesto_en_proyecto", length = 100)
+    private String puestoEnProyecto;
 
     @Column(name = "fecha_inicio")
     private LocalDate fechaInicio;
@@ -46,15 +46,15 @@ public class AsignacionTrabajadorProyecto {
     private LocalDate fechaFinEstimada;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_asignacion", nullable = false, columnDefinition = "ENUM('ACTIVO','SUSPENDIDO','FINALIZADO') DEFAULT 'ACTIVO'")
+    @Column(name = "estatus_asignacion", nullable = false, columnDefinition = "ENUM('ACTIVO','SUSPENDIDO','INCAPACIDAD','CANCELADO','VACACIONES','FINALIZADO') DEFAULT 'ACTIVO'")
     private EstatusAsignacion estatusAsignacion = EstatusAsignacion.ACTIVO;
-
-    @Column(name = "observaciones", length = 500)
-    private String observaciones;
 
     public enum EstatusAsignacion {
         ACTIVO,
         SUSPENDIDO,
+        INCAPACIDAD,
+        CANCELADO,
+        VACACIONES,
         FINALIZADO
     }
 }

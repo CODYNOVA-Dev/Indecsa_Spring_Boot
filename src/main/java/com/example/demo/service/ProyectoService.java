@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.dto.request.ProyectoRequestDTO;
 import com.example.demo.dto.response.ProyectoResponseDTO;
 import com.example.demo.model.Proyecto.EstatusProyecto;
+import com.example.demo.model.Proyecto.TipoProyecto;
 
 import java.util.List;
 
@@ -14,7 +15,9 @@ public interface ProyectoService {
 
     List<ProyectoResponseDTO> findByEstatus(EstatusProyecto estatus);
 
-    List<ProyectoResponseDTO> findByMunicipio(String municipio);
+    List<ProyectoResponseDTO> findByTipo(TipoProyecto tipo);
+
+    List<ProyectoResponseDTO> findByCliente(String cliente);
 
     ProyectoResponseDTO create(ProyectoRequestDTO dto);
 

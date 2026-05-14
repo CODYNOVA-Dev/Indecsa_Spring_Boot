@@ -1,9 +1,13 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.ProyectoRequestDTO;
+import com.example.demo.dto.response.DomicilioResponseDTO;
 import com.example.demo.dto.response.ProyectoResponseDTO;
+import com.example.demo.model.Domicilio;
 import com.example.demo.model.Proyecto;
 import com.example.demo.model.Proyecto.EstatusProyecto;
+import com.example.demo.model.Proyecto.TipoProyecto;
+import com.example.demo.repository.DomicilioRepository;
 import com.example.demo.repository.ProyectoRepository;
 import com.example.demo.service.ProyectoService;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,6 +23,7 @@ import java.util.stream.Collectors;
 public class ProyectoServiceImpl implements ProyectoService {
 
     private final ProyectoRepository proyectoRepository;
+    private final DomicilioRepository domicilioRepository;
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
@@ -47,11 +52,21 @@ public class ProyectoServiceImpl implements ProyectoService {
                 .collect(Collectors.toList());
     }
 
-    // ─── FIND BY MUNICIPIO ────────────────────────────────────────────────────
+    // ─── FIND BY TIPO ─────────────────────────────────────────────────────────
     @Override
     @Transactional(readOnly = true)
-    public List<ProyectoResponseDTO> findByMunicipio(String municipio) {
-        return proyectoRepository.findByMunicipioProyectoIgnoreCase(municipio)
+    public List<ProyectoResponseDTO> findByTipo(TipoProyecto tipo) {
+        return proyectoRepository.findByTipoProyecto(tipo)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    // ─── FIND BY CLIENTE ──────────────────────────────────────────────────────
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProyectoResponseDTO> findByCliente(String cliente) {
+        return proyectoRepository.findByClienteContainingIgnoreCase(cliente)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -62,8 +77,9 @@ public class ProyectoServiceImpl implements ProyectoService {
     @Transactional
     public ProyectoResponseDTO create(ProyectoRequestDTO dto) {
         validarFechas(dto);
+        Domicilio domicilio = getDomicilioOrThrow(dto.getIdDomicilio());
         Proyecto proyecto = new Proyecto();
-        mapDtoToEntity(dto, proyecto);
+        mapDtoToEntity(dto, proyecto, domicilio);
         proyecto.setEstatusProyecto(EstatusProyecto.PLANEACION);
         return toResponse(proyectoRepository.save(proyecto));
     }
@@ -74,7 +90,8 @@ public class ProyectoServiceImpl implements ProyectoService {
     public ProyectoResponseDTO update(Integer id, ProyectoRequestDTO dto) {
         Proyecto proyecto = getProyectoOrThrow(id);
         validarFechas(dto);
-        mapDtoToEntity(dto, proyecto);
+        Domicilio domicilio = getDomicilioOrThrow(dto.getIdDomicilio());
+        mapDtoToEntity(dto, proyecto, domicilio);
         return toResponse(proyectoRepository.save(proyecto));
     }
 
@@ -104,6 +121,12 @@ public class ProyectoServiceImpl implements ProyectoService {
                         "Proyecto no encontrado con id: " + id));
     }
 
+    private Domicilio getDomicilioOrThrow(Integer id) {
+        return domicilioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Domicilio no encontrado con id: " + id));
+    }
+
     private void validarFechas(ProyectoRequestDTO dto) {
         if (dto.getFechaEstimadaInicio() != null && dto.getFechaEstimadaFin() != null
                 && dto.getFechaEstimadaFin().isBefore(dto.getFechaEstimadaInicio())) {
@@ -112,12 +135,12 @@ public class ProyectoServiceImpl implements ProyectoService {
         }
     }
 
-    private void mapDtoToEntity(ProyectoRequestDTO dto, Proyecto proyecto) {
+    private void mapDtoToEntity(ProyectoRequestDTO dto, Proyecto proyecto, Domicilio domicilio) {
         proyecto.setNombreProyecto(dto.getNombreProyecto());
         proyecto.setTipoProyecto(dto.getTipoProyecto());
-        proyecto.setLugarProyecto(dto.getLugarProyecto());
-        proyecto.setMunicipioProyecto(dto.getMunicipioProyecto());
-        proyecto.setEstadoProyectoGeo(dto.getEstadoProyectoGeo());
+        proyecto.setOfertaTrabajo(dto.getOfertaTrabajo());
+        proyecto.setCliente(dto.getCliente());
+        proyecto.setDomicilio(domicilio);
         proyecto.setFechaEstimadaInicio(dto.getFechaEstimadaInicio());
         proyecto.setFechaEstimadaFin(dto.getFechaEstimadaFin());
         proyecto.setCalificacionProyecto(dto.getCalificacionProyecto());
@@ -125,14 +148,26 @@ public class ProyectoServiceImpl implements ProyectoService {
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private ProyectoResponseDTO toResponse(Proyecto p) {
+    public ProyectoResponseDTO toResponse(Proyecto p) {
+        DomicilioResponseDTO domicilioDTO = DomicilioResponseDTO.builder()
+                .idDomicilio(p.getDomicilio().getIdDomicilio())
+                .calle(p.getDomicilio().getCalle())
+                .numExt(p.getDomicilio().getNumExt())
+                .numInt(p.getDomicilio().getNumInt())
+                .colonia(p.getDomicilio().getColonia())
+                .codPost(p.getDomicilio().getCodPost())
+                .munAlc(p.getDomicilio().getMunAlc())
+                .idEstado(p.getDomicilio().getEstado().getIdEstado())
+                .nombreEstado(p.getDomicilio().getEstado().getNombreEst())
+                .build();
+
         return ProyectoResponseDTO.builder()
                 .idProyecto(p.getIdProyecto())
                 .nombreProyecto(p.getNombreProyecto())
                 .tipoProyecto(p.getTipoProyecto())
-                .lugarProyecto(p.getLugarProyecto())
-                .municipioProyecto(p.getMunicipioProyecto())
-                .estadoProyectoGeo(p.getEstadoProyectoGeo())
+                .ofertaTrabajo(p.getOfertaTrabajo())
+                .cliente(p.getCliente())
+                .domicilio(domicilioDTO)
                 .fechaEstimadaInicio(p.getFechaEstimadaInicio())
                 .fechaEstimadaFin(p.getFechaEstimadaFin())
                 .calificacionProyecto(p.getCalificacionProyecto())

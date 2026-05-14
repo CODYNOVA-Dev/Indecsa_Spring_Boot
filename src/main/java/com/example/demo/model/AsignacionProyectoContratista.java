@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -42,20 +41,21 @@ public class AsignacionProyectoContratista {
     @Column(name = "fecha_fin_estimada")
     private LocalDate fechaFinEstimada;
 
-    @Column(name = "monto_contratado", precision = 15, scale = 2)
-    private BigDecimal montoContratado;
+    @Column(name = "personal_asignado", nullable = false)
+    private Integer personalAsignado;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_contrato", nullable = false, columnDefinition = "ENUM('ACTIVO','SUSPENDIDO','FINALIZADO','RESCINDIDO') DEFAULT 'ACTIVO'")
-    private EstatusContrato estatusContrato = EstatusContrato.ACTIVO;
+    @Column(name = "estatus_contrato", nullable = false, columnDefinition = "ENUM('ACTIVO','VIGENTE','SUSPENDIDO','FINALIZADO','CANCELADO') DEFAULT 'VIGENTE'")
+    private EstatusContrato estatusContrato = EstatusContrato.VIGENTE;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
 
     public enum EstatusContrato {
         ACTIVO,
+        VIGENTE,
         SUSPENDIDO,
         FINALIZADO,
-        RESCINDIDO
+        CANCELADO
     }
 }

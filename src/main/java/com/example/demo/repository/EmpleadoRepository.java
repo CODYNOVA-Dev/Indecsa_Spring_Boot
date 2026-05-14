@@ -1,6 +1,7 @@
 package com.example.demo.repository;
 
 import com.example.demo.model.Empleado;
+import com.example.demo.model.Rol.NombreRol;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +15,9 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, Integer> {
 
     boolean existsByCorreoEmpleado(String correoEmpleado);
 
+    boolean existsByCurp(String curp);
+
     List<Empleado> findByRol_IdRol(Integer idRol);
 
-    List<Empleado> findByRol_NombreRol(com.example.demo.model.Rol.NombreRol nombreRol);
+    List<Empleado> findByRol_NombreRol(NombreRol nombreRol);
 }

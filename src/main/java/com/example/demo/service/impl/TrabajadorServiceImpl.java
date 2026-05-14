@@ -1,9 +1,13 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.TrabajadorRequestDTO;
+import com.example.demo.dto.response.DomicilioResponseDTO;
 import com.example.demo.dto.response.TrabajadorResponseDTO;
+import com.example.demo.model.Domicilio;
+import com.example.demo.model.Estado;
 import com.example.demo.model.Trabajador;
 import com.example.demo.model.Trabajador.EstadoTrabajador;
+import com.example.demo.repository.DomicilioRepository;
 import com.example.demo.repository.TrabajadorRepository;
 import com.example.demo.service.TrabajadorService;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,8 +23,8 @@ import java.util.stream.Collectors;
 public class TrabajadorServiceImpl implements TrabajadorService {
 
     private final TrabajadorRepository trabajadorRepository;
-
-    // Se eliminó PasswordEncoder: contrasenia_trabajador no existe en la BD
+    private final DomicilioRepository domicilioRepository;
+    private final EstadoServiceImpl estadoService;
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
@@ -40,7 +44,7 @@ public class TrabajadorServiceImpl implements TrabajadorService {
     }
 
     // ─── FIND BY ESTADO ───────────────────────────────────────────────────────
-    @Override  // Agregado @Override que faltaba
+    @Override
     @Transactional(readOnly = true)
     public List<TrabajadorResponseDTO> findByEstado(EstadoTrabajador estado) {
         return trabajadorRepository.findByEstadoTrabajador(estado)
@@ -72,10 +76,11 @@ public class TrabajadorServiceImpl implements TrabajadorService {
             throw new IllegalArgumentException(
                     "Ya existe un trabajador con el NSS: " + dto.getNssTrabajador());
         }
+        Domicilio domicilio = getDomicilioOrThrow(dto.getIdDomicilio());
+        Estado estadoCalidadVida = estadoService.getEstadoOrThrow(dto.getIdEstadoCalidadVida());
+
         Trabajador trabajador = new Trabajador();
-        mapDtoToEntity(dto, trabajador);
-        // Se eliminó: passwordEncoder.encode(dto.getContraseniaTrabajador())
-        // contrasenia_trabajador no existe en la BD
+        mapDtoToEntity(dto, trabajador, domicilio, estadoCalidadVida);
         trabajador.setEstadoTrabajador(EstadoTrabajador.ACTIVO);
         return toResponse(trabajadorRepository.save(trabajador));
     }
@@ -97,8 +102,10 @@ public class TrabajadorServiceImpl implements TrabajadorService {
             throw new IllegalArgumentException(
                     "Ya existe un trabajador con el NSS: " + dto.getNssTrabajador());
         }
-        mapDtoToEntity(dto, trabajador);
-        // Se eliminó: passwordEncoder.encode(dto.getContraseniaTrabajador())
+        Domicilio domicilio = getDomicilioOrThrow(dto.getIdDomicilio());
+        Estado estadoCalidadVida = estadoService.getEstadoOrThrow(dto.getIdEstadoCalidadVida());
+
+        mapDtoToEntity(dto, trabajador, domicilio, estadoCalidadVida);
         return toResponse(trabajadorRepository.save(trabajador));
     }
 
@@ -128,36 +135,86 @@ public class TrabajadorServiceImpl implements TrabajadorService {
                         "Trabajador no encontrado con id: " + id));
     }
 
-    private void mapDtoToEntity(TrabajadorRequestDTO dto, Trabajador trabajador) {
-        trabajador.setNombreTrabajador(dto.getNombreTrabajador());
-        trabajador.setNssTrabajador(dto.getNssTrabajador());
-        trabajador.setExperiencia(dto.getExperiencia());
-        trabajador.setTelefonoTrabajador(dto.getTelefonoTrabajador());
-        trabajador.setCorreoTrabajador(dto.getCorreoTrabajador().toLowerCase().trim());
-        trabajador.setEspecialidadTrabajador(dto.getEspecialidadTrabajador());
-        trabajador.setDescripcionTrabajador(dto.getDescripcionTrabajador());
-        trabajador.setCalificacionTrabajador(dto.getCalificacionTrabajador());
-        trabajador.setFechaIngreso(dto.getFechaIngreso());
-        // Agregado: ubicacionTrabajador existe en la BD
-        trabajador.setUbicacionTrabajador(dto.getUbicacionTrabajador());
+    private Domicilio getDomicilioOrThrow(Integer id) {
+        return domicilioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Domicilio no encontrado con id: " + id));
+    }
+
+    private void mapDtoToEntity(TrabajadorRequestDTO dto, Trabajador t,
+                                Domicilio domicilio, Estado estadoCalidadVida) {
+        t.setNombreTrabajador(dto.getNombreTrabajador());
+        t.setCurp(dto.getCurp());
+        t.setRfc(dto.getRfc());
+        t.setNssTrabajador(dto.getNssTrabajador());
+        t.setNacionalidad(dto.getNacionalidad());
+        t.setDomicilio(domicilio);
+        t.setPuesto(dto.getPuesto());
+        t.setDescPuesto(dto.getDescPuesto());
+        t.setEspecialidadTrabajador(dto.getEspecialidadTrabajador());
+        t.setEscolaridad(dto.getEscolaridad());
+        t.setExperiencia(dto.getExperiencia());
+        t.setTelefonoTrabajador(dto.getTelefonoTrabajador());
+        t.setCorreoTrabajador(dto.getCorreoTrabajador().toLowerCase().trim());
+        t.setContratacion(dto.getContratacion());
+        t.setJornada(dto.getJornada());
+        t.setEvaluacionTrabajador(dto.getEvaluacionTrabajador());
+        t.setFechaIngreso(dto.getFechaIngreso());
+        t.setEstadoCalidadVida(estadoCalidadVida);
+        t.setSexo(dto.getSexo());
+        t.setAntPenal(dto.getAntPenal());
+        t.setDeudorAlim(dto.getDeudorAlim());
+        t.setFolioLicCond(dto.getFolioLicCond());
+        t.setEstadoCivil(dto.getEstadoCivil());
+        t.setIdiomas(dto.getIdiomas());
+        t.setLenguaIndigena(dto.getLenguaIndigena());
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private TrabajadorResponseDTO toResponse(Trabajador t) {
+    public TrabajadorResponseDTO toResponse(Trabajador t) {
+        DomicilioResponseDTO domicilioDTO = DomicilioResponseDTO.builder()
+                .idDomicilio(t.getDomicilio().getIdDomicilio())
+                .calle(t.getDomicilio().getCalle())
+                .numExt(t.getDomicilio().getNumExt())
+                .numInt(t.getDomicilio().getNumInt())
+                .colonia(t.getDomicilio().getColonia())
+                .codPost(t.getDomicilio().getCodPost())
+                .munAlc(t.getDomicilio().getMunAlc())
+                .idEstado(t.getDomicilio().getEstado().getIdEstado())
+                .nombreEstado(t.getDomicilio().getEstado().getNombreEst())
+                .build();
+
         return TrabajadorResponseDTO.builder()
                 .idTrabajador(t.getIdTrabajador())
                 .nombreTrabajador(t.getNombreTrabajador())
+                .curp(t.getCurp())
+                .rfc(t.getRfc())
                 .nssTrabajador(t.getNssTrabajador())
+                .nacionalidad(t.getNacionalidad())
+                .idMigratorio(t.getRegistroMigratorio() != null
+                        ? t.getRegistroMigratorio().getIdMigratorio() : null)
+                .domicilio(domicilioDTO)
+                .puesto(t.getPuesto())
+                .descPuesto(t.getDescPuesto())
+                .especialidadTrabajador(t.getEspecialidadTrabajador())
+                .escolaridad(t.getEscolaridad())
                 .experiencia(t.getExperiencia())
                 .telefonoTrabajador(t.getTelefonoTrabajador())
                 .correoTrabajador(t.getCorreoTrabajador())
-                .especialidadTrabajador(t.getEspecialidadTrabajador())
+                .contratacion(t.getContratacion())
+                .jornada(t.getJornada())
                 .estadoTrabajador(t.getEstadoTrabajador())
-                .descripcionTrabajador(t.getDescripcionTrabajador())
-                .calificacionTrabajador(t.getCalificacionTrabajador())
+                .evaluacionTrabajador(t.getEvaluacionTrabajador())
                 .fechaIngreso(t.getFechaIngreso())
-                // Agregado: ubicacionTrabajador existe en la BD
-                .ubicacionTrabajador(t.getUbicacionTrabajador())
+                .idEstadoCalidadVida(t.getEstadoCalidadVida().getIdEstado())
+                .nombreEstadoCalidadVida(t.getEstadoCalidadVida().getNombreEst())
+                .sexo(t.getSexo())
+                .antPenal(t.getAntPenal())
+                .deudorAlim(t.getDeudorAlim())
+                .folioLicCond(t.getFolioLicCond())
+                .estadoCivil(t.getEstadoCivil())
+                .idiomas(t.getIdiomas())
+                .lenguaIndigena(t.getLenguaIndigena())
                 .build();
     }
 }

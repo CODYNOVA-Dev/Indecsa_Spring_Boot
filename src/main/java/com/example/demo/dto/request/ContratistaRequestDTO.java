@@ -1,16 +1,18 @@
 package com.example.demo.dto.request;
 
-import com.example.demo.model.Contratista.Ubicacion;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class ContratistaRequestDTO {
 
-    // Campo agregado: nombre_contratista es NOT NULL en la BD
     @NotBlank(message = "El nombre del contratista es obligatorio")
     @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
     private String nombreContratista;
+
+    @NotBlank(message = "La CURP es obligatoria")
+    @Size(max = 18, message = "La CURP no puede exceder 18 caracteres")
+    private String curp;
 
     @NotBlank(message = "El RFC es obligatorio")
     @Size(max = 15, message = "El RFC no puede exceder 15 caracteres")
@@ -25,9 +27,6 @@ public class ContratistaRequestDTO {
     @Size(max = 100, message = "El correo no puede exceder 100 caracteres")
     private String correoContratista;
 
-    // Campo eliminado: contrasenia_contratista no existe en la BD
-    // private String contraseniaContratista;
-
     @NotBlank(message = "La descripción es obligatoria")
     @Size(max = 255, message = "La descripción no puede exceder 255 caracteres")
     private String descripcionContratista;
@@ -39,7 +38,6 @@ public class ContratistaRequestDTO {
     @Max(value = 5, message = "La calificación máxima es 5")
     private Byte calificacionContratista;
 
-    // Campo agregado: ubicacion_contratista es NOT NULL en la BD
-    @NotNull(message = "La ubicación del contratista es obligatoria")
-    private Ubicacion ubicacionContratista;
+    @NotNull(message = "El estado de operación es obligatorio")
+    private Integer idEstadoOperacion;
 }

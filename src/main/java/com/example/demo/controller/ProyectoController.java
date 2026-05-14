@@ -14,58 +14,49 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/proyectos")
+@RequestMapping("/api/proyectos")
 @RequiredArgsConstructor
 public class ProyectoController {
 
     private final ProyectoService proyectoService;
 
-    // ─── GET ALL ──────────────────────────────────────────────────────────────
     @GetMapping
-    public ResponseEntity<List<ProyectoResponseDTO>> getAll() {
+    public ResponseEntity<List<ProyectoResponseDTO>> findAll() {
         return ResponseEntity.ok(proyectoService.findAll());
     }
 
-    // ─── GET BY ID ────────────────────────────────────────────────────────────
-    @GetMapping("/{id}")
-    public ResponseEntity<ProyectoResponseDTO> getById(@PathVariable Integer id) {
-        return ResponseEntity.ok(proyectoService.findById(id));
-    }
-
-    // ─── GET BY ESTATUS ───────────────────────────────────────────────────────
     @GetMapping("/estatus/{estatus}")
-    public ResponseEntity<List<ProyectoResponseDTO>> getByEstatus(
+    public ResponseEntity<List<ProyectoResponseDTO>> findByEstatus(
             @PathVariable EstatusProyecto estatus) {
         return ResponseEntity.ok(proyectoService.findByEstatus(estatus));
     }
 
-    // ─── GET BY TIPO ──────────────────────────────────────────────────────────
     @GetMapping("/tipo/{tipo}")
     public ResponseEntity<List<ProyectoResponseDTO>> getByTipo(@PathVariable TipoProyecto tipo) {
         return ResponseEntity.ok(proyectoService.findByTipo(tipo));
     }
 
-    // ─── GET BY CLIENTE ───────────────────────────────────────────────────────
     @GetMapping("/cliente/{cliente}")
     public ResponseEntity<List<ProyectoResponseDTO>> getByCliente(@PathVariable String cliente) {
         return ResponseEntity.ok(proyectoService.findByCliente(cliente));
     }
 
-    // ─── CREATE ───────────────────────────────────────────────────────────────
+    @GetMapping("/{id}")
+    public ResponseEntity<ProyectoResponseDTO> findById(@PathVariable Integer id) {
+        return ResponseEntity.ok(proyectoService.findById(id));
+    }
+
     @PostMapping
-    public ResponseEntity<ProyectoResponseDTO> create(@Valid @RequestBody ProyectoRequestDTO dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(proyectoService.create(dto));
+    public ResponseEntity<ProyectoResponseDTO> create(@Valid @RequestBody ProyectoRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(proyectoService.create(request));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @PutMapping("/{id}")
-    public ResponseEntity<ProyectoResponseDTO> update(
-            @PathVariable Integer id,
-            @Valid @RequestBody ProyectoRequestDTO dto) {
-        return ResponseEntity.ok(proyectoService.update(id, dto));
+    public ResponseEntity<ProyectoResponseDTO> update(@PathVariable Integer id,
+                                                       @Valid @RequestBody ProyectoRequestDTO request) {
+        return ResponseEntity.ok(proyectoService.update(id, request));
     }
 
-    // ─── CAMBIAR ESTATUS ──────────────────────────────────────────────────────
     @PatchMapping("/{id}/estatus")
     public ResponseEntity<ProyectoResponseDTO> cambiarEstatus(
             @PathVariable Integer id,
@@ -73,7 +64,6 @@ public class ProyectoController {
         return ResponseEntity.ok(proyectoService.cambiarEstatus(id, estatus));
     }
 
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {
         proyectoService.delete(id);

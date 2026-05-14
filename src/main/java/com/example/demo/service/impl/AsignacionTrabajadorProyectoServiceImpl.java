@@ -23,9 +23,10 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabajadorProyectoService {
 
-    private final AsignacionTrabajadorProyectoRepository asignacionRepository;
+    private final AsignacionTrabajadorProyectoRepository asignacionTpRepository;
     private final TrabajadorRepository trabajadorRepository;
     private final ProyectoRepository proyectoRepository;
     private final AsignacionProyectoContratistaRepository asignacionPcRepository;
@@ -33,86 +34,31 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
     private final ProyectoServiceImpl proyectoService;
     private final AsignacionProyectoContratistaServiceImpl asignacionPcService;
 
-    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<AsignacionTrabajadorProyectoResponseDTO> findAll() {
-        return asignacionRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public AsignacionTrabajadorProyectoResponseDTO findById(Integer id) {
-        return toResponse(getAsignacionOrThrow(id));
-    }
-
-    // ─── FIND BY PROYECTO ─────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
     public List<AsignacionTrabajadorProyectoResponseDTO> findByProyecto(Integer idProyecto) {
-        return asignacionRepository.findByProyecto_IdProyecto(idProyecto)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return asignacionTpRepository.findByProyecto_IdProyecto(idProyecto)
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    // ─── FIND BY TRABAJADOR ───────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
     public List<AsignacionTrabajadorProyectoResponseDTO> findByTrabajador(Integer idTrabajador) {
-        return asignacionRepository.findByTrabajador_IdTrabajador(idTrabajador)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+        return asignacionTpRepository.findByTrabajador_IdTrabajador(idTrabajador)
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    // ─── FIND BY ASIGNACION PC ────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<AsignacionTrabajadorProyectoResponseDTO> findByAsignacionPc(Integer idAsignacionPc) {
-        return asignacionRepository.findByAsignacionProyectoContratista_IdAsignacionPc(idAsignacionPc)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public AsignacionTrabajadorProyectoResponseDTO findById(Integer id) {
+        return toResponse(getOrThrow(id));
     }
 
-    // ─── FIND BY ESTATUS ──────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
-    public List<AsignacionTrabajadorProyectoResponseDTO> findByEstatus(EstatusAsignacion estatus) {
-        return asignacionRepository.findByEstatusAsignacion(estatus)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
-    }
-
-    // ─── CREATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public AsignacionTrabajadorProyectoResponseDTO create(AsignacionTrabajadorProyectoRequestDTO dto) {
-        Trabajador trabajador = trabajadorRepository.findById(dto.getIdTrabajador())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Trabajador no encontrado con id: " + dto.getIdTrabajador()));
+        Trabajador trabajador = getTrabajadorOrThrow(dto.getIdTrabajador());
+        Proyecto proyecto = getProyectoOrThrow(dto.getIdProyecto());
+        AsignacionProyectoContratista asignacionPc = getAsignacionPcOrThrow(dto.getIdAsignacionPc());
 
-        Proyecto proyecto = proyectoRepository.findById(dto.getIdProyecto())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Proyecto no encontrado con id: " + dto.getIdProyecto()));
-
-        AsignacionProyectoContratista asignacionPc = asignacionPcRepository
-                .findById(dto.getIdAsignacionPc())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Contrato (asignacion_pc) no encontrado con id: " + dto.getIdAsignacionPc()));
-
-        if (!asignacionPc.getProyecto().getIdProyecto().equals(dto.getIdProyecto())) {
-            throw new IllegalArgumentException(
-                    "El contrato indicado no pertenece al proyecto especificado.");
-        }
-
-        if (asignacionRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
+        if (asignacionTpRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
                 dto.getIdTrabajador(), dto.getIdProyecto())) {
             throw new IllegalArgumentException("El trabajador ya está asignado a este proyecto.");
         }
@@ -123,28 +69,18 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
         asignacion.setAsignacionProyectoContratista(asignacionPc);
         mapDtoToEntity(dto, asignacion);
         asignacion.setEstatusAsignacion(EstatusAsignacion.ACTIVO);
-        return toResponse(asignacionRepository.save(asignacion));
+        return toResponse(asignacionTpRepository.save(asignacion));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public AsignacionTrabajadorProyectoResponseDTO update(Integer id,
                                                           AsignacionTrabajadorProyectoRequestDTO dto) {
-        AsignacionTrabajadorProyecto asignacion = getAsignacionOrThrow(id);
+        AsignacionTrabajadorProyecto asignacion = getOrThrow(id);
 
-        Trabajador trabajador = trabajadorRepository.findById(dto.getIdTrabajador())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Trabajador no encontrado con id: " + dto.getIdTrabajador()));
-
-        Proyecto proyecto = proyectoRepository.findById(dto.getIdProyecto())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Proyecto no encontrado con id: " + dto.getIdProyecto()));
-
-        AsignacionProyectoContratista asignacionPc = asignacionPcRepository
-                .findById(dto.getIdAsignacionPc())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Contrato (asignacion_pc) no encontrado con id: " + dto.getIdAsignacionPc()));
+        Trabajador trabajador = getTrabajadorOrThrow(dto.getIdTrabajador());
+        Proyecto proyecto = getProyectoOrThrow(dto.getIdProyecto());
+        AsignacionProyectoContratista asignacionPc = getAsignacionPcOrThrow(dto.getIdAsignacionPc());
 
         if (!asignacionPc.getProyecto().getIdProyecto().equals(dto.getIdProyecto())) {
             throw new IllegalArgumentException(
@@ -154,7 +90,7 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
         boolean cambioRelacion = !asignacion.getTrabajador().getIdTrabajador().equals(dto.getIdTrabajador())
                 || !asignacion.getProyecto().getIdProyecto().equals(dto.getIdProyecto());
 
-        if (cambioRelacion && asignacionRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
+        if (cambioRelacion && asignacionTpRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
                 dto.getIdTrabajador(), dto.getIdProyecto())) {
             throw new IllegalArgumentException("El trabajador ya está asignado a este proyecto.");
         }
@@ -163,44 +99,20 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
         asignacion.setProyecto(proyecto);
         asignacion.setAsignacionProyectoContratista(asignacionPc);
         mapDtoToEntity(dto, asignacion);
-        return toResponse(asignacionRepository.save(asignacion));
+        if (dto.getEstatusAsignacion() != null) {
+            asignacion.setEstatusAsignacion(dto.getEstatusAsignacion());
+        }
+        return toResponse(asignacionTpRepository.save(asignacion));
     }
 
-    // ─── CAMBIAR ESTATUS ──────────────────────────────────────────────────────
-    @Override
-    @Transactional
-    public AsignacionTrabajadorProyectoResponseDTO cambiarEstatus(Integer id, EstatusAsignacion estatus) {
-        AsignacionTrabajadorProyecto asignacion = getAsignacionOrThrow(id);
-        asignacion.setEstatusAsignacion(estatus);
-        return toResponse(asignacionRepository.save(asignacion));
-    }
-
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!asignacionRepository.existsById(id)) {
-            throw new EntityNotFoundException("Asignación no encontrada con id: " + id);
-        }
-        asignacionRepository.deleteById(id);
+        getOrThrow(id);
+        asignacionTpRepository.deleteById(id);
     }
 
-    // ─── HELPERS ──────────────────────────────────────────────────────────────
-    private AsignacionTrabajadorProyecto getAsignacionOrThrow(Integer id) {
-        return asignacionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Asignación trabajador-proyecto no encontrada con id: " + id));
-    }
-
-    private void mapDtoToEntity(AsignacionTrabajadorProyectoRequestDTO dto,
-                                AsignacionTrabajadorProyecto asignacion) {
-        asignacion.setPuestoEnProyecto(dto.getPuestoEnProyecto());
-        asignacion.setFechaInicio(dto.getFechaInicio());
-        asignacion.setFechaFinEstimada(dto.getFechaFinEstimada());
-    }
-
-    // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private AsignacionTrabajadorProyectoResponseDTO toResponse(AsignacionTrabajadorProyecto a) {
+    public AsignacionTrabajadorProyectoResponseDTO toResponse(AsignacionTrabajadorProyecto a) {
         AsignacionProyectoContratistaResponseDTO apcDTO =
                 asignacionPcService.toResponse(a.getAsignacionProyectoContratista());
 
@@ -214,5 +126,34 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
                 .fechaFinEstimada(a.getFechaFinEstimada())
                 .estatusAsignacion(a.getEstatusAsignacion())
                 .build();
+    }
+
+    private void mapDtoToEntity(AsignacionTrabajadorProyectoRequestDTO dto,
+                                AsignacionTrabajadorProyecto asignacion) {
+        asignacion.setPuestoEnProyecto(dto.getPuestoEnProyecto());
+        asignacion.setFechaInicio(dto.getFechaInicio());
+        asignacion.setFechaFinEstimada(dto.getFechaFinEstimada());
+    }
+
+    private AsignacionTrabajadorProyecto getOrThrow(Integer id) {
+        return asignacionTpRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Asignación trabajador-proyecto no encontrada con id: " + id));
+    }
+
+    private Trabajador getTrabajadorOrThrow(Integer id) {
+        return trabajadorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Trabajador no encontrado con id: " + id));
+    }
+
+    private Proyecto getProyectoOrThrow(Integer id) {
+        return proyectoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado con id: " + id));
+    }
+
+    private AsignacionProyectoContratista getAsignacionPcOrThrow(Integer id) {
+        return asignacionPcRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Asignación proyecto-contratista no encontrada con id: " + id));
     }
 }

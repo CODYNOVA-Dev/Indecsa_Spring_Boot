@@ -9,6 +9,8 @@ import com.example.demo.repository.ContratistaRepository;
 import com.example.demo.service.ContratistaService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,39 +19,28 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ContratistaServiceImpl implements ContratistaService {
 
     private final ContratistaRepository contratistaRepository;
     private final EstadoServiceImpl estadoService;
 
-    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public List<ContratistaResponseDTO> findAll() {
-        return contratistaRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<ContratistaResponseDTO> findAll(Pageable pageable) {
+        return contratistaRepository.findAll(pageable).map(this::toResponse);
     }
 
-    // ─── FIND BY ID ───────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
-    public ContratistaResponseDTO findById(Integer id) {
-        return toResponse(getContratistaOrThrow(id));
-    }
-
-    // ─── FIND BY ESTADO ───────────────────────────────────────────────────────
-    @Override
-    @Transactional(readOnly = true)
     public List<ContratistaResponseDTO> findByEstado(EstadoContratista estado) {
         return contratistaRepository.findByEstadoContratista(estado)
-                .stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    // ─── CREATE ───────────────────────────────────────────────────────────────
+    @Override
+    public ContratistaResponseDTO findById(Integer id) {
+        return toResponse(getOrThrow(id));
+    }
+
     @Override
     @Transactional
     public ContratistaResponseDTO create(ContratistaRequestDTO dto) {
@@ -68,66 +59,44 @@ public class ContratistaServiceImpl implements ContratistaService {
         return toResponse(contratistaRepository.save(contratista));
     }
 
-    // ─── UPDATE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public ContratistaResponseDTO update(Integer id, ContratistaRequestDTO dto) {
-        Contratista contratista = getContratistaOrThrow(id);
+        Contratista contratista = getOrThrow(id);
 
-        if (!contratista.getCorreoContratista().equals(dto.getCorreoContratista())
+        if (dto.getCorreoContratista() != null
+                && !dto.getCorreoContratista().equals(contratista.getCorreoContratista())
                 && contratistaRepository.existsByCorreoContratista(dto.getCorreoContratista())) {
             throw new IllegalArgumentException(
                     "Ya existe un contratista con el correo: " + dto.getCorreoContratista());
         }
-        if (!contratista.getRfcContratista().equals(dto.getRfcContratista())
+        if (dto.getRfcContratista() != null
+                && !dto.getRfcContratista().equals(contratista.getRfcContratista())
                 && contratistaRepository.existsByRfcContratista(dto.getRfcContratista())) {
             throw new IllegalArgumentException(
                     "Ya existe un contratista con el RFC: " + dto.getRfcContratista());
         }
+
         Estado estadoOperacion = estadoService.getEstadoOrThrow(dto.getIdEstadoOperacion());
         mapDtoToEntity(dto, contratista, estadoOperacion);
         return toResponse(contratistaRepository.save(contratista));
     }
 
-    // ─── CAMBIAR ESTADO ───────────────────────────────────────────────────────
     @Override
     @Transactional
     public ContratistaResponseDTO cambiarEstado(Integer id, EstadoContratista estado) {
-        Contratista contratista = getContratistaOrThrow(id);
+        Contratista contratista = getOrThrow(id);
         contratista.setEstadoContratista(estado);
         return toResponse(contratistaRepository.save(contratista));
     }
 
-    // ─── DELETE ───────────────────────────────────────────────────────────────
     @Override
     @Transactional
     public void delete(Integer id) {
-        if (!contratistaRepository.existsById(id)) {
-            throw new EntityNotFoundException("Contratista no encontrado con id: " + id);
-        }
+        getOrThrow(id);
         contratistaRepository.deleteById(id);
     }
 
-    // ─── HELPERS ──────────────────────────────────────────────────────────────
-    private Contratista getContratistaOrThrow(Integer id) {
-        return contratistaRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "Contratista no encontrado con id: " + id));
-    }
-
-    private void mapDtoToEntity(ContratistaRequestDTO dto, Contratista c, Estado estadoOperacion) {
-        c.setNombreContratista(dto.getNombreContratista());
-        c.setCurp(dto.getCurp());
-        c.setRfcContratista(dto.getRfcContratista());
-        c.setTelefonoContratista(dto.getTelefonoContratista());
-        c.setCorreoContratista(dto.getCorreoContratista().toLowerCase().trim());
-        c.setDescripcionContratista(dto.getDescripcionContratista());
-        c.setExperiencia(dto.getExperiencia());
-        c.setCalificacionContratista(dto.getCalificacionContratista());
-        c.setEstadoOperacion(estadoOperacion);
-    }
-
-    // ─── MAPPER ───────────────────────────────────────────────────────────────
     public ContratistaResponseDTO toResponse(Contratista c) {
         return ContratistaResponseDTO.builder()
                 .idContratista(c.getIdContratista())
@@ -143,5 +112,23 @@ public class ContratistaServiceImpl implements ContratistaService {
                 .idEstadoOperacion(c.getEstadoOperacion().getIdEstado())
                 .nombreEstadoOperacion(c.getEstadoOperacion().getNombreEst())
                 .build();
+    }
+
+    private void mapDtoToEntity(ContratistaRequestDTO dto, Contratista c, Estado estadoOperacion) {
+        c.setNombreContratista(dto.getNombreContratista());
+        c.setCurp(dto.getCurp());
+        c.setRfcContratista(dto.getRfcContratista());
+        c.setTelefonoContratista(dto.getTelefonoContratista());
+        c.setCorreoContratista(dto.getCorreoContratista().toLowerCase().trim());
+        c.setDescripcionContratista(dto.getDescripcionContratista());
+        c.setExperiencia(dto.getExperiencia());
+        c.setCalificacionContratista(dto.getCalificacionContratista());
+        c.setEstadoOperacion(estadoOperacion);
+    }
+
+    private Contratista getOrThrow(Integer id) {
+        return contratistaRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Contratista no encontrado con id: " + id));
     }
 }

@@ -1,22 +1,20 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(
     name = "Asignacion_Trabajador_Proyecto",
-    uniqueConstraints = {
-        @UniqueConstraint(name = "uq_trabajador_proyecto", columnNames = {"id_trabajador", "id_proyecto"})
-    }
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_trabajador_proyecto",
+        columnNames = {"id_trabajador", "id_proyecto"}
+    )
 )
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class AsignacionTrabajadorProyecto {
 
     @Id

@@ -1,7 +1,6 @@
 package com.example.demo.repository;
 
 import com.example.demo.model.Trabajador;
-import com.example.demo.model.Trabajador.EstadoTrabajador;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,18 +8,15 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TrabajadorRepository extends JpaRepository<Trabajador, Integer> {
+public interface TrabajadorRepository extends JpaRepository<Trabajador, Integer>,
+        TrabajadorRepositoryCustom {
 
-    Optional<Trabajador> findByCorreoTrabajador(String correoTrabajador);
-
-    boolean existsByCorreoTrabajador(String correoTrabajador);
-
-    boolean existsByNssTrabajador(String nssTrabajador);
-
-    List<Trabajador> findByEstadoTrabajador(EstadoTrabajador estadoTrabajador);
-
+    Optional<Trabajador> findByCurp(String curp);
+    Optional<Trabajador> findByRfc(String rfc);
+    Optional<Trabajador> findByCorreoTrabajador(String correo);
+    boolean existsByCurp(String curp);
+    boolean existsByRfc(String rfc);
+    boolean existsByCorreoTrabajador(String correo);
+    List<Trabajador> findByEstadoTrabajador(Trabajador.EstadoTrabajador estado);
     List<Trabajador> findByEspecialidadTrabajadorContainingIgnoreCase(String especialidad);
-
-    List<Trabajador> findByEstadoTrabajadorAndEspecialidadTrabajadorContainingIgnoreCase(
-            EstadoTrabajador estadoTrabajador, String especialidad);
 }

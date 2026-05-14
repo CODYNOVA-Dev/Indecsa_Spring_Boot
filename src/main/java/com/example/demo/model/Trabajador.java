@@ -2,17 +2,14 @@ package com.example.demo.model;
 
 import com.example.demo.model.enums.Sexo;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "Trabajador")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
+@Builder
 public class Trabajador {
 
     @Id
@@ -20,6 +17,7 @@ public class Trabajador {
     @Column(name = "id_trabajador")
     private Integer idTrabajador;
 
+    // --- Datos personales ---
     @Column(name = "nombre_trabajador", nullable = false, length = 100)
     private String nombreTrabajador;
 

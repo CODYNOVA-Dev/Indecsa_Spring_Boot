@@ -1,20 +1,29 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.proyecto.ProyectoRequest;
-import com.example.demo.dto.proyecto.ProyectoResponse;
-import com.example.demo.model.Proyecto;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.example.demo.dto.request.ProyectoRequestDTO;
+import com.example.demo.dto.response.ProyectoResponseDTO;
+import com.example.demo.model.Proyecto.EstatusProyecto;
+import com.example.demo.model.Proyecto.TipoProyecto;
 
 import java.util.List;
 
 public interface ProyectoService {
-    Page<ProyectoResponse> findAll(Pageable pageable);
-    List<ProyectoResponse> findByEstatus(Proyecto.EstatusProyecto estatus);
-    List<ProyectoResponse> findByMunicipio(String municipio);
-    ProyectoResponse findById(Integer id);
-    ProyectoResponse create(ProyectoRequest request);
-    ProyectoResponse update(Integer id, ProyectoRequest request);
-    ProyectoResponse cambiarEstatus(Integer id, Proyecto.EstatusProyecto estatus);
+
+    List<ProyectoResponseDTO> findAll();
+
+    ProyectoResponseDTO findById(Integer id);
+
+    List<ProyectoResponseDTO> findByEstatus(EstatusProyecto estatus);
+
+    List<ProyectoResponseDTO> findByTipo(TipoProyecto tipo);
+
+    List<ProyectoResponseDTO> findByCliente(String cliente);
+
+    ProyectoResponseDTO create(ProyectoRequestDTO dto);
+
+    ProyectoResponseDTO update(Integer id, ProyectoRequestDTO dto);
+
+    ProyectoResponseDTO cambiarEstatus(Integer id, EstatusProyecto estatus);
+
     void delete(Integer id);
 }

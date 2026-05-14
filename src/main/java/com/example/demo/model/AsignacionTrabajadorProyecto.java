@@ -44,13 +44,15 @@ public class AsignacionTrabajadorProyecto {
     private LocalDate fechaFinEstimada;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_asignacion", nullable = false)
-    private EstatusAsignacion estatusAsignacion;
-
-    @Column(name = "observaciones", length = 500)
-    private String observaciones;
+    @Column(name = "estatus_asignacion", nullable = false, columnDefinition = "ENUM('ACTIVO','SUSPENDIDO','INCAPACIDAD','CANCELADO','VACACIONES','FINALIZADO') DEFAULT 'ACTIVO'")
+    private EstatusAsignacion estatusAsignacion = EstatusAsignacion.ACTIVO;
 
     public enum EstatusAsignacion {
-        ACTIVO, SUSPENDIDO, INCAPACIDAD, CANCELADO, VACACIONES, FINALIZADO
+        ACTIVO,
+        SUSPENDIDO,
+        INCAPACIDAD,
+        CANCELADO,
+        VACACIONES,
+        FINALIZADO
     }
 }

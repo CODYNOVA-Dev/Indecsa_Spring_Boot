@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.contratista.ContratistaRequest;
-import com.example.demo.dto.contratista.ContratistaResponse;
+import com.example.demo.dto.request.ContratistaRequestDTO;
+import com.example.demo.dto.response.ContratistaResponseDTO;
 import com.example.demo.model.Contratista;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,11 +9,11 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ContratistaService {
-    Page<ContratistaResponse> findAll(Pageable pageable);
-    List<ContratistaResponse> findByEstado(Contratista.EstadoContratista estado);
-    ContratistaResponse findById(Integer id);
-    ContratistaResponse create(ContratistaRequest request);
-    ContratistaResponse update(Integer id, ContratistaRequest request);
-    ContratistaResponse cambiarEstado(Integer id, Contratista.EstadoContratista estado);
+    Page<ContratistaResponseDTO> findAll(Pageable pageable);
+    List<ContratistaResponseDTO> findByEstado(Contratista.EstadoContratista estado);
+    ContratistaResponseDTO findById(Integer id);
+    ContratistaResponseDTO create(ContratistaRequestDTO request);
+    ContratistaResponseDTO update(Integer id, ContratistaRequestDTO request);
+    ContratistaResponseDTO cambiarEstado(Integer id, Contratista.EstadoContratista estado);
     void delete(Integer id);
 }

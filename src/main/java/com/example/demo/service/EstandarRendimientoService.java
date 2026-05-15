@@ -1,14 +1,14 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.estandar.EstandarRendimientoRequest;
-import com.example.demo.dto.estandar.EstandarRendimientoResponse;
+import com.example.demo.dto.request.EstandarRendimientoRequestDTO;
+import com.example.demo.dto.response.EstandarRendimientoResponseDTO;
 
 import java.util.List;
 
 public interface EstandarRendimientoService {
-    EstandarRendimientoResponse crear(EstandarRendimientoRequest req);
-    List<EstandarRendimientoResponse> listarTodos();
-    EstandarRendimientoResponse findById(Integer id);
-    EstandarRendimientoResponse actualizar(Integer id, EstandarRendimientoRequest req);
+    EstandarRendimientoResponseDTO crear(EstandarRendimientoRequestDTO request);
+    List<EstandarRendimientoResponseDTO> listarTodos();
+    EstandarRendimientoResponseDTO findById(Integer id);
+    EstandarRendimientoResponseDTO actualizar(Integer id, EstandarRendimientoRequestDTO request);
     void eliminar(Integer id);
 }

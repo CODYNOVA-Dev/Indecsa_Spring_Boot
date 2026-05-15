@@ -37,18 +37,7 @@ public class RegistroHoras {
     @Column(name = "horas_trabajadas", nullable = false, precision = 5, scale = 2)
     private BigDecimal horasTrabajadas;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_periodo", nullable = false)
-    private TipoPeriodo tipoPeriodo;
-
-    @Column(name = "observaciones", length = 500)
-    private String observaciones;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_empleado_registro", nullable = false)
     private Empleado empleadoRegistro;
-
-    public enum TipoPeriodo {
-        DIARIO, SEMANAL
-    }
 }

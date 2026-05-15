@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.avance.AvancePartidaRequest;
-import com.example.demo.dto.avance.AvancePartidaResponse;
+import com.example.demo.dto.request.AvancePartidaRequestDTO;
+import com.example.demo.dto.response.AvancePartidaResponseDTO;
 import com.example.demo.model.Empleado;
 import com.example.demo.repository.EmpleadoRepository;
 import com.example.demo.service.AvancePartidaService;
@@ -29,7 +29,7 @@ public class AvancePartidaController {
 
     @GetMapping("/proyecto/{idProyecto}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<List<AvancePartidaResponse>> listarPorProyecto(
+    public ResponseEntity<List<AvancePartidaResponseDTO>> listarPorProyecto(
             @PathVariable Integer idProyecto,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
@@ -38,7 +38,7 @@ public class AvancePartidaController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<AvancePartidaResponse> registrar(@Valid @RequestBody AvancePartidaRequest request) {
+    public ResponseEntity<AvancePartidaResponseDTO> registrar(@Valid @RequestBody AvancePartidaRequestDTO request) {
         Integer idEmpleado = getEmpleadoAutenticado().getIdEmpleado();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(avancePartidaService.registrar(request, idEmpleado));
@@ -46,9 +46,9 @@ public class AvancePartidaController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<AvancePartidaResponse> actualizar(
+    public ResponseEntity<AvancePartidaResponseDTO> actualizar(
             @PathVariable Integer id,
-            @Valid @RequestBody AvancePartidaRequest request) {
+            @Valid @RequestBody AvancePartidaRequestDTO request) {
         return ResponseEntity.ok(avancePartidaService.actualizar(id, request));
     }
 

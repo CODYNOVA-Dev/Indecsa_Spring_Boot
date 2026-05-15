@@ -9,12 +9,9 @@ import com.example.demo.model.Proyecto.EstatusProyecto;
 import com.example.demo.model.Proyecto.TipoProyecto;
 import com.example.demo.repository.DomicilioRepository;
 import com.example.demo.repository.ProyectoRepository;
-import com.example.demo.repository.UbicacionProyectoRepository;
 import com.example.demo.service.ProyectoService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,14 +27,15 @@ public class ProyectoServiceImpl implements ProyectoService {
     private final DomicilioRepository domicilioRepository;
 
     @Override
-    public Page<ProyectoResponse> findAll(Pageable pageable) {
-        return proyectoRepository.findAll(pageable).map(ProyectoResponse::from);
+    public List<ProyectoResponseDTO> findAll() {
+        return proyectoRepository.findAll()
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<ProyectoResponse> findByEstatus(Proyecto.EstatusProyecto estatus) {
+    public List<ProyectoResponseDTO> findByEstatus(Proyecto.EstatusProyecto estatus) {
         return proyectoRepository.findByEstatusProyecto(estatus)
-                .stream().map(ProyectoResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     // ─── FIND BY TIPO ─────────────────────────────────────────────────────────
@@ -83,10 +81,10 @@ public class ProyectoServiceImpl implements ProyectoService {
 
     @Override
     @Transactional
-    public ProyectoResponse cambiarEstatus(Integer id, Proyecto.EstatusProyecto estatus) {
+    public ProyectoResponseDTO cambiarEstatus(Integer id, Proyecto.EstatusProyecto estatus) {
         Proyecto proyecto = getOrThrow(id);
         proyecto.setEstatusProyecto(estatus);
-        return ProyectoResponse.from(proyectoRepository.save(proyecto));
+        return toResponse(proyectoRepository.save(proyecto));
     }
 
     @Override
@@ -149,6 +147,23 @@ public class ProyectoServiceImpl implements ProyectoService {
                 .ofertaTrabajo(p.getOfertaTrabajo())
                 .cliente(p.getCliente())
                 .domicilio(domicilioDTO)
+                .fechaEstimadaInicio(p.getFechaEstimadaInicio())
+                .fechaEstimadaFin(p.getFechaEstimadaFin())
+                .calificacionProyecto(p.getCalificacionProyecto())
+                .estatusProyecto(p.getEstatusProyecto())
+                .descripcionProyecto(p.getDescripcionProyecto())
+                .build();
+    }
+
+    public ProyectoResponseDTO toResponse(Proyecto p) {
+        return ProyectoResponseDTO.builder()
+                .idProyecto(p.getIdProyecto())
+                .nombreProyecto(p.getNombreProyecto())
+                .tipoProyecto(p.getTipoProyecto())
+                .ofertaTrabajo(p.getOfertaTrabajo())
+                .cliente(p.getCliente())
+                .municipioProyecto(p.getMunicipioProyecto())
+                .estadoProyectoGeo(p.getEstadoProyectoGeo())
                 .fechaEstimadaInicio(p.getFechaEstimadaInicio())
                 .fechaEstimadaFin(p.getFechaEstimadaFin())
                 .calificacionProyecto(p.getCalificacionProyecto())

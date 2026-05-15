@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.avance.AvancePartidaResponse;
-import com.example.demo.dto.registro.RegistroHorasResponse;
+import com.example.demo.dto.response.AvancePartidaResponseDTO;
+import com.example.demo.dto.response.RegistroHorasResponseDTO;
 import com.example.demo.dto.rendimiento.RendimientoIndicadorResponse;
 import com.example.demo.service.AvancePartidaService;
 import com.example.demo.service.RegistroHorasService;
@@ -53,7 +53,6 @@ public class ReporteServiceImpl implements ReporteService {
             PdfWriter.getInstance(doc, baos);
             doc.open();
 
-            // Encabezado
             String trabajadorNombre = datos.isEmpty() ? "ID " + idTrabajador
                     : datos.get(0).getNombreTrabajador();
             agregarEncabezado(doc, "Reporte de Rendimiento — " + trabajadorNombre,
@@ -65,7 +64,6 @@ public class ReporteServiceImpl implements ReporteService {
                 return baos.toByteArray();
             }
 
-            // Tabla
             float[] anchos = {3f, 2f, 1.5f, 2f, 1.5f, 1.5f, 1.5f, 1.5f};
             PdfPTable tabla = crearTabla(anchos,
                     "Proyecto", "Cuadrilla", "Horas", "Avance", "Rend. Real", "Rend. Esp.", "Desviación", "Semáforo");
@@ -100,7 +98,7 @@ public class ReporteServiceImpl implements ReporteService {
     // ════════════════════════════════════════════════════════════════════════
     @Override
     public byte[] generarHorasProyecto(Integer idProyecto, LocalDate fechaInicio, LocalDate fechaFin) {
-        List<RegistroHorasResponse> datos =
+        List<RegistroHorasResponseDTO> datos =
                 registroHorasService.listarPorProyecto(idProyecto, fechaInicio, fechaFin);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -120,20 +118,18 @@ public class ReporteServiceImpl implements ReporteService {
                 return baos.toByteArray();
             }
 
-            float[] anchos = {3f, 2f, 1.5f, 1.5f, 1.5f, 3f};
+            float[] anchos = {3f, 2f, 2f, 2f};
             PdfPTable tabla = crearTabla(anchos,
-                    "Trabajador", "Cuadrilla", "Fecha", "Horas", "Tipo Período", "Observaciones");
+                    "Trabajador", "Cuadrilla", "Fecha", "Horas");
 
             BigDecimal totalHoras = BigDecimal.ZERO;
             boolean par = false;
-            for (RegistroHorasResponse r : datos) {
+            for (RegistroHorasResponseDTO r : datos) {
                 Color bg = par ? COLOR_ALT : COLOR_BLANCO;
                 addCelda(tabla, nvl(r.getNombreTrabajador()), bg, false);
                 addCelda(tabla, nvl(r.getNombreCuadrilla()),  bg, false);
                 addCelda(tabla, r.getFechaRegistro() != null ? r.getFechaRegistro().format(FMT) : "—", bg, true);
                 addCelda(tabla, fmt(r.getHorasTrabajadas(), "h"), bg, true);
-                addCelda(tabla, nvl(r.getTipoPeriodo()),          bg, true);
-                addCelda(tabla, nvl(r.getObservaciones()),        bg, false);
                 if (r.getHorasTrabajadas() != null) totalHoras = totalHoras.add(r.getHorasTrabajadas());
                 par = !par;
             }
@@ -155,12 +151,6 @@ public class ReporteServiceImpl implements ReporteService {
             celdaTotalVal.setPadding(5);
             tabla.addCell(celdaTotalVal);
 
-            PdfPCell celdaBlanco = new PdfPCell(new Phrase(""));
-            celdaBlanco.setColspan(2);
-            celdaBlanco.setBackgroundColor(COLOR_HEADER);
-            celdaBlanco.setPadding(5);
-            tabla.addCell(celdaBlanco);
-
             doc.add(tabla);
             agregarPiePagina(doc);
         } catch (DocumentException e) {
@@ -176,7 +166,7 @@ public class ReporteServiceImpl implements ReporteService {
     // ════════════════════════════════════════════════════════════════════════
     @Override
     public byte[] generarAvanceObra(Integer idProyecto, LocalDate fechaInicio, LocalDate fechaFin) {
-        List<AvancePartidaResponse> datos =
+        List<AvancePartidaResponseDTO> datos =
                 avancePartidaService.listarPorProyecto(idProyecto, fechaInicio, fechaFin);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -196,21 +186,19 @@ public class ReporteServiceImpl implements ReporteService {
                 return baos.toByteArray();
             }
 
-            float[] anchos = {2.5f, 2f, 1.5f, 2.5f, 1.5f, 1.5f, 1.5f, 1.5f};
+            float[] anchos = {2.5f, 2f, 1.5f, 2.5f, 2f, 2f};
             PdfPTable tabla = crearTabla(anchos,
-                    "Partida", "Cuadrilla", "Fecha", "Actividad (Estándar)", "Cantidad Ej.", "Programado", "Unidad", "% Avance");
+                    "Partida", "Cuadrilla", "Fecha", "Actividad (Estándar)", "Cantidad Ej.", "Rend. Esperado");
 
             boolean par = false;
-            for (AvancePartidaResponse r : datos) {
+            for (AvancePartidaResponseDTO r : datos) {
                 Color bg = par ? COLOR_ALT : COLOR_BLANCO;
                 addCelda(tabla, nvl(r.getNombrePartida()),    bg, false);
                 addCelda(tabla, nvl(r.getNombreCuadrilla()),  bg, false);
                 addCelda(tabla, r.getFechaRegistro() != null ? r.getFechaRegistro().format(FMT) : "—", bg, true);
                 addCelda(tabla, nvl(r.getNombreActividad()),  bg, false);
-                addCelda(tabla, fmtBd(r.getCantidadEjecutada()),  bg, true);
-                addCelda(tabla, fmtBd(r.getCantidadProgramada()), bg, true);
-                addCelda(tabla, nvl(r.getUnidadMedida()),    bg, true);
-                addCelda(tabla, fmtPorcentaje(r.getCantidadEjecutada(), r.getCantidadProgramada()), bg, true);
+                addCelda(tabla, fmtBd(r.getCantidadEjecutada()), bg, true);
+                addCelda(tabla, fmtBd(r.getRendimientoEsperado()), bg, true);
                 par = !par;
             }
 
@@ -243,7 +231,6 @@ public class ReporteServiceImpl implements ReporteService {
         pPeriodo.setSpacingAfter(12);
         doc.add(pPeriodo);
 
-        // línea separadora
         LineSeparator sep = new LineSeparator(1.5f, 100, COLOR_HEADER, Element.ALIGN_CENTER, -2);
         doc.add(sep);
         doc.add(Chunk.NEWLINE);
@@ -328,12 +315,5 @@ public class ReporteServiceImpl implements ReporteService {
 
     private String fmtDesv(BigDecimal d) {
         return d != null ? String.format("%+.1f%%", d.doubleValue()) : "—";
-    }
-
-    private String fmtPorcentaje(BigDecimal ejecutado, BigDecimal programado) {
-        if (ejecutado == null || programado == null || programado.compareTo(BigDecimal.ZERO) == 0)
-            return "—";
-        double pct = ejecutado.doubleValue() / programado.doubleValue() * 100.0;
-        return String.format("%.1f%%", pct);
     }
 }

@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.asignacion.AsignacionTrabajadorProyectoRequest;
-import com.example.demo.dto.asignacion.AsignacionTrabajadorProyectoResponse;
+import com.example.demo.dto.request.AsignacionTrabajadorProyectoRequestDTO;
+import com.example.demo.dto.response.AsignacionTrabajadorProyectoResponseDTO;
 import com.example.demo.service.AsignacionTrabajadorProyectoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,36 +21,36 @@ public class AsignacionTrabajadorProyectoController {
 
     @GetMapping("/proyecto/{idProyecto}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<List<AsignacionTrabajadorProyectoResponse>> findByProyecto(
+    public ResponseEntity<List<AsignacionTrabajadorProyectoResponseDTO>> findByProyecto(
             @PathVariable Integer idProyecto) {
         return ResponseEntity.ok(asignacionTpService.findByProyecto(idProyecto));
     }
 
     @GetMapping("/trabajador/{idTrabajador}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<List<AsignacionTrabajadorProyectoResponse>> findByTrabajador(
+    public ResponseEntity<List<AsignacionTrabajadorProyectoResponseDTO>> findByTrabajador(
             @PathVariable Integer idTrabajador) {
         return ResponseEntity.ok(asignacionTpService.findByTrabajador(idTrabajador));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<AsignacionTrabajadorProyectoResponse> findById(@PathVariable Integer id) {
+    public ResponseEntity<AsignacionTrabajadorProyectoResponseDTO> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(asignacionTpService.findById(id));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<AsignacionTrabajadorProyectoResponse> create(
-            @Valid @RequestBody AsignacionTrabajadorProyectoRequest request) {
+    public ResponseEntity<AsignacionTrabajadorProyectoResponseDTO> create(
+            @Valid @RequestBody AsignacionTrabajadorProyectoRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(asignacionTpService.create(request));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<AsignacionTrabajadorProyectoResponse> update(
+    public ResponseEntity<AsignacionTrabajadorProyectoResponseDTO> update(
             @PathVariable Integer id,
-            @Valid @RequestBody AsignacionTrabajadorProyectoRequest request) {
+            @Valid @RequestBody AsignacionTrabajadorProyectoRequestDTO request) {
         return ResponseEntity.ok(asignacionTpService.update(id, request));
     }
 

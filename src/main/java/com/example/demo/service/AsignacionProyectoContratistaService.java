@@ -1,15 +1,15 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.asignacion.AsignacionProyectoContratistaRequest;
-import com.example.demo.dto.asignacion.AsignacionProyectoContratistaResponse;
+import com.example.demo.dto.request.AsignacionProyectoContratistaRequestDTO;
+import com.example.demo.dto.response.AsignacionProyectoContratistaResponseDTO;
 
 import java.util.List;
 
 public interface AsignacionProyectoContratistaService {
-    List<AsignacionProyectoContratistaResponse> findByProyecto(Integer idProyecto);
-    List<AsignacionProyectoContratistaResponse> findByContratista(Integer idContratista);
-    AsignacionProyectoContratistaResponse findById(Integer id);
-    AsignacionProyectoContratistaResponse create(AsignacionProyectoContratistaRequest request);
-    AsignacionProyectoContratistaResponse update(Integer id, AsignacionProyectoContratistaRequest request);
+    List<AsignacionProyectoContratistaResponseDTO> findByProyecto(Integer idProyecto);
+    List<AsignacionProyectoContratistaResponseDTO> findByContratista(Integer idContratista);
+    AsignacionProyectoContratistaResponseDTO findById(Integer id);
+    AsignacionProyectoContratistaResponseDTO create(AsignacionProyectoContratistaRequestDTO request);
+    AsignacionProyectoContratistaResponseDTO update(Integer id, AsignacionProyectoContratistaRequestDTO request);
     void delete(Integer id);
 }

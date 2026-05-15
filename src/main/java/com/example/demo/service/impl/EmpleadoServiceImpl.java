@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.empleado.EmpleadoRequest;
-import com.example.demo.dto.empleado.EmpleadoResponse;
+import com.example.demo.dto.request.EmpleadoRequestDTO;
+import com.example.demo.dto.response.EmpleadoResponseDTO;
 import com.example.demo.model.Empleado;
 import com.example.demo.model.Rol;
 import com.example.demo.repository.EmpleadoRepository;
@@ -26,27 +26,26 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public List<EmpleadoResponse> findAll() {
+    public List<EmpleadoResponseDTO> findAll() {
         return empleadoRepository.findAll()
-                .stream().map(EmpleadoResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<EmpleadoResponse> findByRol(Integer idRol) {
+    public List<EmpleadoResponseDTO> findByRol(Integer idRol) {
         return empleadoRepository.findByRolIdRol(idRol)
-                .stream().map(EmpleadoResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public EmpleadoResponse findById(Integer id) {
-        return EmpleadoResponse.from(getEmpleadoOrThrow(id));
+    public EmpleadoResponseDTO findById(Integer id) {
+        return toResponse(getEmpleadoOrThrow(id));
     }
 
     @Override
     @Transactional
-    public EmpleadoResponse create(EmpleadoRequest request) {
-        if (request.getCorreoEmpleado() != null
-                && empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
+    public EmpleadoResponseDTO create(EmpleadoRequestDTO request) {
+        if (empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
         if (empleadoRepository.existsByCurp(dto.getCurp())) {
@@ -68,7 +67,7 @@ public class EmpleadoServiceImpl implements EmpleadoService {
 
     @Override
     @Transactional
-    public EmpleadoResponse update(Integer id, EmpleadoRequest request) {
+    public EmpleadoResponseDTO update(Integer id, EmpleadoRequestDTO request) {
         Empleado empleado = getEmpleadoOrThrow(id);
 
         if (request.getCorreoEmpleado() != null

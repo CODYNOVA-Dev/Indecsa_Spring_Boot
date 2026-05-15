@@ -38,16 +38,6 @@ public class AvancePartida {
     @Column(name = "cantidad_ejecutada", nullable = false, precision = 12, scale = 4)
     private BigDecimal cantidadEjecutada;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "unidad_medida", nullable = false)
-    private EstandarRendimiento.UnidadMedida unidadMedida;
-
-    @Column(name = "cantidad_programada", precision = 12, scale = 4)
-    private BigDecimal cantidadProgramada;
-
-    @Column(name = "observaciones", length = 500)
-    private String observaciones;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_empleado_registro", nullable = false)
     private Empleado empleadoRegistro;

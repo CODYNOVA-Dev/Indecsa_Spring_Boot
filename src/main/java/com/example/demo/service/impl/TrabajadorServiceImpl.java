@@ -31,8 +31,8 @@ public class TrabajadorServiceImpl implements TrabajadorService {
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
-    public Page<TrabajadorResponse> findAll(Pageable pageable) {
-        return trabajadorRepository.findAll(pageable).map(TrabajadorResponse::from);
+    public Page<TrabajadorResponseDTO> findAll(Pageable pageable) {
+        return trabajadorRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Override
@@ -46,13 +46,13 @@ public class TrabajadorServiceImpl implements TrabajadorService {
     @Transactional(readOnly = true)
     public List<TrabajadorResponseDTO> findByEstado(EstadoTrabajador estado) {
         return trabajadorRepository.findByEstadoTrabajador(estado)
-                .stream().map(TrabajadorResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<TrabajadorResponse> findByEspecialidad(String especialidad) {
+    public List<TrabajadorResponseDTO> findByEspecialidad(String especialidad) {
         return trabajadorRepository.findByEspecialidadTrabajadorContainingIgnoreCase(especialidad)
-                .stream().map(TrabajadorResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
@@ -78,7 +78,7 @@ public class TrabajadorServiceImpl implements TrabajadorService {
 
     @Override
     @Transactional
-    public TrabajadorResponse create(TrabajadorRequest request) {
+    public TrabajadorResponseDTO create(TrabajadorRequestDTO request) {
         if (request.getCurp() != null && trabajadorRepository.existsByCurp(request.getCurp())) {
             throw new IllegalArgumentException("Ya existe un trabajador con la CURP: " + request.getCurp());
         }
@@ -111,7 +111,7 @@ public class TrabajadorServiceImpl implements TrabajadorService {
 
     @Override
     @Transactional
-    public TrabajadorResponse update(Integer id, TrabajadorRequest request) {
+    public TrabajadorResponseDTO update(Integer id, TrabajadorRequestDTO request) {
         Trabajador trabajador = getOrThrow(id);
 
         if (request.getCurp() != null && !request.getCurp().equals(trabajador.getCurp())
@@ -128,57 +128,16 @@ public class TrabajadorServiceImpl implements TrabajadorService {
             throw new IllegalArgumentException("Ya existe un trabajador con el correo: " + request.getCorreoTrabajador());
         }
 
-        RegistroMigratorio migratorio = null;
-        if (request.getIdMigratorio() != null) {
-            migratorio = migratorioRepository.findById(request.getIdMigratorio())
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            "Registro migratorio no encontrado con id: " + request.getIdMigratorio()));
-        }
-
-        if (request.getNombreTrabajador() != null) trabajador.setNombreTrabajador(request.getNombreTrabajador());
-        if (request.getCurp() != null)               trabajador.setCurp(request.getCurp());
-        if (request.getRfc() != null)                trabajador.setRfc(request.getRfc());
-        if (request.getNssTrabajador() != null)      trabajador.setNssTrabajador(request.getNssTrabajador());
-        if (request.getNacionalidad() != null)       trabajador.setNacionalidad(request.getNacionalidad());
-        trabajador.setRegistroMigratorio(migratorio);
-        if (request.getCalle() != null)              trabajador.setCalle(request.getCalle());
-        if (request.getNumExt() != null)             trabajador.setNumExt(request.getNumExt());
-        if (request.getNumInt() != null)             trabajador.setNumInt(request.getNumInt());
-        if (request.getColonia() != null)            trabajador.setColonia(request.getColonia());
-        if (request.getCodPost() != null)            trabajador.setCodPost(request.getCodPost());
-        if (request.getMunAlc() != null)             trabajador.setMunAlc(request.getMunAlc());
-        if (request.getEstado() != null)             trabajador.setEstado(request.getEstado());
-        if (request.getPuesto() != null)             trabajador.setPuesto(request.getPuesto());
-        if (request.getDescPuesto() != null)         trabajador.setDescPuesto(request.getDescPuesto());
-        if (request.getEspecialidadTrabajador() != null) trabajador.setEspecialidadTrabajador(request.getEspecialidadTrabajador());
-        if (request.getEscolaridad() != null)        trabajador.setEscolaridad(request.getEscolaridad());
-        if (request.getExperiencia() != null)        trabajador.setExperiencia(request.getExperiencia());
-        if (request.getTelefonoTrabajador() != null) trabajador.setTelefonoTrabajador(request.getTelefonoTrabajador());
-        if (request.getCorreoTrabajador() != null)   trabajador.setCorreoTrabajador(request.getCorreoTrabajador());
-        if (request.getContratacion() != null)       trabajador.setContratacion(request.getContratacion());
-        if (request.getJornada() != null)            trabajador.setJornada(request.getJornada());
-        if (request.getEstadoTrabajador() != null)   trabajador.setEstadoTrabajador(request.getEstadoTrabajador());
-        if (request.getDescripcionTrabajador() != null) trabajador.setDescripcionTrabajador(request.getDescripcionTrabajador());
-        if (request.getEvaluacionTrabajador() != null)  trabajador.setEvaluacionTrabajador(request.getEvaluacionTrabajador());
-        if (request.getFechaIngreso() != null)       trabajador.setFechaIngreso(request.getFechaIngreso());
-        if (request.getCalidadVida() != null)        trabajador.setCalidadVida(request.getCalidadVida());
-        if (request.getAntPenal() != null)           trabajador.setAntPenal(request.getAntPenal());
-        if (request.getDeudorAlim() != null)         trabajador.setDeudorAlim(request.getDeudorAlim());
-        if (request.getFolioLicCond() != null)       trabajador.setFolioLicCond(request.getFolioLicCond());
-        if (request.getEstadoCivil() != null)        trabajador.setEstadoCivil(request.getEstadoCivil());
-        if (request.getIdiomas() != null)            trabajador.setIdiomas(request.getIdiomas());
-        if (request.getLenguaIndigena() != null)     trabajador.setLenguaIndigena(request.getLenguaIndigena());
-        if (request.getSexo() != null)               trabajador.setSexo(request.getSexo());
-
-        return TrabajadorResponse.from(trabajadorRepository.save(trabajador));
+        applyUpdates(trabajador, request);
+        return toResponse(trabajadorRepository.save(trabajador));
     }
 
     @Override
     @Transactional
-    public TrabajadorResponse cambiarEstado(Integer id, Trabajador.EstadoTrabajador estado) {
+    public TrabajadorResponseDTO cambiarEstado(Integer id, Trabajador.EstadoTrabajador estado) {
         Trabajador trabajador = getOrThrow(id);
         trabajador.setEstadoTrabajador(estado);
-        return TrabajadorResponse.from(trabajadorRepository.save(trabajador));
+        return toResponse(trabajadorRepository.save(trabajador));
     }
 
     @Override
@@ -281,5 +240,46 @@ public class TrabajadorServiceImpl implements TrabajadorService {
     private Trabajador getOrThrow(Integer id) {
         return trabajadorRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Trabajador no encontrado con id: " + id));
+    }
+
+    public TrabajadorResponseDTO toResponse(Trabajador t) {
+        return TrabajadorResponseDTO.builder()
+                .idTrabajador(t.getIdTrabajador())
+                .nombreTrabajador(t.getNombreTrabajador())
+                .curp(t.getCurp())
+                .rfc(t.getRfc())
+                .nssTrabajador(t.getNssTrabajador())
+                .nacionalidad(t.getNacionalidad())
+                .idMigratorio(t.getRegistroMigratorio() != null
+                        ? t.getRegistroMigratorio().getIdMigratorio() : null)
+                .calle(t.getCalle())
+                .numExt(t.getNumExt())
+                .numInt(t.getNumInt())
+                .colonia(t.getColonia())
+                .codPost(t.getCodPost())
+                .munAlc(t.getMunAlc())
+                .estado(t.getEstado())
+                .puesto(t.getPuesto())
+                .descPuesto(t.getDescPuesto())
+                .especialidadTrabajador(t.getEspecialidadTrabajador())
+                .escolaridad(t.getEscolaridad())
+                .experiencia(t.getExperiencia())
+                .telefonoTrabajador(t.getTelefonoTrabajador())
+                .correoTrabajador(t.getCorreoTrabajador())
+                .contratacion(t.getContratacion())
+                .jornada(t.getJornada())
+                .estadoTrabajador(t.getEstadoTrabajador())
+                .descripcionTrabajador(t.getDescripcionTrabajador())
+                .evaluacionTrabajador(t.getEvaluacionTrabajador())
+                .fechaIngreso(t.getFechaIngreso())
+                .calidadVida(t.getCalidadVida())
+                .antPenal(t.getAntPenal())
+                .deudorAlim(t.getDeudorAlim())
+                .folioLicCond(t.getFolioLicCond())
+                .estadoCivil(t.getEstadoCivil())
+                .idiomas(t.getIdiomas())
+                .lenguaIndigena(t.getLenguaIndigena())
+                .sexo(t.getSexo())
+                .build();
     }
 }

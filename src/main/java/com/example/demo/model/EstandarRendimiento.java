@@ -2,8 +2,6 @@ package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
-
 @Entity
 @Table(name = "Estandar_Rendimiento")
 @Getter @Setter
@@ -25,12 +23,6 @@ public class EstandarRendimiento {
 
     @Column(name = "rendimiento_esperado", nullable = false, precision = 10, scale = 4)
     private BigDecimal rendimientoEsperado;
-
-    @Column(name = "descripcion", length = 255)
-    private String descripcion;
-
-    @Column(name = "jornada_base_horas", nullable = false, precision = 5, scale = 2)
-    private BigDecimal jornadaBaseHoras;
 
     public enum UnidadMedida {
         m2, m3, ml, piezas, porcentaje

@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -34,29 +35,25 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
     private final AsignacionProyectoContratistaServiceImpl asignacionPcService;
 
     @Override
-    public List<AsignacionTrabajadorProyectoResponse> findByProyecto(Integer idProyecto) {
+    public List<AsignacionTrabajadorProyectoResponseDTO> findByProyecto(Integer idProyecto) {
         return asignacionTpRepository.findByProyecto_IdProyecto(idProyecto)
-                .stream()
-                .map(AsignacionTrabajadorProyectoResponse::from)
-                .toList();
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<AsignacionTrabajadorProyectoResponse> findByTrabajador(Integer idTrabajador) {
+    public List<AsignacionTrabajadorProyectoResponseDTO> findByTrabajador(Integer idTrabajador) {
         return asignacionTpRepository.findByTrabajador_IdTrabajador(idTrabajador)
-                .stream()
-                .map(AsignacionTrabajadorProyectoResponse::from)
-                .toList();
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public AsignacionTrabajadorProyectoResponse findById(Integer id) {
-        return AsignacionTrabajadorProyectoResponse.from(getOrThrow(id));
+    public AsignacionTrabajadorProyectoResponseDTO findById(Integer id) {
+        return toResponse(getOrThrow(id));
     }
 
     @Override
     @Transactional
-    public AsignacionTrabajadorProyectoResponse create(AsignacionTrabajadorProyectoRequest request) {
+    public AsignacionTrabajadorProyectoResponseDTO create(AsignacionTrabajadorProyectoRequestDTO request) {
         Trabajador trabajador = trabajadorRepository.findById(request.getIdTrabajador())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Trabajador no encontrado con id: " + request.getIdTrabajador()));
@@ -65,8 +62,7 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Proyecto no encontrado con id: " + request.getIdProyecto()));
 
-        AsignacionProyectoContratista asignacionPc = asignacionPcRepository
-                .findById(request.getIdAsignacionPc())
+        AsignacionProyectoContratista asignacionPc = asignacionPcRepository.findById(request.getIdAsignacionPc())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Asignación proyecto-contratista no encontrada con id: " + request.getIdAsignacionPc()));
 
@@ -80,7 +76,7 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
             throw new IllegalArgumentException("El trabajador ya está asignado a este proyecto.");
         }
 
-        return AsignacionTrabajadorProyectoResponse.from(asignacionTpRepository.save(asignacion));
+        return toResponse(asignacionTpRepository.save(asignacion));
     }
 
     @Override
@@ -97,8 +93,7 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Proyecto no encontrado con id: " + request.getIdProyecto()));
 
-        AsignacionProyectoContratista asignacionPc = asignacionPcRepository
-                .findById(request.getIdAsignacionPc())
+        AsignacionProyectoContratista asignacionPc = asignacionPcRepository.findById(request.getIdAsignacionPc())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Contrato (asignacion_pc) no encontrado con id: " + dto.getIdAsignacionPc()));
 
@@ -121,12 +116,10 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
         asignacion.setPuestoEnProyecto(request.getPuestoEnProyecto());
         asignacion.setFechaInicio(request.getFechaInicio());
         asignacion.setFechaFinEstimada(request.getFechaFinEstimada());
-        if (request.getEstatusAsignacion() != null) {
-            asignacion.setEstatusAsignacion(request.getEstatusAsignacion());
-        }
+        if (request.getEstatusAsignacion() != null) asignacion.setEstatusAsignacion(request.getEstatusAsignacion());
         asignacion.setObservaciones(request.getObservaciones());
 
-        return AsignacionTrabajadorProyectoResponse.from(asignacionTpRepository.save(asignacion));
+        return toResponse(asignacionTpRepository.save(asignacion));
     }
 
     @Override

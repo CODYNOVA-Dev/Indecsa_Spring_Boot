@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.estandar.EstandarRendimientoRequest;
-import com.example.demo.dto.estandar.EstandarRendimientoResponse;
+import com.example.demo.dto.request.EstandarRendimientoRequestDTO;
+import com.example.demo.dto.response.EstandarRendimientoResponseDTO;
 import com.example.demo.service.EstandarRendimientoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,27 +21,27 @@ public class EstandarRendimientoController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<List<EstandarRendimientoResponse>> listarTodos() {
+    public ResponseEntity<List<EstandarRendimientoResponseDTO>> listarTodos() {
         return ResponseEntity.ok(estandarService.listarTodos());
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<EstandarRendimientoResponse> findById(@PathVariable Integer id) {
+    public ResponseEntity<EstandarRendimientoResponseDTO> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(estandarService.findById(id));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EstandarRendimientoResponse> crear(@Valid @RequestBody EstandarRendimientoRequest request) {
+    public ResponseEntity<EstandarRendimientoResponseDTO> crear(@Valid @RequestBody EstandarRendimientoRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(estandarService.crear(request));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EstandarRendimientoResponse> actualizar(
+    public ResponseEntity<EstandarRendimientoResponseDTO> actualizar(
             @PathVariable Integer id,
-            @Valid @RequestBody EstandarRendimientoRequest request) {
+            @Valid @RequestBody EstandarRendimientoRequestDTO request) {
         return ResponseEntity.ok(estandarService.actualizar(id, request));
     }
 

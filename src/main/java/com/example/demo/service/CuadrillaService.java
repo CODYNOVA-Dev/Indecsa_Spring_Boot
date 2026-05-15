@@ -1,13 +1,13 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.cuadrilla.CuadrillaRequest;
-import com.example.demo.dto.cuadrilla.CuadrillaResponse;
+import com.example.demo.dto.request.CuadrillaRequestDTO;
+import com.example.demo.dto.response.CuadrillaResponseDTO;
 
 import java.util.List;
 
 public interface CuadrillaService {
-    CuadrillaResponse crear(CuadrillaRequest req);
-    List<CuadrillaResponse> listarPorProyecto(Integer idProyecto);
-    CuadrillaResponse actualizar(Integer id, CuadrillaRequest req);
+    CuadrillaResponseDTO crear(CuadrillaRequestDTO request);
+    List<CuadrillaResponseDTO> listarPorProyecto(Integer idProyecto);
+    CuadrillaResponseDTO actualizar(Integer id, CuadrillaRequestDTO request);
     void eliminar(Integer id);
 }

@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,29 +29,25 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
     private final ContratistaServiceImpl contratistaService;
 
     @Override
-    public List<AsignacionProyectoContratistaResponse> findByProyecto(Integer idProyecto) {
+    public List<AsignacionProyectoContratistaResponseDTO> findByProyecto(Integer idProyecto) {
         return asignacionPcRepository.findByProyecto_IdProyecto(idProyecto)
-                .stream()
-                .map(AsignacionProyectoContratistaResponse::from)
-                .toList();
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<AsignacionProyectoContratistaResponse> findByContratista(Integer idContratista) {
+    public List<AsignacionProyectoContratistaResponseDTO> findByContratista(Integer idContratista) {
         return asignacionPcRepository.findByContratista_IdContratista(idContratista)
-                .stream()
-                .map(AsignacionProyectoContratistaResponse::from)
-                .toList();
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public AsignacionProyectoContratistaResponse findById(Integer id) {
-        return AsignacionProyectoContratistaResponse.from(getOrThrow(id));
+    public AsignacionProyectoContratistaResponseDTO findById(Integer id) {
+        return toResponse(getOrThrow(id));
     }
 
     @Override
     @Transactional
-    public AsignacionProyectoContratistaResponse create(AsignacionProyectoContratistaRequest request) {
+    public AsignacionProyectoContratistaResponseDTO create(AsignacionProyectoContratistaRequestDTO request) {
         Proyecto proyecto = proyectoRepository.findById(request.getIdProyecto())
                 .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado con id: " + request.getIdProyecto()));
 
@@ -109,12 +106,12 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
                 .observaciones(request.getObservaciones())
                 .build();
 
-        return AsignacionProyectoContratistaResponse.from(asignacionPcRepository.save(asignacion));
+        return toResponse(asignacionPcRepository.save(asignacion));
     }
 
     @Override
     @Transactional
-    public AsignacionProyectoContratistaResponse update(Integer id, AsignacionProyectoContratistaRequest request) {
+    public AsignacionProyectoContratistaResponseDTO update(Integer id, AsignacionProyectoContratistaRequestDTO request) {
         AsignacionProyectoContratista asignacion = getOrThrow(id);
 
         Proyecto proyecto = proyectoRepository.findById(request.getIdProyecto())
@@ -136,12 +133,10 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
         asignacion.setFechaFinEstimada(request.getFechaFinEstimada());
         asignacion.setPersonalAsignado(request.getPersonalAsignado());
         asignacion.setPuestosRequeridos(request.getPuestosRequeridos());
-        if (request.getEstatusContrato() != null) {
-            asignacion.setEstatusContrato(request.getEstatusContrato());
-        }
+        if (request.getEstatusContrato() != null) asignacion.setEstatusContrato(request.getEstatusContrato());
         asignacion.setObservaciones(request.getObservaciones());
 
-        return AsignacionProyectoContratistaResponse.from(asignacionPcRepository.save(asignacion));
+        return toResponse(asignacionPcRepository.save(asignacion));
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.estandar.EstandarRendimientoRequest;
-import com.example.demo.dto.estandar.EstandarRendimientoResponse;
+import com.example.demo.dto.request.EstandarRendimientoRequestDTO;
+import com.example.demo.dto.response.EstandarRendimientoResponseDTO;
 import com.example.demo.model.EstandarRendimiento;
 import com.example.demo.repository.EstandarRendimientoRepository;
 import com.example.demo.service.EstandarRendimientoService;
@@ -22,37 +22,35 @@ public class EstandarRendimientoServiceImpl implements EstandarRendimientoServic
 
     @Override
     @Transactional
-    public EstandarRendimientoResponse crear(EstandarRendimientoRequest req) {
+    public EstandarRendimientoResponseDTO crear(EstandarRendimientoRequestDTO request) {
         EstandarRendimiento estandar = EstandarRendimiento.builder()
-                .nombreActividad(req.getNombreActividad())
-                .unidadMedida(EstandarRendimiento.UnidadMedida.valueOf(req.getUnidadMedida()))
-                .rendimientoEsperado(req.getRendimientoEsperado())
-                .descripcion(req.getDescripcion())
+                .nombreActividad(request.getNombreActividad())
+                .unidadMedida(EstandarRendimiento.UnidadMedida.valueOf(request.getUnidadMedida()))
+                .rendimientoEsperado(request.getRendimientoEsperado())
                 .build();
-        return EstandarRendimientoResponse.from(estandarRepository.save(estandar));
+        return toResponse(estandarRepository.save(estandar));
     }
 
     @Override
-    public List<EstandarRendimientoResponse> listarTodos() {
+    public List<EstandarRendimientoResponseDTO> listarTodos() {
         return estandarRepository.findAll()
-                .stream().map(EstandarRendimientoResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public EstandarRendimientoResponse findById(Integer id) {
-        return EstandarRendimientoResponse.from(getOrThrow(id));
+    public EstandarRendimientoResponseDTO findById(Integer id) {
+        return toResponse(getOrThrow(id));
     }
 
     @Override
     @Transactional
-    public EstandarRendimientoResponse actualizar(Integer id, EstandarRendimientoRequest req) {
+    public EstandarRendimientoResponseDTO actualizar(Integer id, EstandarRendimientoRequestDTO request) {
         EstandarRendimiento estandar = getOrThrow(id);
-        if (req.getNombreActividad() != null)    estandar.setNombreActividad(req.getNombreActividad());
-        if (req.getUnidadMedida() != null)
-            estandar.setUnidadMedida(EstandarRendimiento.UnidadMedida.valueOf(req.getUnidadMedida()));
-        if (req.getRendimientoEsperado() != null) estandar.setRendimientoEsperado(req.getRendimientoEsperado());
-        if (req.getDescripcion() != null)         estandar.setDescripcion(req.getDescripcion());
-        return EstandarRendimientoResponse.from(estandarRepository.save(estandar));
+        if (request.getNombreActividad() != null)     estandar.setNombreActividad(request.getNombreActividad());
+        if (request.getUnidadMedida() != null)
+            estandar.setUnidadMedida(EstandarRendimiento.UnidadMedida.valueOf(request.getUnidadMedida()));
+        if (request.getRendimientoEsperado() != null) estandar.setRendimientoEsperado(request.getRendimientoEsperado());
+        return toResponse(estandarRepository.save(estandar));
     }
 
     @Override
@@ -65,5 +63,14 @@ public class EstandarRendimientoServiceImpl implements EstandarRendimientoServic
     private EstandarRendimiento getOrThrow(Integer id) {
         return estandarRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Estándar de rendimiento no encontrado con id: " + id));
+    }
+
+    EstandarRendimientoResponseDTO toResponse(EstandarRendimiento e) {
+        return EstandarRendimientoResponseDTO.builder()
+                .idEstandar(e.getIdEstandar())
+                .nombreActividad(e.getNombreActividad())
+                .unidadMedida(e.getUnidadMedida())
+                .rendimientoEsperado(e.getRendimientoEsperado())
+                .build();
     }
 }

@@ -2,8 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.auth.LoginRequest;
 import com.example.demo.dto.auth.LoginResponse;
-import com.example.demo.dto.empleado.EmpleadoRequest;
-import com.example.demo.dto.empleado.EmpleadoResponse;
+import com.example.demo.dto.request.EmpleadoRequestDTO;
+import com.example.demo.dto.response.EmpleadoResponseDTO;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.EmpleadoService;
 import jakarta.validation.Valid;
@@ -28,28 +28,28 @@ public class EmpleadoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EmpleadoResponse>> findAll() {
+    public ResponseEntity<List<EmpleadoResponseDTO>> findAll() {
         return ResponseEntity.ok(empleadoService.findAll());
     }
 
     @GetMapping("/rol/{idRol}")
-    public ResponseEntity<List<EmpleadoResponse>> findByRol(@PathVariable Integer idRol) {
+    public ResponseEntity<List<EmpleadoResponseDTO>> findByRol(@PathVariable Integer idRol) {
         return ResponseEntity.ok(empleadoService.findByRol(idRol));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<EmpleadoResponse> findById(@PathVariable Integer id) {
+    public ResponseEntity<EmpleadoResponseDTO> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(empleadoService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<EmpleadoResponse> create(@Valid @RequestBody EmpleadoRequest request) {
+    public ResponseEntity<EmpleadoResponseDTO> create(@Valid @RequestBody EmpleadoRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(empleadoService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<EmpleadoResponse> update(@PathVariable Integer id,
-                                                    @Valid @RequestBody EmpleadoRequest request) {
+    public ResponseEntity<EmpleadoResponseDTO> update(@PathVariable Integer id,
+                                                       @Valid @RequestBody EmpleadoRequestDTO request) {
         return ResponseEntity.ok(empleadoService.update(id, request));
     }
 

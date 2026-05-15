@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.cuadrilla.CuadrillaRequest;
-import com.example.demo.dto.cuadrilla.CuadrillaResponse;
+import com.example.demo.dto.request.CuadrillaRequestDTO;
+import com.example.demo.dto.response.CuadrillaResponseDTO;
 import com.example.demo.model.Cuadrilla;
 import com.example.demo.model.Proyecto;
 import com.example.demo.repository.CuadrillaRepository;
@@ -25,41 +25,39 @@ public class CuadrillaServiceImpl implements CuadrillaService {
 
     @Override
     @Transactional
-    public CuadrillaResponse crear(CuadrillaRequest req) {
+    public CuadrillaResponseDTO crear(CuadrillaRequestDTO request) {
         if (cuadrillaRepository.existsByNombreCuadrillaAndProyecto_IdProyecto(
-                req.getNombreCuadrilla(), req.getIdProyecto())) {
+                request.getNombreCuadrilla(), request.getIdProyecto())) {
             throw new IllegalArgumentException(
-                "Ya existe una cuadrilla con el nombre '" + req.getNombreCuadrilla()
-                + "' en el proyecto con id: " + req.getIdProyecto());
+                "Ya existe una cuadrilla con el nombre '" + request.getNombreCuadrilla()
+                + "' en el proyecto con id: " + request.getIdProyecto());
         }
-        Proyecto proyecto = getProyectoOrThrow(req.getIdProyecto());
+        Proyecto proyecto = getProyectoOrThrow(request.getIdProyecto());
         Cuadrilla cuadrilla = Cuadrilla.builder()
                 .proyecto(proyecto)
-                .nombreCuadrilla(req.getNombreCuadrilla())
-                .frenteTrabajo(req.getFrenteTrabajo())
+                .nombreCuadrilla(request.getNombreCuadrilla())
+                .frenteTrabajo(request.getFrenteTrabajo())
                 .estatusCuadrilla(Cuadrilla.EstatusCuadrilla.ACTIVO)
-                .observaciones(req.getObservaciones())
                 .build();
-        return CuadrillaResponse.from(cuadrillaRepository.save(cuadrilla));
+        return toResponse(cuadrillaRepository.save(cuadrilla));
     }
 
     @Override
-    public List<CuadrillaResponse> listarPorProyecto(Integer idProyecto) {
+    public List<CuadrillaResponseDTO> listarPorProyecto(Integer idProyecto) {
         return cuadrillaRepository.findByProyecto_IdProyecto(idProyecto)
-                .stream().map(CuadrillaResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public CuadrillaResponse actualizar(Integer id, CuadrillaRequest req) {
+    public CuadrillaResponseDTO actualizar(Integer id, CuadrillaRequestDTO request) {
         Cuadrilla cuadrilla = getCuadrillaOrThrow(id);
-        if (req.getIdProyecto() != null) {
-            cuadrilla.setProyecto(getProyectoOrThrow(req.getIdProyecto()));
+        if (request.getIdProyecto() != null) {
+            cuadrilla.setProyecto(getProyectoOrThrow(request.getIdProyecto()));
         }
-        if (req.getNombreCuadrilla() != null) cuadrilla.setNombreCuadrilla(req.getNombreCuadrilla());
-        if (req.getFrenteTrabajo() != null)   cuadrilla.setFrenteTrabajo(req.getFrenteTrabajo());
-        if (req.getObservaciones() != null)   cuadrilla.setObservaciones(req.getObservaciones());
-        return CuadrillaResponse.from(cuadrillaRepository.save(cuadrilla));
+        if (request.getNombreCuadrilla() != null) cuadrilla.setNombreCuadrilla(request.getNombreCuadrilla());
+        if (request.getFrenteTrabajo() != null)   cuadrilla.setFrenteTrabajo(request.getFrenteTrabajo());
+        return toResponse(cuadrillaRepository.save(cuadrilla));
     }
 
     @Override
@@ -77,5 +75,16 @@ public class CuadrillaServiceImpl implements CuadrillaService {
     private Proyecto getProyectoOrThrow(Integer id) {
         return proyectoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Proyecto no encontrado con id: " + id));
+    }
+
+    CuadrillaResponseDTO toResponse(Cuadrilla c) {
+        return CuadrillaResponseDTO.builder()
+                .idCuadrilla(c.getIdCuadrilla())
+                .idProyecto(c.getProyecto().getIdProyecto())
+                .nombreProyecto(c.getProyecto().getNombreProyecto())
+                .nombreCuadrilla(c.getNombreCuadrilla())
+                .frenteTrabajo(c.getFrenteTrabajo())
+                .estatusCuadrilla(c.getEstatusCuadrilla())
+                .build();
     }
 }

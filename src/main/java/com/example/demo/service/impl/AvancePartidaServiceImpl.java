@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.avance.AvancePartidaRequest;
-import com.example.demo.dto.avance.AvancePartidaResponse;
+import com.example.demo.dto.request.AvancePartidaRequestDTO;
+import com.example.demo.dto.response.AvancePartidaResponseDTO;
 import com.example.demo.model.AvancePartida;
 import com.example.demo.model.Cuadrilla;
 import com.example.demo.model.Empleado;
@@ -35,53 +35,46 @@ public class AvancePartidaServiceImpl implements AvancePartidaService {
 
     @Override
     @Transactional
-    public AvancePartidaResponse registrar(AvancePartidaRequest req, Integer idEmpleadoRegistro) {
-        Proyecto proyecto   = getProyectoOrThrow(req.getIdProyecto());
-        Cuadrilla cuadrilla = req.getIdCuadrilla() != null ? getCuadrillaOrThrow(req.getIdCuadrilla()) : null;
-        EstandarRendimiento estandar = req.getIdEstandar() != null ? getEstandarOrThrow(req.getIdEstandar()) : null;
-        Empleado empleado   = getEmpleadoOrThrow(idEmpleadoRegistro);
+    public AvancePartidaResponseDTO registrar(AvancePartidaRequestDTO request, Integer idEmpleadoRegistro) {
+        Proyecto proyecto     = getProyectoOrThrow(request.getIdProyecto());
+        Cuadrilla cuadrilla   = request.getIdCuadrilla() != null ? getCuadrillaOrThrow(request.getIdCuadrilla()) : null;
+        EstandarRendimiento estandar = request.getIdEstandar() != null ? getEstandarOrThrow(request.getIdEstandar()) : null;
+        Empleado empleado     = getEmpleadoOrThrow(idEmpleadoRegistro);
 
         AvancePartida avance = AvancePartida.builder()
                 .proyecto(proyecto)
                 .cuadrilla(cuadrilla)
                 .estandar(estandar)
-                .nombrePartida(req.getNombrePartida())
-                .fechaRegistro(req.getFechaRegistro())
-                .cantidadEjecutada(req.getCantidadEjecutada())
-                .unidadMedida(EstandarRendimiento.UnidadMedida.valueOf(req.getUnidadMedida()))
-                .cantidadProgramada(req.getCantidadProgramada())
-                .observaciones(req.getObservaciones())
+                .nombrePartida(request.getNombrePartida())
+                .fechaRegistro(request.getFechaRegistro())
+                .cantidadEjecutada(request.getCantidadEjecutada())
                 .empleadoRegistro(empleado)
                 .build();
-        return AvancePartidaResponse.from(avancePartidaRepository.save(avance));
+        return toResponse(avancePartidaRepository.save(avance));
     }
 
     @Override
-    public List<AvancePartidaResponse> listarPorProyecto(Integer idProyecto, LocalDate inicio, LocalDate fin) {
+    public List<AvancePartidaResponseDTO> listarPorProyecto(Integer idProyecto, LocalDate inicio, LocalDate fin) {
         List<AvancePartida> avances;
         if (inicio != null && fin != null) {
             avances = avancePartidaRepository.findByProyecto_IdProyectoAndFechaRegistroBetween(idProyecto, inicio, fin);
         } else {
             avances = avancePartidaRepository.findByProyecto_IdProyecto(idProyecto);
         }
-        return avances.stream().map(AvancePartidaResponse::from).collect(Collectors.toList());
+        return avances.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public AvancePartidaResponse actualizar(Integer id, AvancePartidaRequest req) {
+    public AvancePartidaResponseDTO actualizar(Integer id, AvancePartidaRequestDTO request) {
         AvancePartida avance = getOrThrow(id);
-        if (req.getIdProyecto() != null)       avance.setProyecto(getProyectoOrThrow(req.getIdProyecto()));
-        if (req.getIdCuadrilla() != null)      avance.setCuadrilla(getCuadrillaOrThrow(req.getIdCuadrilla()));
-        if (req.getIdEstandar() != null)       avance.setEstandar(getEstandarOrThrow(req.getIdEstandar()));
-        if (req.getNombrePartida() != null)    avance.setNombrePartida(req.getNombrePartida());
-        if (req.getFechaRegistro() != null)    avance.setFechaRegistro(req.getFechaRegistro());
-        if (req.getCantidadEjecutada() != null) avance.setCantidadEjecutada(req.getCantidadEjecutada());
-        if (req.getUnidadMedida() != null)
-            avance.setUnidadMedida(EstandarRendimiento.UnidadMedida.valueOf(req.getUnidadMedida()));
-        if (req.getCantidadProgramada() != null) avance.setCantidadProgramada(req.getCantidadProgramada());
-        if (req.getObservaciones() != null)    avance.setObservaciones(req.getObservaciones());
-        return AvancePartidaResponse.from(avancePartidaRepository.save(avance));
+        if (request.getIdProyecto() != null)       avance.setProyecto(getProyectoOrThrow(request.getIdProyecto()));
+        if (request.getIdCuadrilla() != null)      avance.setCuadrilla(getCuadrillaOrThrow(request.getIdCuadrilla()));
+        if (request.getIdEstandar() != null)       avance.setEstandar(getEstandarOrThrow(request.getIdEstandar()));
+        if (request.getNombrePartida() != null)    avance.setNombrePartida(request.getNombrePartida());
+        if (request.getFechaRegistro() != null)    avance.setFechaRegistro(request.getFechaRegistro());
+        if (request.getCantidadEjecutada() != null) avance.setCantidadEjecutada(request.getCantidadEjecutada());
+        return toResponse(avancePartidaRepository.save(avance));
     }
 
     @Override
@@ -114,5 +107,21 @@ public class AvancePartidaServiceImpl implements AvancePartidaService {
     private Empleado getEmpleadoOrThrow(Integer id) {
         return empleadoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con id: " + id));
+    }
+
+    AvancePartidaResponseDTO toResponse(AvancePartida a) {
+        return AvancePartidaResponseDTO.builder()
+                .idAvance(a.getIdAvance())
+                .idProyecto(a.getProyecto().getIdProyecto())
+                .nombreProyecto(a.getProyecto().getNombreProyecto())
+                .idCuadrilla(a.getCuadrilla() != null ? a.getCuadrilla().getIdCuadrilla() : null)
+                .nombreCuadrilla(a.getCuadrilla() != null ? a.getCuadrilla().getNombreCuadrilla() : null)
+                .idEstandar(a.getEstandar() != null ? a.getEstandar().getIdEstandar() : null)
+                .nombreActividad(a.getEstandar() != null ? a.getEstandar().getNombreActividad() : null)
+                .rendimientoEsperado(a.getEstandar() != null ? a.getEstandar().getRendimientoEsperado() : null)
+                .nombrePartida(a.getNombrePartida())
+                .fechaRegistro(a.getFechaRegistro())
+                .cantidadEjecutada(a.getCantidadEjecutada())
+                .build();
     }
 }

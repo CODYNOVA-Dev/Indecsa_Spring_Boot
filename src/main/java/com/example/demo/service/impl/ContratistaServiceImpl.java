@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.contratista.ContratistaRequest;
-import com.example.demo.dto.contratista.ContratistaResponse;
+import com.example.demo.dto.request.ContratistaRequestDTO;
+import com.example.demo.dto.response.ContratistaResponseDTO;
 import com.example.demo.model.Contratista;
 import com.example.demo.repository.ContratistaRepository;
 import com.example.demo.service.ContratistaService;
@@ -23,24 +23,24 @@ public class ContratistaServiceImpl implements ContratistaService {
     private final ContratistaRepository contratistaRepository;
 
     @Override
-    public Page<ContratistaResponse> findAll(Pageable pageable) {
-        return contratistaRepository.findAll(pageable).map(ContratistaResponse::from);
+    public Page<ContratistaResponseDTO> findAll(Pageable pageable) {
+        return contratistaRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Override
-    public List<ContratistaResponse> findByEstado(Contratista.EstadoContratista estado) {
+    public List<ContratistaResponseDTO> findByEstado(Contratista.EstadoContratista estado) {
         return contratistaRepository.findByEstadoContratista(estado)
-                .stream().map(ContratistaResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public ContratistaResponse findById(Integer id) {
-        return ContratistaResponse.from(getOrThrow(id));
+    public ContratistaResponseDTO findById(Integer id) {
+        return toResponse(getOrThrow(id));
     }
 
     @Override
     @Transactional
-    public ContratistaResponse create(ContratistaRequest request) {
+    public ContratistaResponseDTO create(ContratistaRequestDTO request) {
         if (request.getRfcContratista() != null
                 && contratistaRepository.existsByRfcContratista(request.getRfcContratista())) {
             throw new IllegalArgumentException("Ya existe un contratista con el RFC: " + request.getRfcContratista());
@@ -65,12 +65,12 @@ public class ContratistaServiceImpl implements ContratistaService {
                 .ubicacionContratista(request.getUbicacionContratista())
                 .build();
 
-        return ContratistaResponse.from(contratistaRepository.save(contratista));
+        return toResponse(contratistaRepository.save(contratista));
     }
 
     @Override
     @Transactional
-    public ContratistaResponse update(Integer id, ContratistaRequest request) {
+    public ContratistaResponseDTO update(Integer id, ContratistaRequestDTO request) {
         Contratista contratista = getOrThrow(id);
 
         if (request.getRfcContratista() != null
@@ -84,26 +84,26 @@ public class ContratistaServiceImpl implements ContratistaService {
             throw new IllegalArgumentException("Ya existe un contratista con el correo: " + request.getCorreoContratista());
         }
 
-        if (request.getNombreContratista() != null)     contratista.setNombreContratista(request.getNombreContratista());
-        if (request.getCurp() != null)                  contratista.setCurp(request.getCurp());
-        if (request.getRfcContratista() != null)        contratista.setRfcContratista(request.getRfcContratista());
-        if (request.getTelefonoContratista() != null)   contratista.setTelefonoContratista(request.getTelefonoContratista());
-        if (request.getCorreoContratista() != null)     contratista.setCorreoContratista(request.getCorreoContratista());
-        if (request.getDescripcionContratista() != null)contratista.setDescripcionContratista(request.getDescripcionContratista());
-        if (request.getExperiencia() != null)           contratista.setExperiencia(request.getExperiencia());
+        if (request.getNombreContratista() != null)      contratista.setNombreContratista(request.getNombreContratista());
+        if (request.getCurp() != null)                   contratista.setCurp(request.getCurp());
+        if (request.getRfcContratista() != null)         contratista.setRfcContratista(request.getRfcContratista());
+        if (request.getTelefonoContratista() != null)    contratista.setTelefonoContratista(request.getTelefonoContratista());
+        if (request.getCorreoContratista() != null)      contratista.setCorreoContratista(request.getCorreoContratista());
+        if (request.getDescripcionContratista() != null) contratista.setDescripcionContratista(request.getDescripcionContratista());
+        if (request.getExperiencia() != null)            contratista.setExperiencia(request.getExperiencia());
         if (request.getCalificacionContratista() != null) contratista.setCalificacionContratista(request.getCalificacionContratista());
-        if (request.getEstadoContratista() != null)     contratista.setEstadoContratista(request.getEstadoContratista());
-        if (request.getUbicacionContratista() != null)  contratista.setUbicacionContratista(request.getUbicacionContratista());
+        if (request.getEstadoContratista() != null)      contratista.setEstadoContratista(request.getEstadoContratista());
+        if (request.getUbicacionContratista() != null)   contratista.setUbicacionContratista(request.getUbicacionContratista());
 
-        return ContratistaResponse.from(contratistaRepository.save(contratista));
+        return toResponse(contratistaRepository.save(contratista));
     }
 
     @Override
     @Transactional
-    public ContratistaResponse cambiarEstado(Integer id, Contratista.EstadoContratista estado) {
+    public ContratistaResponseDTO cambiarEstado(Integer id, Contratista.EstadoContratista estado) {
         Contratista contratista = getOrThrow(id);
         contratista.setEstadoContratista(estado);
-        return ContratistaResponse.from(contratistaRepository.save(contratista));
+        return toResponse(contratistaRepository.save(contratista));
     }
 
     @Override
@@ -116,5 +116,21 @@ public class ContratistaServiceImpl implements ContratistaService {
     private Contratista getOrThrow(Integer id) {
         return contratistaRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Contratista no encontrado con id: " + id));
+    }
+
+    public ContratistaResponseDTO toResponse(Contratista c) {
+        return ContratistaResponseDTO.builder()
+                .idContratista(c.getIdContratista())
+                .nombreContratista(c.getNombreContratista())
+                .curp(c.getCurp())
+                .rfcContratista(c.getRfcContratista())
+                .telefonoContratista(c.getTelefonoContratista())
+                .correoContratista(c.getCorreoContratista())
+                .descripcionContratista(c.getDescripcionContratista())
+                .experiencia(c.getExperiencia())
+                .calificacionContratista(c.getCalificacionContratista())
+                .estadoContratista(c.getEstadoContratista())
+                .ubicacionContratista(c.getUbicacionContratista())
+                .build();
     }
 }

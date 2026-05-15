@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.empleado.EmpleadoRequest;
-import com.example.demo.dto.empleado.EmpleadoResponse;
+import com.example.demo.dto.request.EmpleadoRequestDTO;
+import com.example.demo.dto.response.EmpleadoResponseDTO;
 import com.example.demo.model.Empleado;
 import com.example.demo.model.Rol;
 import com.example.demo.repository.EmpleadoRepository;
@@ -26,35 +26,32 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public List<EmpleadoResponse> findAll() {
+    public List<EmpleadoResponseDTO> findAll() {
         return empleadoRepository.findAll()
-                .stream().map(EmpleadoResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<EmpleadoResponse> findByRol(Integer idRol) {
+    public List<EmpleadoResponseDTO> findByRol(Integer idRol) {
         return empleadoRepository.findByRolIdRol(idRol)
-                .stream().map(EmpleadoResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public EmpleadoResponse findById(Integer id) {
-        return EmpleadoResponse.from(getEmpleadoOrThrow(id));
+    public EmpleadoResponseDTO findById(Integer id) {
+        return toResponse(getEmpleadoOrThrow(id));
     }
 
     @Override
     @Transactional
-    public EmpleadoResponse create(EmpleadoRequest request) {
-        if (request.getCorreoEmpleado() != null
-                && empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
+    public EmpleadoResponseDTO create(EmpleadoRequestDTO request) {
+        if (empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
-        if (request.getCurp() != null
-                && empleadoRepository.existsByCurp(request.getCurp())) {
+        if (request.getCurp() != null && empleadoRepository.existsByCurp(request.getCurp())) {
             throw new IllegalArgumentException("Ya existe un empleado con la CURP: " + request.getCurp());
         }
-        Rol rol = rolRepository.findById(request.getIdRol())
-                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con id: " + request.getIdRol()));
+        Rol rol = getRolOrThrow(request.getIdRol());
 
         Empleado empleado = Empleado.builder()
                 .nombreEmpleado(request.getNombreEmpleado())
@@ -63,12 +60,12 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                 .contrasena(passwordEncoder.encode(request.getContrasena()))
                 .rol(rol)
                 .build();
-        return EmpleadoResponse.from(empleadoRepository.save(empleado));
+        return toResponse(empleadoRepository.save(empleado));
     }
 
     @Override
     @Transactional
-    public EmpleadoResponse update(Integer id, EmpleadoRequest request) {
+    public EmpleadoResponseDTO update(Integer id, EmpleadoRequestDTO request) {
         Empleado empleado = getEmpleadoOrThrow(id);
 
         if (request.getCorreoEmpleado() != null
@@ -77,16 +74,13 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
 
-        Rol rol = rolRepository.findById(request.getIdRol())
-                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con id: " + request.getIdRol()));
+        if (request.getNombreEmpleado() != null) empleado.setNombreEmpleado(request.getNombreEmpleado());
+        if (request.getCurp() != null)            empleado.setCurp(request.getCurp());
+        if (request.getCorreoEmpleado() != null)  empleado.setCorreoEmpleado(request.getCorreoEmpleado().toLowerCase().trim());
+        if (request.getContrasena() != null)      empleado.setContrasena(passwordEncoder.encode(request.getContrasena()));
+        if (request.getIdRol() != null)           empleado.setRol(getRolOrThrow(request.getIdRol()));
 
-        if (request.getNombreEmpleado() != null)  empleado.setNombreEmpleado(request.getNombreEmpleado());
-        if (request.getCurp() != null)             empleado.setCurp(request.getCurp());
-        if (request.getCorreoEmpleado() != null)   empleado.setCorreoEmpleado(request.getCorreoEmpleado().toLowerCase().trim());
-        if (request.getContrasena() != null)       empleado.setContrasena(passwordEncoder.encode(request.getContrasena()));
-        empleado.setRol(rol);
-
-        return EmpleadoResponse.from(empleadoRepository.save(empleado));
+        return toResponse(empleadoRepository.save(empleado));
     }
 
     @Override
@@ -99,5 +93,21 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     private Empleado getEmpleadoOrThrow(Integer id) {
         return empleadoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con id: " + id));
+    }
+
+    private Rol getRolOrThrow(Integer idRol) {
+        return rolRepository.findById(idRol)
+                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con id: " + idRol));
+    }
+
+    EmpleadoResponseDTO toResponse(Empleado e) {
+        return EmpleadoResponseDTO.builder()
+                .idEmpleado(e.getIdEmpleado())
+                .nombreEmpleado(e.getNombreEmpleado())
+                .curp(e.getCurp())
+                .correoEmpleado(e.getCorreoEmpleado())
+                .idRol(e.getRol().getIdRol())
+                .nombreRol(e.getRol().getNombreRol())
+                .build();
     }
 }

@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.cuadrilla.CuadrillaRequest;
-import com.example.demo.dto.cuadrilla.CuadrillaResponse;
+import com.example.demo.dto.request.CuadrillaRequestDTO;
+import com.example.demo.dto.response.CuadrillaResponseDTO;
 import com.example.demo.service.CuadrillaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,21 +21,21 @@ public class CuadrillaController {
 
     @GetMapping("/proyecto/{idProyecto}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<List<CuadrillaResponse>> listarPorProyecto(@PathVariable Integer idProyecto) {
+    public ResponseEntity<List<CuadrillaResponseDTO>> listarPorProyecto(@PathVariable Integer idProyecto) {
         return ResponseEntity.ok(cuadrillaService.listarPorProyecto(idProyecto));
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CuadrillaResponse> crear(@Valid @RequestBody CuadrillaRequest request) {
+    public ResponseEntity<CuadrillaResponseDTO> crear(@Valid @RequestBody CuadrillaRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(cuadrillaService.crear(request));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CuadrillaResponse> actualizar(
+    public ResponseEntity<CuadrillaResponseDTO> actualizar(
             @PathVariable Integer id,
-            @Valid @RequestBody CuadrillaRequest request) {
+            @Valid @RequestBody CuadrillaRequestDTO request) {
         return ResponseEntity.ok(cuadrillaService.actualizar(id, request));
     }
 

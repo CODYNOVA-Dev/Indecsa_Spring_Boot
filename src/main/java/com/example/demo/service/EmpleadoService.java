@@ -1,15 +1,15 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.empleado.EmpleadoRequest;
-import com.example.demo.dto.empleado.EmpleadoResponse;
+import com.example.demo.dto.request.EmpleadoRequestDTO;
+import com.example.demo.dto.response.EmpleadoResponseDTO;
 
 import java.util.List;
 
 public interface EmpleadoService {
-    List<EmpleadoResponse> findAll();
-    List<EmpleadoResponse> findByRol(Integer idRol);
-    EmpleadoResponse findById(Integer id);
-    EmpleadoResponse create(EmpleadoRequest request);
-    EmpleadoResponse update(Integer id, EmpleadoRequest request);
+    List<EmpleadoResponseDTO> findAll();
+    List<EmpleadoResponseDTO> findByRol(Integer idRol);
+    EmpleadoResponseDTO findById(Integer id);
+    EmpleadoResponseDTO create(EmpleadoRequestDTO request);
+    EmpleadoResponseDTO update(Integer id, EmpleadoRequestDTO request);
     void delete(Integer id);
 }

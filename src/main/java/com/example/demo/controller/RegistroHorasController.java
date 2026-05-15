@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.registro.RegistroHorasRequest;
-import com.example.demo.dto.registro.RegistroHorasResponse;
+import com.example.demo.dto.request.RegistroHorasRequestDTO;
+import com.example.demo.dto.response.RegistroHorasResponseDTO;
 import com.example.demo.model.Empleado;
 import com.example.demo.repository.EmpleadoRepository;
 import com.example.demo.service.RegistroHorasService;
@@ -29,7 +29,7 @@ public class RegistroHorasController {
 
     @GetMapping("/proyecto/{idProyecto}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<List<RegistroHorasResponse>> listarPorProyecto(
+    public ResponseEntity<List<RegistroHorasResponseDTO>> listarPorProyecto(
             @PathVariable Integer idProyecto,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin) {
@@ -38,14 +38,14 @@ public class RegistroHorasController {
 
     @GetMapping("/trabajador/{idTrabajador}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<List<RegistroHorasResponse>> listarPorTrabajador(
+    public ResponseEntity<List<RegistroHorasResponseDTO>> listarPorTrabajador(
             @PathVariable Integer idTrabajador) {
         return ResponseEntity.ok(registroHorasService.listarPorTrabajador(idTrabajador));
     }
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<RegistroHorasResponse> registrar(@Valid @RequestBody RegistroHorasRequest request) {
+    public ResponseEntity<RegistroHorasResponseDTO> registrar(@Valid @RequestBody RegistroHorasRequestDTO request) {
         Integer idEmpleado = getEmpleadoAutenticado().getIdEmpleado();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(registroHorasService.registrar(request, idEmpleado));
@@ -53,9 +53,9 @@ public class RegistroHorasController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','CAPITAL_HUMANO')")
-    public ResponseEntity<RegistroHorasResponse> actualizar(
+    public ResponseEntity<RegistroHorasResponseDTO> actualizar(
             @PathVariable Integer id,
-            @Valid @RequestBody RegistroHorasRequest request) {
+            @Valid @RequestBody RegistroHorasRequestDTO request) {
         return ResponseEntity.ok(registroHorasService.actualizar(id, request));
     }
 

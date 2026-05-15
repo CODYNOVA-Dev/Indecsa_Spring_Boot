@@ -1,7 +1,7 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.contratista.ContratistaRequest;
-import com.example.demo.dto.contratista.ContratistaResponse;
+import com.example.demo.dto.request.ContratistaRequestDTO;
+import com.example.demo.dto.response.ContratistaResponseDTO;
 import com.example.demo.model.Contratista;
 import com.example.demo.service.ContratistaService;
 import jakarta.validation.Valid;
@@ -23,35 +23,35 @@ public class ContratistaController {
     private final ContratistaService contratistaService;
 
     @GetMapping
-    public ResponseEntity<Page<ContratistaResponse>> findAll(
+    public ResponseEntity<Page<ContratistaResponseDTO>> findAll(
             @PageableDefault(size = 20, sort = "idContratista") Pageable pageable) {
         return ResponseEntity.ok(contratistaService.findAll(pageable));
     }
 
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<ContratistaResponse>> findByEstado(
+    public ResponseEntity<List<ContratistaResponseDTO>> findByEstado(
             @PathVariable Contratista.EstadoContratista estado) {
         return ResponseEntity.ok(contratistaService.findByEstado(estado));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ContratistaResponse> findById(@PathVariable Integer id) {
+    public ResponseEntity<ContratistaResponseDTO> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(contratistaService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<ContratistaResponse> create(@Valid @RequestBody ContratistaRequest request) {
+    public ResponseEntity<ContratistaResponseDTO> create(@Valid @RequestBody ContratistaRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(contratistaService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ContratistaResponse> update(@PathVariable Integer id,
-                                                       @Valid @RequestBody ContratistaRequest request) {
+    public ResponseEntity<ContratistaResponseDTO> update(@PathVariable Integer id,
+                                                          @Valid @RequestBody ContratistaRequestDTO request) {
         return ResponseEntity.ok(contratistaService.update(id, request));
     }
 
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<ContratistaResponse> cambiarEstado(
+    public ResponseEntity<ContratistaResponseDTO> cambiarEstado(
             @PathVariable Integer id,
             @RequestParam Contratista.EstadoContratista estado) {
         return ResponseEntity.ok(contratistaService.cambiarEstado(id, estado));

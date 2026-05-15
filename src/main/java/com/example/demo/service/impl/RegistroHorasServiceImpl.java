@@ -1,7 +1,7 @@
 package com.example.demo.service.impl;
 
-import com.example.demo.dto.registro.RegistroHorasRequest;
-import com.example.demo.dto.registro.RegistroHorasResponse;
+import com.example.demo.dto.request.RegistroHorasRequestDTO;
+import com.example.demo.dto.response.RegistroHorasResponseDTO;
 import com.example.demo.model.AsignacionTrabajadorProyecto;
 import com.example.demo.model.Cuadrilla;
 import com.example.demo.model.Empleado;
@@ -32,34 +32,30 @@ public class RegistroHorasServiceImpl implements RegistroHorasService {
 
     @Override
     @Transactional
-    public RegistroHorasResponse registrar(RegistroHorasRequest req, Integer idEmpleadoRegistro) {
+    public RegistroHorasResponseDTO registrar(RegistroHorasRequestDTO request, Integer idEmpleadoRegistro) {
         if (registroHorasRepository.existsByAsignacionTrabajadorProyecto_IdAsignacionTpAndFechaRegistro(
-                req.getIdAsignacionTp(), req.getFechaRegistro())) {
+                request.getIdAsignacionTp(), request.getFechaRegistro())) {
             throw new IllegalArgumentException(
                 "Ya existe un registro de horas para la asignación "
-                + req.getIdAsignacionTp() + " en la fecha " + req.getFechaRegistro());
+                + request.getIdAsignacionTp() + " en la fecha " + request.getFechaRegistro());
         }
-        AsignacionTrabajadorProyecto asignacion = getAsignacionOrThrow(req.getIdAsignacionTp());
-        Cuadrilla cuadrilla = null;
-        if (req.getIdCuadrilla() != null) {
-            cuadrilla = getCuadrillaOrThrow(req.getIdCuadrilla());
-        }
+        AsignacionTrabajadorProyecto asignacion = getAsignacionOrThrow(request.getIdAsignacionTp());
+        Cuadrilla cuadrilla = request.getIdCuadrilla() != null
+                ? getCuadrillaOrThrow(request.getIdCuadrilla()) : null;
         Empleado empleado = getEmpleadoOrThrow(idEmpleadoRegistro);
 
         RegistroHoras registro = RegistroHoras.builder()
                 .asignacionTrabajadorProyecto(asignacion)
                 .cuadrilla(cuadrilla)
-                .fechaRegistro(req.getFechaRegistro())
-                .horasTrabajadas(req.getHorasTrabajadas())
-                .tipoPeriodo(RegistroHoras.TipoPeriodo.valueOf(req.getTipoPeriodo()))
-                .observaciones(req.getObservaciones())
+                .fechaRegistro(request.getFechaRegistro())
+                .horasTrabajadas(request.getHorasTrabajadas())
                 .empleadoRegistro(empleado)
                 .build();
-        return RegistroHorasResponse.from(registroHorasRepository.save(registro));
+        return toResponse(registroHorasRepository.save(registro));
     }
 
     @Override
-    public List<RegistroHorasResponse> listarPorProyecto(Integer idProyecto, LocalDate inicio, LocalDate fin) {
+    public List<RegistroHorasResponseDTO> listarPorProyecto(Integer idProyecto, LocalDate inicio, LocalDate fin) {
         List<RegistroHoras> registros;
         if (inicio != null && fin != null) {
             registros = registroHorasRepository
@@ -69,31 +65,27 @@ public class RegistroHorasServiceImpl implements RegistroHorasService {
             registros = registroHorasRepository
                     .findByAsignacionTrabajadorProyecto_Proyecto_IdProyecto(idProyecto);
         }
-        return registros.stream().map(RegistroHorasResponse::from).collect(Collectors.toList());
+        return registros.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
-    public List<RegistroHorasResponse> listarPorTrabajador(Integer idTrabajador) {
+    public List<RegistroHorasResponseDTO> listarPorTrabajador(Integer idTrabajador) {
         return registroHorasRepository
                 .findByAsignacionTrabajadorProyecto_Trabajador_IdTrabajador(idTrabajador)
-                .stream().map(RegistroHorasResponse::from).collect(Collectors.toList());
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public RegistroHorasResponse actualizar(Integer id, RegistroHorasRequest req) {
+    public RegistroHorasResponseDTO actualizar(Integer id, RegistroHorasRequestDTO request) {
         RegistroHoras registro = getOrThrow(id);
-        if (req.getIdAsignacionTp() != null)
-            registro.setAsignacionTrabajadorProyecto(getAsignacionOrThrow(req.getIdAsignacionTp()));
-        if (req.getIdCuadrilla() != null) {
-            registro.setCuadrilla(getCuadrillaOrThrow(req.getIdCuadrilla()));
-        }
-        if (req.getFechaRegistro() != null)    registro.setFechaRegistro(req.getFechaRegistro());
-        if (req.getHorasTrabajadas() != null)  registro.setHorasTrabajadas(req.getHorasTrabajadas());
-        if (req.getTipoPeriodo() != null)
-            registro.setTipoPeriodo(RegistroHoras.TipoPeriodo.valueOf(req.getTipoPeriodo()));
-        if (req.getObservaciones() != null)    registro.setObservaciones(req.getObservaciones());
-        return RegistroHorasResponse.from(registroHorasRepository.save(registro));
+        if (request.getIdAsignacionTp() != null)
+            registro.setAsignacionTrabajadorProyecto(getAsignacionOrThrow(request.getIdAsignacionTp()));
+        if (request.getIdCuadrilla() != null)
+            registro.setCuadrilla(getCuadrillaOrThrow(request.getIdCuadrilla()));
+        if (request.getFechaRegistro() != null)   registro.setFechaRegistro(request.getFechaRegistro());
+        if (request.getHorasTrabajadas() != null) registro.setHorasTrabajadas(request.getHorasTrabajadas());
+        return toResponse(registroHorasRepository.save(registro));
     }
 
     @Override
@@ -121,5 +113,21 @@ public class RegistroHorasServiceImpl implements RegistroHorasService {
     private Empleado getEmpleadoOrThrow(Integer id) {
         return empleadoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con id: " + id));
+    }
+
+    RegistroHorasResponseDTO toResponse(RegistroHoras r) {
+        AsignacionTrabajadorProyecto atp = r.getAsignacionTrabajadorProyecto();
+        return RegistroHorasResponseDTO.builder()
+                .idRegistro(r.getIdRegistro())
+                .idAsignacionTp(atp.getIdAsignacionTp())
+                .idTrabajador(atp.getTrabajador().getIdTrabajador())
+                .nombreTrabajador(atp.getTrabajador().getNombreTrabajador())
+                .idProyecto(atp.getProyecto().getIdProyecto())
+                .nombreProyecto(atp.getProyecto().getNombreProyecto())
+                .idCuadrilla(r.getCuadrilla() != null ? r.getCuadrilla().getIdCuadrilla() : null)
+                .nombreCuadrilla(r.getCuadrilla() != null ? r.getCuadrilla().getNombreCuadrilla() : null)
+                .fechaRegistro(r.getFechaRegistro())
+                .horasTrabajadas(r.getHorasTrabajadas())
+                .build();
     }
 }

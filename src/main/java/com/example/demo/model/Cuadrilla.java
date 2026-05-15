@@ -35,9 +35,6 @@ public class Cuadrilla {
     @Column(name = "estatus_cuadrilla", nullable = false)
     private EstatusCuadrilla estatusCuadrilla;
 
-    @Column(name = "observaciones", length = 500)
-    private String observaciones;
-
     public enum EstatusCuadrilla {
         ACTIVO, INACTIVO
     }

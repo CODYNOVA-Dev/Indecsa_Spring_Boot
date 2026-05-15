@@ -29,10 +29,6 @@ public class Proyecto {
     @Column(name = "cliente", nullable = false, length = 200)
     private String cliente;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_ubicacion")
-    private UbicacionProyecto ubicacion;
-
     @Column(name = "municipio_proyecto", length = 100)
     private String municipioProyecto;
 

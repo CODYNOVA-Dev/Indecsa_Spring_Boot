@@ -1,16 +1,18 @@
 package com.example.demo.dto.request;
 
-import com.example.demo.model.Contratista.Ubicacion;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class ContratistaRequestDTO {
 
-    // Campo agregado: nombre_contratista es NOT NULL en la BD
     @NotBlank(message = "El nombre del contratista es obligatorio")
     @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
     private String nombreContratista;
+
+    @NotBlank(message = "El CURP es obligatorio")
+    @Size(min = 18, max = 18, message = "El CURP debe tener exactamente 18 caracteres")
+    private String curp;
 
     @NotBlank(message = "El RFC es obligatorio")
     @Size(max = 15, message = "El RFC no puede exceder 15 caracteres")
@@ -25,12 +27,12 @@ public class ContratistaRequestDTO {
     @Size(max = 100, message = "El correo no puede exceder 100 caracteres")
     private String correoContratista;
 
-    // Campo eliminado: contrasenia_contratista no existe en la BD
-    // private String contraseniaContratista;
-
     @NotBlank(message = "La descripción es obligatoria")
     @Size(max = 255, message = "La descripción no puede exceder 255 caracteres")
     private String descripcionContratista;
+
+    @Size(max = 255, message = "La URL de foto no puede exceder 255 caracteres")
+    private String fotoPerfilUrl;
 
     @Size(max = 200, message = "La experiencia no puede exceder 200 caracteres")
     private String experiencia;
@@ -39,7 +41,7 @@ public class ContratistaRequestDTO {
     @Max(value = 5, message = "La calificación máxima es 5")
     private Byte calificacionContratista;
 
-    // Campo agregado: ubicacion_contratista es NOT NULL en la BD
-    @NotNull(message = "La ubicación del contratista es obligatoria")
-    private Ubicacion ubicacionContratista;
+    // Sustituye al ENUM ubicacion_contratista
+    @NotNull(message = "El estado de operación es obligatorio")
+    private Integer idEstadoOperacion;
 }

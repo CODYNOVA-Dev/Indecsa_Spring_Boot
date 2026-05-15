@@ -15,6 +15,10 @@ public interface TrabajadorRepository extends JpaRepository<Trabajador, Integer>
 
     boolean existsByCorreoTrabajador(String correoTrabajador);
 
+    boolean existsByCurp(String curp);
+
+    boolean existsByRfc(String rfc);
+
     boolean existsByNssTrabajador(String nssTrabajador);
 
     List<Trabajador> findByEstadoTrabajador(EstadoTrabajador estadoTrabajador);

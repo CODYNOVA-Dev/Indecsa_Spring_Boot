@@ -38,11 +38,11 @@ public class ProyectoController {
         return ResponseEntity.ok(proyectoService.findByEstatus(estatus));
     }
 
-    // ─── GET BY MUNICIPIO ─────────────────────────────────────────────────────
-    @GetMapping("/municipio/{municipio}")
-    public ResponseEntity<List<ProyectoResponseDTO>> getByMunicipio(
-            @PathVariable String municipio) {
-        return ResponseEntity.ok(proyectoService.findByMunicipio(municipio));
+    // ─── GET BY CLIENTE ───────────────────────────────────────────────────────
+    @GetMapping("/cliente/{cliente}")
+    public ResponseEntity<List<ProyectoResponseDTO>> getByCliente(
+            @PathVariable String cliente) {
+        return ResponseEntity.ok(proyectoService.findByCliente(cliente));
     }
 
     // ─── CREATE ───────────────────────────────────────────────────────────────

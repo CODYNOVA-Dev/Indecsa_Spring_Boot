@@ -1,6 +1,6 @@
 package com.example.demo.dto.request;
 
-import com.example.demo.model.Proyecto.UbicacionGeo;
+import com.example.demo.model.Proyecto.TipoProyecto;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -13,18 +13,18 @@ public class ProyectoRequestDTO {
     @Size(max = 150, message = "El nombre no puede exceder 150 caracteres")
     private String nombreProyecto;
 
-    @Size(max = 80, message = "El tipo de proyecto no puede exceder 80 caracteres")
-    private String tipoProyecto;
+    private TipoProyecto tipoProyecto;
 
-    @Size(max = 200, message = "El lugar no puede exceder 200 caracteres")
-    private String lugarProyecto;
+    @Size(max = 200, message = "La oferta de trabajo no puede exceder 200 caracteres")
+    private String ofertaTrabajo;
 
-    @Size(max = 100, message = "El municipio no puede exceder 100 caracteres")
-    private String municipioProyecto;
+    @NotBlank(message = "El cliente es obligatorio")
+    @Size(max = 200, message = "El cliente no puede exceder 200 caracteres")
+    private String cliente;
 
-    // Corregido: era String con @Size, pero en la BD es ENUM('CDMX','Hidalgo','Puebla') NOT NULL
-    @NotNull(message = "El estado geográfico del proyecto es obligatorio")
-    private UbicacionGeo estadoProyectoGeo;
+    // Reemplaza municipio_proyecto + estado_proyecto_geo
+    @NotNull(message = "El domicilio del proyecto es obligatorio")
+    private Integer idDomicilio;
 
     private LocalDate fechaEstimadaInicio;
 
@@ -36,4 +36,7 @@ public class ProyectoRequestDTO {
 
     @Size(max = 500, message = "La descripción no puede exceder 500 caracteres")
     private String descripcionProyecto;
+
+    @Size(max = 255, message = "La URL de imagen no puede exceder 255 caracteres")
+    private String imagenProyectoUrl;
 }

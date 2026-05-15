@@ -13,6 +13,10 @@ public class EmpleadoRequestDTO {
     @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
     private String nombreEmpleado;
 
+    @NotBlank(message = "El CURP es obligatorio")
+    @Size(min = 18, max = 18, message = "El CURP debe tener exactamente 18 caracteres")
+    private String curp;
+
     @NotBlank(message = "El correo es obligatorio")
     @Email(message = "El correo no tiene un formato válido")
     @Size(max = 100, message = "El correo no puede exceder 100 caracteres")

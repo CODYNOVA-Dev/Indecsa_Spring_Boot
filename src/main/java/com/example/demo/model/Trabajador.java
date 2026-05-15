@@ -19,11 +19,46 @@ public class Trabajador {
     @Column(name = "id_trabajador")
     private Integer idTrabajador;
 
+    // ─── Datos personales ──────────────────────────────────────────────────────
     @Column(name = "nombre_trabajador", nullable = false, length = 100)
     private String nombreTrabajador;
 
-    @Column(name = "nss_trabajador", length = 15)
+    @Column(name = "curp", nullable = false, unique = true, length = 18)
+    private String curp;
+
+    @Column(name = "rfc", nullable = false, unique = true, length = 13)
+    private String rfc;
+
+    @Column(name = "nss_trabajador", unique = true, length = 11)
     private String nssTrabajador;
+
+    @Column(name = "nacionalidad", nullable = false, length = 100)
+    private String nacionalidad;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_migratorio")
+    private RegistroMigratorio registroMigratorio;
+
+    // ─── Domicilio (FK centralizada) ───────────────────────────────────────────
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_domicilio", nullable = false)
+    private Domicilio domicilio;
+
+    @Column(name = "foto_perfil_url", length = 255)
+    private String fotoPerfilUrl;
+
+    // ─── Información laboral ───────────────────────────────────────────────────
+    @Column(name = "puesto", nullable = false, length = 100)
+    private String puesto;
+
+    @Column(name = "desc_puesto", nullable = false, length = 500)
+    private String descPuesto;
+
+    @Column(name = "especialidad_trabajador", nullable = false, length = 100)
+    private String especialidadTrabajador;
+
+    @Column(name = "escolaridad", nullable = false, length = 100)
+    private String escolaridad;
 
     @Column(name = "experiencia", length = 200)
     private String experiencia;
@@ -34,40 +69,56 @@ public class Trabajador {
     @Column(name = "correo_trabajador", nullable = false, unique = true, length = 100)
     private String correoTrabajador;
 
-    // Campo eliminado: contrasenia_trabajador no existe en la BD
-    // private String contraseniaTrabajador;
+    @Column(name = "contratacion", nullable = false, length = 200)
+    private String contratacion;
 
-    @Column(name = "especialidad_trabajador", nullable = false, length = 100)
-    private String especialidadTrabajador;
+    @Column(name = "jornada", nullable = false, length = 200)
+    private String jornada;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_trabajador", nullable = false, columnDefinition = "ENUM('ACTIVO','INACTIVO','VACACIONES','BAJA') DEFAULT 'ACTIVO'")
+    @Column(name = "estado_trabajador", nullable = false)
     private EstadoTrabajador estadoTrabajador = EstadoTrabajador.ACTIVO;
 
-    @Column(name = "descripcion_trabajador", length = 800, columnDefinition = "VARCHAR(800) DEFAULT 'Sin descripcion'")
-    private String descripcionTrabajador;
-
-    @Column(name = "calificacion_trabajador")
-    private Byte calificacionTrabajador;
+    @Column(name = "evaluacion_trabajador")
+    private Byte evaluacionTrabajador;
 
     @Column(name = "fecha_ingreso", nullable = false)
     private LocalDate fechaIngreso;
 
-    // Campo agregado: existe en la BD pero faltaba en el modelo
-    @Enumerated(EnumType.STRING)
-    @Column(name = "ubicacion_trabajador", nullable = false)
-    private Ubicacion ubicacionTrabajador;
+    // ─── Calidad de vida (FK a Estado) ─────────────────────────────────────────
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_estado_calidad_vida", nullable = false)
+    private Estado estadoCalidadVida;
 
+    // ─── Otros datos ───────────────────────────────────────────────────────────
+    @Enumerated(EnumType.STRING)
+    @Column(name = "sexo", nullable = false)
+    private Sexo sexo;
+
+    @Column(name = "ant_penal", length = 500)
+    private String antPenal;
+
+    @Column(name = "deudor_alim", length = 500)
+    private String deudorAlim;
+
+    @Column(name = "folio_lic_cond", length = 20)
+    private String folioLicCond;
+
+    @Column(name = "estado_civil", length = 50)
+    private String estadoCivil;
+
+    @Column(name = "idiomas", length = 200)
+    private String idiomas;
+
+    @Column(name = "lengua_indigena", length = 100)
+    private String lenguaIndigena;
+
+    // ─── Enums ─────────────────────────────────────────────────────────────────
     public enum EstadoTrabajador {
-        ACTIVO,
-        INACTIVO,
-        VACACIONES,
-        BAJA
+        DESCANSO, VACACIONES, INCAPACIDAD, ACTIVO, INACTIVO, BAJA, BOLETINADO
     }
 
-    public enum Ubicacion {
-        CDMX,
-        Hidalgo,
-        Puebla
+    public enum Sexo {
+        Masculino, Femenino, Otro
     }
 }

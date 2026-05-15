@@ -7,6 +7,7 @@ import com.example.demo.dto.response.ProyectoResponseDTO;
 import com.example.demo.model.AsignacionProyectoContratista;
 import com.example.demo.model.AsignacionProyectoContratista.EstatusContrato;
 import com.example.demo.model.Contratista;
+import com.example.demo.model.Domicilio;
 import com.example.demo.model.Proyecto;
 import com.example.demo.repository.AsignacionProyectoContratistaRepository;
 import com.example.demo.repository.ContratistaRepository;
@@ -99,7 +100,7 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
         asignacion.setProyecto(proyecto);
         asignacion.setContratista(contratista);
         mapDtoToEntity(dto, asignacion);
-        asignacion.setEstatusContrato(EstatusContrato.ACTIVO);
+        asignacion.setEstatusContrato(EstatusContrato.VIGENTE);
         return toResponse(asignacionRepository.save(asignacion));
     }
 
@@ -172,51 +173,59 @@ public class AsignacionProyectoContratistaServiceImpl implements AsignacionProye
         asignacion.setNumeroContrato(dto.getNumeroContrato());
         asignacion.setFechaInicio(dto.getFechaInicio());
         asignacion.setFechaFinEstimada(dto.getFechaFinEstimada());
-        asignacion.setMontoContratado(dto.getMontoContratado());
+        asignacion.setPersonalAsignado(dto.getPersonalAsignado());
         asignacion.setObservaciones(dto.getObservaciones());
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────
-    private AsignacionProyectoContratistaResponseDTO toResponse(AsignacionProyectoContratista a) {
-        Proyecto p = a.getProyecto();
-        Contratista c = a.getContratista();
-
-        ProyectoResponseDTO proyectoDTO = ProyectoResponseDTO.builder()
+    private ProyectoResponseDTO toProyectoResponse(Proyecto p) {
+        Domicilio d = p.getDomicilio();
+        return ProyectoResponseDTO.builder()
                 .idProyecto(p.getIdProyecto())
                 .nombreProyecto(p.getNombreProyecto())
                 .tipoProyecto(p.getTipoProyecto())
-                .lugarProyecto(p.getLugarProyecto())
-                .municipioProyecto(p.getMunicipioProyecto())
-                .estadoProyectoGeo(p.getEstadoProyectoGeo())
+                .ofertaTrabajo(p.getOfertaTrabajo())
+                .cliente(p.getCliente())
+                .idDomicilio(d.getIdDomicilio())
+                .calleDomicilio(d.getCalle() + " " + d.getNumExt())
+                .munAlcDomicilio(d.getMunAlc())
+                .nombreEstadoDomicilio(d.getEstado().getNombreEst())
                 .fechaEstimadaInicio(p.getFechaEstimadaInicio())
                 .fechaEstimadaFin(p.getFechaEstimadaFin())
                 .calificacionProyecto(p.getCalificacionProyecto())
                 .estatusProyecto(p.getEstatusProyecto())
                 .descripcionProyecto(p.getDescripcionProyecto())
+                .imagenProyectoUrl(p.getImagenProyectoUrl())
                 .build();
+    }
 
-        ContratistaResponseDTO contratistaDTO = ContratistaResponseDTO.builder()
+    private ContratistaResponseDTO toContratistaResponse(Contratista c) {
+        return ContratistaResponseDTO.builder()
                 .idContratista(c.getIdContratista())
-                // Agregados: nombreContratista y ubicacionContratista existen en la BD
                 .nombreContratista(c.getNombreContratista())
+                .curp(c.getCurp())
                 .rfcContratista(c.getRfcContratista())
                 .telefonoContratista(c.getTelefonoContratista())
                 .correoContratista(c.getCorreoContratista())
                 .descripcionContratista(c.getDescripcionContratista())
+                .fotoPerfilUrl(c.getFotoPerfilUrl())
                 .experiencia(c.getExperiencia())
                 .calificacionContratista(c.getCalificacionContratista())
                 .estadoContratista(c.getEstadoContratista())
-                .ubicacionContratista(c.getUbicacionContratista())
+                .idEstadoOperacion(c.getEstadoOperacion().getIdEstado())
+                .nombreEstadoOperacion(c.getEstadoOperacion().getNombreEst())
                 .build();
+    }
 
+    private AsignacionProyectoContratistaResponseDTO toResponse(AsignacionProyectoContratista a) {
         return AsignacionProyectoContratistaResponseDTO.builder()
                 .idAsignacionPc(a.getIdAsignacionPc())
-                .proyecto(proyectoDTO)
-                .contratista(contratistaDTO)
+                .proyecto(toProyectoResponse(a.getProyecto()))
+                .contratista(toContratistaResponse(a.getContratista()))
                 .numeroContrato(a.getNumeroContrato())
                 .fechaInicio(a.getFechaInicio())
                 .fechaFinEstimada(a.getFechaFinEstimada())
-                .montoContratado(a.getMontoContratado())
+                .personalAsignado(a.getPersonalAsignado())
                 .estatusContrato(a.getEstatusContrato())
                 .observaciones(a.getObservaciones())
                 .build();

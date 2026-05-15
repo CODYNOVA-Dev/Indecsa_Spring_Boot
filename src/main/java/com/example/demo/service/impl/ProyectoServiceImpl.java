@@ -2,8 +2,11 @@ package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.ProyectoRequestDTO;
 import com.example.demo.dto.response.ProyectoResponseDTO;
+import com.example.demo.model.Domicilio;
 import com.example.demo.model.Proyecto;
 import com.example.demo.model.Proyecto.EstatusProyecto;
+import com.example.demo.model.Proyecto.TipoProyecto;
+import com.example.demo.repository.DomicilioRepository;
 import com.example.demo.repository.ProyectoRepository;
 import com.example.demo.service.ProyectoService;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,6 +22,7 @@ import java.util.stream.Collectors;
 public class ProyectoServiceImpl implements ProyectoService {
 
     private final ProyectoRepository proyectoRepository;
+    private final DomicilioRepository domicilioRepository;
 
     // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
@@ -47,11 +51,11 @@ public class ProyectoServiceImpl implements ProyectoService {
                 .collect(Collectors.toList());
     }
 
-    // ─── FIND BY MUNICIPIO ────────────────────────────────────────────────────
+    // ─── FIND BY CLIENTE ──────────────────────────────────────────────────────
     @Override
     @Transactional(readOnly = true)
-    public List<ProyectoResponseDTO> findByMunicipio(String municipio) {
-        return proyectoRepository.findByMunicipioProyectoIgnoreCase(municipio)
+    public List<ProyectoResponseDTO> findByCliente(String cliente) {
+        return proyectoRepository.findByClienteContainingIgnoreCase(cliente)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -115,29 +119,41 @@ public class ProyectoServiceImpl implements ProyectoService {
     private void mapDtoToEntity(ProyectoRequestDTO dto, Proyecto proyecto) {
         proyecto.setNombreProyecto(dto.getNombreProyecto());
         proyecto.setTipoProyecto(dto.getTipoProyecto());
-        proyecto.setLugarProyecto(dto.getLugarProyecto());
-        proyecto.setMunicipioProyecto(dto.getMunicipioProyecto());
-        proyecto.setEstadoProyectoGeo(dto.getEstadoProyectoGeo());
+        proyecto.setOfertaTrabajo(dto.getOfertaTrabajo());
+        proyecto.setCliente(dto.getCliente());
+        proyecto.setDomicilio(getDomicilioOrThrow(dto.getIdDomicilio()));
         proyecto.setFechaEstimadaInicio(dto.getFechaEstimadaInicio());
         proyecto.setFechaEstimadaFin(dto.getFechaEstimadaFin());
         proyecto.setCalificacionProyecto(dto.getCalificacionProyecto());
         proyecto.setDescripcionProyecto(dto.getDescripcionProyecto());
+        proyecto.setImagenProyectoUrl(dto.getImagenProyectoUrl());
+    }
+
+    private Domicilio getDomicilioOrThrow(Integer idDomicilio) {
+        return domicilioRepository.findById(idDomicilio)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Domicilio no encontrado con id: " + idDomicilio));
     }
 
     // ─── MAPPER ───────────────────────────────────────────────────────────────
     private ProyectoResponseDTO toResponse(Proyecto p) {
+        Domicilio d = p.getDomicilio();
         return ProyectoResponseDTO.builder()
                 .idProyecto(p.getIdProyecto())
                 .nombreProyecto(p.getNombreProyecto())
                 .tipoProyecto(p.getTipoProyecto())
-                .lugarProyecto(p.getLugarProyecto())
-                .municipioProyecto(p.getMunicipioProyecto())
-                .estadoProyectoGeo(p.getEstadoProyectoGeo())
+                .ofertaTrabajo(p.getOfertaTrabajo())
+                .cliente(p.getCliente())
+                .idDomicilio(d.getIdDomicilio())
+                .calleDomicilio(d.getCalle() + " " + d.getNumExt())
+                .munAlcDomicilio(d.getMunAlc())
+                .nombreEstadoDomicilio(d.getEstado().getNombreEst())
                 .fechaEstimadaInicio(p.getFechaEstimadaInicio())
                 .fechaEstimadaFin(p.getFechaEstimadaFin())
                 .calificacionProyecto(p.getCalificacionProyecto())
                 .estatusProyecto(p.getEstatusProyecto())
                 .descripcionProyecto(p.getDescripcionProyecto())
+                .imagenProyectoUrl(p.getImagenProyectoUrl())
                 .build();
     }
 }

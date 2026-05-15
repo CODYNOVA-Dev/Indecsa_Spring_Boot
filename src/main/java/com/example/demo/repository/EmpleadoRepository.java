@@ -14,6 +14,8 @@ public interface EmpleadoRepository extends JpaRepository<Empleado, Integer> {
 
     boolean existsByCorreoEmpleado(String correoEmpleado);
 
+    boolean existsByCurp(String curp);
+
     List<Empleado> findByRol_IdRol(Integer idRol);
 
     List<Empleado> findByRol_NombreRol(com.example.demo.model.Rol.NombreRol nombreRol);

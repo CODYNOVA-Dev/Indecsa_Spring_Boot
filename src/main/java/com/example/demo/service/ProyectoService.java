@@ -14,7 +14,7 @@ public interface ProyectoService {
 
     List<ProyectoResponseDTO> findByEstatus(EstatusProyecto estatus);
 
-    List<ProyectoResponseDTO> findByMunicipio(String municipio);
+    List<ProyectoResponseDTO> findByCliente(String cliente);
 
     ProyectoResponseDTO create(ProyectoRequestDTO dto);
 

@@ -64,15 +64,16 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             throw new IllegalArgumentException(
                     "Ya existe un empleado con el correo: " + dto.getCorreoEmpleado());
         }
+        if (empleadoRepository.existsByCurp(dto.getCurp())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un empleado con el CURP: " + dto.getCurp());
+        }
         Rol rol = rolRepository.findById(dto.getIdRol())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Rol no encontrado con id: " + dto.getIdRol()));
 
         Empleado empleado = new Empleado();
-        empleado.setNombreEmpleado(dto.getNombreEmpleado());
-        empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
-        empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
-        empleado.setRol(rol);
+        mapDtoToEntity(dto, empleado, rol);
         return toResponse(empleadoRepository.save(empleado));
     }
 
@@ -87,14 +88,16 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             throw new IllegalArgumentException(
                     "Ya existe un empleado con el correo: " + dto.getCorreoEmpleado());
         }
+        if (!empleado.getCurp().equals(dto.getCurp())
+                && empleadoRepository.existsByCurp(dto.getCurp())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un empleado con el CURP: " + dto.getCurp());
+        }
         Rol rol = rolRepository.findById(dto.getIdRol())
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Rol no encontrado con id: " + dto.getIdRol()));
 
-        empleado.setNombreEmpleado(dto.getNombreEmpleado());
-        empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
-        empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
-        empleado.setRol(rol);
+        mapDtoToEntity(dto, empleado, rol);
         return toResponse(empleadoRepository.save(empleado));
     }
 
@@ -112,12 +115,10 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     @Override
     @Transactional(readOnly = true)
     public LoginResponseDTO login(String correo, String contrasena) {
-        // Buscar empleado por correo (ignorando mayúsculas y espacios)
         Empleado empleado = empleadoRepository
                 .findByCorreoEmpleado(correo.toLowerCase().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas"));
 
-        // Verificar contraseña con BCrypt
         if (!passwordEncoder.matches(contrasena, empleado.getContrasena())) {
             throw new IllegalArgumentException("Credenciales incorrectas");
         }
@@ -137,6 +138,14 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                         "Empleado no encontrado con id: " + id));
     }
 
+    private void mapDtoToEntity(EmpleadoRequestDTO dto, Empleado empleado, Rol rol) {
+        empleado.setNombreEmpleado(dto.getNombreEmpleado());
+        empleado.setCurp(dto.getCurp().toUpperCase().trim());
+        empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
+        empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
+        empleado.setRol(rol);
+    }
+
     // ─── MAPPER ───────────────────────────────────────────────────────────────
     private EmpleadoResponseDTO toResponse(Empleado empleado) {
         RolResponseDTO rolDTO = RolResponseDTO.builder()
@@ -148,7 +157,9 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         return EmpleadoResponseDTO.builder()
                 .idEmpleado(empleado.getIdEmpleado())
                 .nombreEmpleado(empleado.getNombreEmpleado())
+                .curp(empleado.getCurp())
                 .correoEmpleado(empleado.getCorreoEmpleado())
+                .fotoPerfilUrl(empleado.getFotoPerfilUrl())
                 .rol(rolDTO)
                 .build();
     }

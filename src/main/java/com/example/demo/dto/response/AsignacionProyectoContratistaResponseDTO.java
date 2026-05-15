@@ -1,12 +1,9 @@
 package com.example.demo.dto.response;
 
-import com.example.demo.dto.response.ContratistaResponseDTO;
-import com.example.demo.dto.response.ProyectoResponseDTO;
 import com.example.demo.model.AsignacionProyectoContratista.EstatusContrato;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -19,7 +16,7 @@ public class AsignacionProyectoContratistaResponseDTO {
     private String numeroContrato;
     private LocalDate fechaInicio;
     private LocalDate fechaFinEstimada;
-    private BigDecimal montoContratado;
+    private Integer personalAsignado;
     private EstatusContrato estatusContrato;
     private String observaciones;
 }

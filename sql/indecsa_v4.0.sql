@@ -3,11 +3,11 @@
 --  Fecha: 2026-05-15 (Ajuste de Caracteres)
 -- ============================================================
 
-DROP DATABASE IF EXISTS indecsa;
-CREATE DATABASE IF NOT EXISTS indecsa 
+DROP DATABASE IF EXISTS aws-indecsa;
+CREATE DATABASE IF NOT EXISTS aws-indecsa
     CHARACTER SET utf8mb4 
     COLLATE utf8mb4_unicode_ci;
-USE indecsa;
+USE aws-indecsa;
 
 -- ===================================
 -- 1. CATALOGOS BASE

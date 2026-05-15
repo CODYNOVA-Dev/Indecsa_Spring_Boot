@@ -1,12 +1,13 @@
 package com.example.demo.dto.response;
 
-import com.example.demo.model.Contratista;
+import com.example.demo.model.Contratista.EstadoContratista;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
 public class ContratistaResponseDTO {
+
     private Integer idContratista;
     private String nombreContratista;
     private String curp;
@@ -16,6 +17,7 @@ public class ContratistaResponseDTO {
     private String descripcionContratista;
     private String experiencia;
     private Byte calificacionContratista;
-    private Contratista.EstadoContratista estadoContratista;
-    private Contratista.EntidadFederativa ubicacionContratista;
+    private EstadoContratista estadoContratista;
+    private Integer idEstadoOperacion;
+    private String nombreEstadoOperacion;
 }

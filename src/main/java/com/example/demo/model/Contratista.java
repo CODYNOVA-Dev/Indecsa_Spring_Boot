@@ -43,15 +43,11 @@ public class Contratista {
     @Column(name = "estado_contratista", nullable = false)
     private EstadoContratista estadoContratista;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "ubicacion_contratista", nullable = false)
-    private EntidadFederativa ubicacionContratista;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_estado_operacion", nullable = false)
+    private Estado estadoOperacion;
 
     public enum EstadoContratista {
         ACTIVO, INACTIVO, SUSPENDIDO
-    }
-
-    public enum EntidadFederativa {
-        CDMX, Hidalgo, Puebla
     }
 }

@@ -2,7 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.request.ProyectoRequestDTO;
 import com.example.demo.dto.response.ProyectoResponseDTO;
-import com.example.demo.model.Proyecto;
+import com.example.demo.model.Proyecto.EstatusProyecto;
+import com.example.demo.model.Proyecto.TipoProyecto;
 import com.example.demo.service.ProyectoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +31,16 @@ public class ProyectoController {
         return ResponseEntity.ok(proyectoService.findByEstatus(estatus));
     }
 
-    @GetMapping("/municipio/{municipio}")
-    public ResponseEntity<List<ProyectoResponseDTO>> findByMunicipio(
-            @PathVariable String municipio) {
-        return ResponseEntity.ok(proyectoService.findByMunicipio(municipio));
+    // ─── GET BY TIPO ──────────────────────────────────────────────────────────
+    @GetMapping("/tipo/{tipo}")
+    public ResponseEntity<List<ProyectoResponseDTO>> getByTipo(@PathVariable TipoProyecto tipo) {
+        return ResponseEntity.ok(proyectoService.findByTipo(tipo));
+    }
+
+    // ─── GET BY CLIENTE ───────────────────────────────────────────────────────
+    @GetMapping("/cliente/{cliente}")
+    public ResponseEntity<List<ProyectoResponseDTO>> getByCliente(@PathVariable String cliente) {
+        return ResponseEntity.ok(proyectoService.findByCliente(cliente));
     }
 
     @GetMapping("/{id}")

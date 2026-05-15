@@ -1,38 +1,43 @@
 package com.example.demo.dto.request;
 
-import com.example.demo.model.Contratista;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
 public class ContratistaRequestDTO {
 
-    @NotBlank @Size(max = 100)
+    @NotBlank(message = "El nombre del contratista es obligatorio")
+    @Size(max = 100, message = "El nombre no puede exceder 100 caracteres")
     private String nombreContratista;
 
-    @NotBlank @Size(min = 18, max = 18)
+    @NotBlank(message = "La CURP es obligatoria")
+    @Size(max = 18, message = "La CURP no puede exceder 18 caracteres")
     private String curp;
 
-    @NotBlank @Size(max = 15)
+    @NotBlank(message = "El RFC es obligatorio")
+    @Size(max = 15, message = "El RFC no puede exceder 15 caracteres")
     private String rfcContratista;
 
-    @NotBlank @Size(max = 15)
+    @NotBlank(message = "El teléfono es obligatorio")
+    @Size(max = 15, message = "El teléfono no puede exceder 15 caracteres")
     private String telefonoContratista;
 
-    @NotBlank @Email @Size(max = 100)
+    @NotBlank(message = "El correo es obligatorio")
+    @Email(message = "El correo no tiene un formato válido")
+    @Size(max = 100, message = "El correo no puede exceder 100 caracteres")
     private String correoContratista;
 
-    @NotBlank @Size(max = 255)
+    @NotBlank(message = "La descripción es obligatoria")
+    @Size(max = 255, message = "La descripción no puede exceder 255 caracteres")
     private String descripcionContratista;
 
-    @Size(max = 200)
+    @Size(max = 200, message = "La experiencia no puede exceder 200 caracteres")
     private String experiencia;
 
-    @Min(1) @Max(10)
+    @Min(value = 1, message = "La calificación mínima es 1")
+    @Max(value = 5, message = "La calificación máxima es 5")
     private Byte calificacionContratista;
 
-    private Contratista.EstadoContratista estadoContratista;
-
-    @NotNull
-    private Contratista.EntidadFederativa ubicacionContratista;
+    @NotNull(message = "El estado de operación es obligatorio")
+    private Integer idEstadoOperacion;
 }

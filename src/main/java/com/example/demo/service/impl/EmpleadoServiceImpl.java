@@ -48,18 +48,20 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         if (empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
-        if (request.getCurp() != null && empleadoRepository.existsByCurp(request.getCurp())) {
-            throw new IllegalArgumentException("Ya existe un empleado con la CURP: " + request.getCurp());
+        if (empleadoRepository.existsByCurp(dto.getCurp())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un empleado con la CURP: " + dto.getCurp());
         }
-        Rol rol = getRolOrThrow(request.getIdRol());
+        Rol rol = rolRepository.findById(dto.getIdRol())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Rol no encontrado con id: " + dto.getIdRol()));
 
-        Empleado empleado = Empleado.builder()
-                .nombreEmpleado(request.getNombreEmpleado())
-                .curp(request.getCurp() != null ? request.getCurp() : "")
-                .correoEmpleado(request.getCorreoEmpleado().toLowerCase().trim())
-                .contrasena(passwordEncoder.encode(request.getContrasena()))
-                .rol(rol)
-                .build();
+        Empleado empleado = new Empleado();
+        empleado.setNombreEmpleado(dto.getNombreEmpleado());
+        empleado.setCurp(dto.getCurp());
+        empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
+        empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
+        empleado.setRol(rol);
         return toResponse(empleadoRepository.save(empleado));
     }
 
@@ -73,14 +75,22 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                 && empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
+        if (!empleado.getCurp().equals(dto.getCurp())
+                && empleadoRepository.existsByCurp(dto.getCurp())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un empleado con la CURP: " + dto.getCurp());
+        }
+        Rol rol = rolRepository.findById(dto.getIdRol())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Rol no encontrado con id: " + dto.getIdRol()));
 
-        if (request.getNombreEmpleado() != null) empleado.setNombreEmpleado(request.getNombreEmpleado());
-        if (request.getCurp() != null)            empleado.setCurp(request.getCurp());
-        if (request.getCorreoEmpleado() != null)  empleado.setCorreoEmpleado(request.getCorreoEmpleado().toLowerCase().trim());
-        if (request.getContrasena() != null)      empleado.setContrasena(passwordEncoder.encode(request.getContrasena()));
-        if (request.getIdRol() != null)           empleado.setRol(getRolOrThrow(request.getIdRol()));
+        empleado.setNombreEmpleado(dto.getNombreEmpleado());
+        empleado.setCurp(dto.getCurp());
+        empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
+        empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
+        empleado.setRol(rol);
 
-        return toResponse(empleadoRepository.save(empleado));
+        return EmpleadoResponse.from(empleadoRepository.save(empleado));
     }
 
     @Override
@@ -90,24 +100,46 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         empleadoRepository.deleteById(id);
     }
 
+    // ─── LOGIN ────────────────────────────────────────────────────────────────
+    @Override
+    @Transactional(readOnly = true)
+    public LoginResponseDTO login(String correo, String contrasena) {
+        Empleado empleado = empleadoRepository
+                .findByCorreoEmpleado(correo.toLowerCase().trim())
+                .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas"));
+
+        if (!passwordEncoder.matches(contrasena, empleado.getContrasena())) {
+            throw new IllegalArgumentException("Credenciales incorrectas");
+        }
+
+        return LoginResponseDTO.builder()
+                .idEmpleado(empleado.getIdEmpleado())
+                .nombreEmpleado(empleado.getNombreEmpleado())
+                .correoEmpleado(empleado.getCorreoEmpleado())
+                .nombreRol(empleado.getRol().getNombreRol().name())
+                .build();
+    }
+
+    // ─── HELPERS ──────────────────────────────────────────────────────────────
     private Empleado getEmpleadoOrThrow(Integer id) {
         return empleadoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Empleado no encontrado con id: " + id));
     }
 
-    private Rol getRolOrThrow(Integer idRol) {
-        return rolRepository.findById(idRol)
-                .orElseThrow(() -> new EntityNotFoundException("Rol no encontrado con id: " + idRol));
-    }
+    // ─── MAPPER ───────────────────────────────────────────────────────────────
+    private EmpleadoResponseDTO toResponse(Empleado empleado) {
+        RolResponseDTO rolDTO = RolResponseDTO.builder()
+                .idRol(empleado.getRol().getIdRol())
+                .nombreRol(empleado.getRol().getNombreRol())
+                .descripcionRol(empleado.getRol().getDescripcionRol())
+                .build();
 
-    EmpleadoResponseDTO toResponse(Empleado e) {
         return EmpleadoResponseDTO.builder()
-                .idEmpleado(e.getIdEmpleado())
-                .nombreEmpleado(e.getNombreEmpleado())
-                .curp(e.getCurp())
-                .correoEmpleado(e.getCorreoEmpleado())
-                .idRol(e.getRol().getIdRol())
-                .nombreRol(e.getRol().getNombreRol())
+                .idEmpleado(empleado.getIdEmpleado())
+                .nombreEmpleado(empleado.getNombreEmpleado())
+                .curp(empleado.getCurp())
+                .correoEmpleado(empleado.getCorreoEmpleado())
+                .rol(rolDTO)
                 .build();
     }
 }

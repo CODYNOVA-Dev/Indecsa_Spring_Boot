@@ -1,7 +1,10 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
 @Entity
@@ -42,17 +45,18 @@ public class AsignacionProyectoContratista {
     @Column(name = "personal_asignado", nullable = false)
     private Integer personalAsignado;
 
-    @Column(name = "puestos_requeridos", length = 500)
-    private String puestosRequeridos;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_contrato", nullable = false)
-    private EstatusContrato estatusContrato;
+    @Column(name = "estatus_contrato", nullable = false, columnDefinition = "ENUM('ACTIVO','VIGENTE','SUSPENDIDO','FINALIZADO','CANCELADO') DEFAULT 'VIGENTE'")
+    private EstatusContrato estatusContrato = EstatusContrato.VIGENTE;
 
     @Column(name = "observaciones", length = 500)
     private String observaciones;
 
     public enum EstatusContrato {
-        ACTIVO, VIGENTE, SUSPENDIDO, FINALIZADO, CANCELADO
+        ACTIVO,
+        VIGENTE,
+        SUSPENDIDO,
+        FINALIZADO,
+        CANCELADO
     }
 }

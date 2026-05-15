@@ -1,9 +1,11 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.AsignacionTrabajadorProyectoRequestDTO;
+import com.example.demo.dto.response.AsignacionProyectoContratistaResponseDTO;
 import com.example.demo.dto.response.AsignacionTrabajadorProyectoResponseDTO;
 import com.example.demo.model.AsignacionProyectoContratista;
 import com.example.demo.model.AsignacionTrabajadorProyecto;
+import com.example.demo.model.AsignacionTrabajadorProyecto.EstatusAsignacion;
 import com.example.demo.model.Proyecto;
 import com.example.demo.model.Trabajador;
 import com.example.demo.repository.AsignacionProyectoContratistaRepository;
@@ -28,6 +30,9 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
     private final TrabajadorRepository trabajadorRepository;
     private final ProyectoRepository proyectoRepository;
     private final AsignacionProyectoContratistaRepository asignacionPcRepository;
+    private final TrabajadorServiceImpl trabajadorService;
+    private final ProyectoServiceImpl proyectoService;
+    private final AsignacionProyectoContratistaServiceImpl asignacionPcService;
 
     @Override
     public List<AsignacionTrabajadorProyectoResponseDTO> findByProyecto(Integer idProyecto) {
@@ -66,26 +71,19 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
             throw new IllegalArgumentException("El trabajador ya está asignado a este proyecto.");
         }
 
-        AsignacionTrabajadorProyecto asignacion = AsignacionTrabajadorProyecto.builder()
-                .trabajador(trabajador)
-                .proyecto(proyecto)
-                .asignacionProyectoContratista(asignacionPc)
-                .puestoEnProyecto(request.getPuestoEnProyecto())
-                .fechaInicio(request.getFechaInicio())
-                .fechaFinEstimada(request.getFechaFinEstimada())
-                .estatusAsignacion(request.getEstatusAsignacion() != null
-                        ? request.getEstatusAsignacion()
-                        : AsignacionTrabajadorProyecto.EstatusAsignacion.ACTIVO)
-                .observaciones(request.getObservaciones())
-                .build();
+        if (asignacionRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
+                dto.getIdTrabajador(), dto.getIdProyecto())) {
+            throw new IllegalArgumentException("El trabajador ya está asignado a este proyecto.");
+        }
 
         return toResponse(asignacionTpRepository.save(asignacion));
     }
 
     @Override
     @Transactional
-    public AsignacionTrabajadorProyectoResponseDTO update(Integer id, AsignacionTrabajadorProyectoRequestDTO request) {
-        AsignacionTrabajadorProyecto asignacion = getOrThrow(id);
+    public AsignacionTrabajadorProyectoResponseDTO update(Integer id,
+                                                          AsignacionTrabajadorProyectoRequestDTO dto) {
+        AsignacionTrabajadorProyecto asignacion = getAsignacionOrThrow(id);
 
         Trabajador trabajador = trabajadorRepository.findById(request.getIdTrabajador())
                 .orElseThrow(() -> new EntityNotFoundException(
@@ -97,7 +95,20 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
 
         AsignacionProyectoContratista asignacionPc = asignacionPcRepository.findById(request.getIdAsignacionPc())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Asignación proyecto-contratista no encontrada con id: " + request.getIdAsignacionPc()));
+                        "Contrato (asignacion_pc) no encontrado con id: " + dto.getIdAsignacionPc()));
+
+        if (!asignacionPc.getProyecto().getIdProyecto().equals(dto.getIdProyecto())) {
+            throw new IllegalArgumentException(
+                    "El contrato indicado no pertenece al proyecto especificado.");
+        }
+
+        boolean cambioRelacion = !asignacion.getTrabajador().getIdTrabajador().equals(dto.getIdTrabajador())
+                || !asignacion.getProyecto().getIdProyecto().equals(dto.getIdProyecto());
+
+        if (cambioRelacion && asignacionRepository.existsByTrabajador_IdTrabajadorAndProyecto_IdProyecto(
+                dto.getIdTrabajador(), dto.getIdProyecto())) {
+            throw new IllegalArgumentException("El trabajador ya está asignado a este proyecto.");
+        }
 
         asignacion.setTrabajador(trabajador);
         asignacion.setProyecto(proyecto);
@@ -124,19 +135,27 @@ public class AsignacionTrabajadorProyectoServiceImpl implements AsignacionTrabaj
                         "Asignación trabajador-proyecto no encontrada con id: " + id));
     }
 
-    AsignacionTrabajadorProyectoResponseDTO toResponse(AsignacionTrabajadorProyecto a) {
+    private void mapDtoToEntity(AsignacionTrabajadorProyectoRequestDTO dto,
+                                AsignacionTrabajadorProyecto asignacion) {
+        asignacion.setPuestoEnProyecto(dto.getPuestoEnProyecto());
+        asignacion.setFechaInicio(dto.getFechaInicio());
+        asignacion.setFechaFinEstimada(dto.getFechaFinEstimada());
+    }
+
+    // ─── MAPPER ───────────────────────────────────────────────────────────────
+    private AsignacionTrabajadorProyectoResponseDTO toResponse(AsignacionTrabajadorProyecto a) {
+        AsignacionProyectoContratistaResponseDTO apcDTO =
+                asignacionPcService.toResponse(a.getAsignacionProyectoContratista());
+
         return AsignacionTrabajadorProyectoResponseDTO.builder()
                 .idAsignacionTp(a.getIdAsignacionTp())
-                .idTrabajador(a.getTrabajador().getIdTrabajador())
-                .nombreTrabajador(a.getTrabajador().getNombreTrabajador())
-                .idProyecto(a.getProyecto().getIdProyecto())
-                .nombreProyecto(a.getProyecto().getNombreProyecto())
-                .idAsignacionPc(a.getAsignacionProyectoContratista().getIdAsignacionPc())
+                .trabajador(trabajadorService.toResponse(a.getTrabajador()))
+                .proyecto(proyectoService.toResponse(a.getProyecto()))
+                .asignacionProyectoContratista(apcDTO)
                 .puestoEnProyecto(a.getPuestoEnProyecto())
                 .fechaInicio(a.getFechaInicio())
                 .fechaFinEstimada(a.getFechaFinEstimada())
                 .estatusAsignacion(a.getEstatusAsignacion())
-                .observaciones(a.getObservaciones())
                 .build();
     }
 }

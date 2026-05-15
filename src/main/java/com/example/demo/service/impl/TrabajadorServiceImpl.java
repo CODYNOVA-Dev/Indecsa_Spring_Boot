@@ -1,10 +1,13 @@
 package com.example.demo.service.impl;
 
 import com.example.demo.dto.request.TrabajadorRequestDTO;
+import com.example.demo.dto.response.DomicilioResponseDTO;
 import com.example.demo.dto.response.TrabajadorResponseDTO;
-import com.example.demo.model.RegistroMigratorio;
+import com.example.demo.model.Domicilio;
+import com.example.demo.model.Estado;
 import com.example.demo.model.Trabajador;
-import com.example.demo.repository.RegistroMigratorioRepository;
+import com.example.demo.model.Trabajador.EstadoTrabajador;
+import com.example.demo.repository.DomicilioRepository;
 import com.example.demo.repository.TrabajadorRepository;
 import com.example.demo.service.TrabajadorService;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,15 +26,25 @@ import java.util.stream.Collectors;
 public class TrabajadorServiceImpl implements TrabajadorService {
 
     private final TrabajadorRepository trabajadorRepository;
-    private final RegistroMigratorioRepository migratorioRepository;
+    private final DomicilioRepository domicilioRepository;
+    private final EstadoServiceImpl estadoService;
 
+    // ─── FIND ALL ─────────────────────────────────────────────────────────────
     @Override
     public Page<TrabajadorResponseDTO> findAll(Pageable pageable) {
         return trabajadorRepository.findAll(pageable).map(this::toResponse);
     }
 
     @Override
-    public List<TrabajadorResponseDTO> findByEstado(Trabajador.EstadoTrabajador estado) {
+    @Transactional(readOnly = true)
+    public TrabajadorResponseDTO findById(Integer id) {
+        return toResponse(getTrabajadorOrThrow(id));
+    }
+
+    // ─── FIND BY ESTADO ───────────────────────────────────────────────────────
+    @Override
+    @Transactional(readOnly = true)
+    public List<TrabajadorResponseDTO> findByEstado(EstadoTrabajador estado) {
         return trabajadorRepository.findByEstadoTrabajador(estado)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
@@ -43,8 +56,24 @@ public class TrabajadorServiceImpl implements TrabajadorService {
     }
 
     @Override
-    public TrabajadorResponseDTO findById(Integer id) {
-        return toResponse(getOrThrow(id));
+    @Transactional
+    public TrabajadorResponseDTO create(TrabajadorRequestDTO dto) {
+        if (trabajadorRepository.existsByCorreoTrabajador(dto.getCorreoTrabajador())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un trabajador con el correo: " + dto.getCorreoTrabajador());
+        }
+        if (dto.getNssTrabajador() != null
+                && trabajadorRepository.existsByNssTrabajador(dto.getNssTrabajador())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un trabajador con el NSS: " + dto.getNssTrabajador());
+        }
+        Domicilio domicilio = getDomicilioOrThrow(dto.getIdDomicilio());
+        Estado estadoCalidadVida = estadoService.getEstadoOrThrow(dto.getIdEstadoCalidadVida());
+
+        Trabajador trabajador = new Trabajador();
+        mapDtoToEntity(dto, trabajador, domicilio, estadoCalidadVida);
+        trabajador.setEstadoTrabajador(EstadoTrabajador.ACTIVO);
+        return toResponse(trabajadorRepository.save(trabajador));
     }
 
     @Override
@@ -61,7 +90,22 @@ public class TrabajadorServiceImpl implements TrabajadorService {
             throw new IllegalArgumentException("Ya existe un trabajador con el correo: " + request.getCorreoTrabajador());
         }
 
-        Trabajador trabajador = buildFromRequest(new Trabajador(), request);
+        RegistroMigratorio migratorio = null;
+        if (request.getIdMigratorio() != null) {
+            migratorio = migratorioRepository.findById(request.getIdMigratorio())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "Registro migratorio no encontrado con id: " + request.getIdMigratorio()));
+        }
+        if (dto.getNssTrabajador() != null
+                && !dto.getNssTrabajador().equals(trabajador.getNssTrabajador())
+                && trabajadorRepository.existsByNssTrabajador(dto.getNssTrabajador())) {
+            throw new IllegalArgumentException(
+                    "Ya existe un trabajador con el NSS: " + dto.getNssTrabajador());
+        }
+        Domicilio domicilio = getDomicilioOrThrow(dto.getIdDomicilio());
+        Estado estadoCalidadVida = estadoService.getEstadoOrThrow(dto.getIdEstadoCalidadVida());
+
+        mapDtoToEntity(dto, trabajador, domicilio, estadoCalidadVida);
         return toResponse(trabajadorRepository.save(trabajador));
     }
 
@@ -103,92 +147,94 @@ public class TrabajadorServiceImpl implements TrabajadorService {
         trabajadorRepository.deleteById(id);
     }
 
-    private Trabajador buildFromRequest(Trabajador t, TrabajadorRequestDTO r) {
-        RegistroMigratorio migratorio = null;
-        if (r.getIdMigratorio() != null) {
-            migratorio = migratorioRepository.findById(r.getIdMigratorio())
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            "Registro migratorio no encontrado con id: " + r.getIdMigratorio()));
-        }
-        t.setNombreTrabajador(r.getNombreTrabajador());
-        t.setCurp(r.getCurp());
-        t.setRfc(r.getRfc());
-        t.setNssTrabajador(r.getNssTrabajador());
-        t.setNacionalidad(r.getNacionalidad() != null ? r.getNacionalidad() : "Mexicana");
-        t.setRegistroMigratorio(migratorio);
-        t.setCalle(r.getCalle() != null ? r.getCalle() : "");
-        t.setNumExt(r.getNumExt() != null ? r.getNumExt() : "S/N");
-        t.setNumInt(r.getNumInt());
-        t.setColonia(r.getColonia() != null ? r.getColonia() : "");
-        t.setCodPost(r.getCodPost() != null ? r.getCodPost() : 0);
-        t.setMunAlc(r.getMunAlc() != null ? r.getMunAlc() : "");
-        t.setEstado(r.getEstado() != null ? r.getEstado() : "");
-        t.setPuesto(r.getPuesto() != null ? r.getPuesto() : "");
-        t.setDescPuesto(r.getDescPuesto() != null ? r.getDescPuesto() : "");
-        t.setEspecialidadTrabajador(r.getEspecialidadTrabajador() != null ? r.getEspecialidadTrabajador() : "");
-        t.setEscolaridad(r.getEscolaridad() != null ? r.getEscolaridad() : "");
-        t.setExperiencia(r.getExperiencia());
-        t.setTelefonoTrabajador(r.getTelefonoTrabajador() != null ? r.getTelefonoTrabajador() : "");
-        t.setCorreoTrabajador(r.getCorreoTrabajador() != null ? r.getCorreoTrabajador() : "");
-        t.setContratacion(r.getContratacion() != null ? r.getContratacion() : "");
-        t.setJornada(r.getJornada() != null ? r.getJornada() : "");
-        t.setEstadoTrabajador(r.getEstadoTrabajador() != null
-                ? r.getEstadoTrabajador() : Trabajador.EstadoTrabajador.ACTIVO);
-        t.setDescripcionTrabajador(r.getDescripcionTrabajador());
-        t.setEvaluacionTrabajador(r.getEvaluacionTrabajador());
-        t.setFechaIngreso(r.getFechaIngreso());
-        t.setCalidadVida(r.getCalidadVida());
-        t.setAntPenal(r.getAntPenal());
-        t.setDeudorAlim(r.getDeudorAlim());
-        t.setFolioLicCond(r.getFolioLicCond());
-        t.setEstadoCivil(r.getEstadoCivil());
-        t.setIdiomas(r.getIdiomas());
-        t.setLenguaIndigena(r.getLenguaIndigena());
-        t.setSexo(r.getSexo());
-        return t;
+    // ─── HELPERS ──────────────────────────────────────────────────────────────
+    private Trabajador getTrabajadorOrThrow(Integer id) {
+        return trabajadorRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Trabajador no encontrado con id: " + id));
     }
 
-    private void applyUpdates(Trabajador t, TrabajadorRequestDTO r) {
-        if (r.getIdMigratorio() != null) {
-            t.setRegistroMigratorio(migratorioRepository.findById(r.getIdMigratorio())
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            "Registro migratorio no encontrado con id: " + r.getIdMigratorio())));
-        } else {
-            t.setRegistroMigratorio(null);
-        }
-        if (r.getNombreTrabajador() != null)        t.setNombreTrabajador(r.getNombreTrabajador());
-        if (r.getCurp() != null)                    t.setCurp(r.getCurp());
-        if (r.getRfc() != null)                     t.setRfc(r.getRfc());
-        if (r.getNssTrabajador() != null)           t.setNssTrabajador(r.getNssTrabajador());
-        if (r.getNacionalidad() != null)            t.setNacionalidad(r.getNacionalidad());
-        if (r.getCalle() != null)                   t.setCalle(r.getCalle());
-        if (r.getNumExt() != null)                  t.setNumExt(r.getNumExt());
-        if (r.getNumInt() != null)                  t.setNumInt(r.getNumInt());
-        if (r.getColonia() != null)                 t.setColonia(r.getColonia());
-        if (r.getCodPost() != null)                 t.setCodPost(r.getCodPost());
-        if (r.getMunAlc() != null)                  t.setMunAlc(r.getMunAlc());
-        if (r.getEstado() != null)                  t.setEstado(r.getEstado());
-        if (r.getPuesto() != null)                  t.setPuesto(r.getPuesto());
-        if (r.getDescPuesto() != null)              t.setDescPuesto(r.getDescPuesto());
-        if (r.getEspecialidadTrabajador() != null)  t.setEspecialidadTrabajador(r.getEspecialidadTrabajador());
-        if (r.getEscolaridad() != null)             t.setEscolaridad(r.getEscolaridad());
-        if (r.getExperiencia() != null)             t.setExperiencia(r.getExperiencia());
-        if (r.getTelefonoTrabajador() != null)      t.setTelefonoTrabajador(r.getTelefonoTrabajador());
-        if (r.getCorreoTrabajador() != null)        t.setCorreoTrabajador(r.getCorreoTrabajador());
-        if (r.getContratacion() != null)            t.setContratacion(r.getContratacion());
-        if (r.getJornada() != null)                 t.setJornada(r.getJornada());
-        if (r.getEstadoTrabajador() != null)        t.setEstadoTrabajador(r.getEstadoTrabajador());
-        if (r.getDescripcionTrabajador() != null)   t.setDescripcionTrabajador(r.getDescripcionTrabajador());
-        if (r.getEvaluacionTrabajador() != null)    t.setEvaluacionTrabajador(r.getEvaluacionTrabajador());
-        if (r.getFechaIngreso() != null)            t.setFechaIngreso(r.getFechaIngreso());
-        if (r.getCalidadVida() != null)             t.setCalidadVida(r.getCalidadVida());
-        if (r.getAntPenal() != null)                t.setAntPenal(r.getAntPenal());
-        if (r.getDeudorAlim() != null)              t.setDeudorAlim(r.getDeudorAlim());
-        if (r.getFolioLicCond() != null)            t.setFolioLicCond(r.getFolioLicCond());
-        if (r.getEstadoCivil() != null)             t.setEstadoCivil(r.getEstadoCivil());
-        if (r.getIdiomas() != null)                 t.setIdiomas(r.getIdiomas());
-        if (r.getLenguaIndigena() != null)          t.setLenguaIndigena(r.getLenguaIndigena());
-        if (r.getSexo() != null)                    t.setSexo(r.getSexo());
+    private Domicilio getDomicilioOrThrow(Integer id) {
+        return domicilioRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Domicilio no encontrado con id: " + id));
+    }
+
+    private void mapDtoToEntity(TrabajadorRequestDTO dto, Trabajador t,
+                                Domicilio domicilio, Estado estadoCalidadVida) {
+        t.setNombreTrabajador(dto.getNombreTrabajador());
+        t.setCurp(dto.getCurp());
+        t.setRfc(dto.getRfc());
+        t.setNssTrabajador(dto.getNssTrabajador());
+        t.setNacionalidad(dto.getNacionalidad());
+        t.setDomicilio(domicilio);
+        t.setPuesto(dto.getPuesto());
+        t.setDescPuesto(dto.getDescPuesto());
+        t.setEspecialidadTrabajador(dto.getEspecialidadTrabajador());
+        t.setEscolaridad(dto.getEscolaridad());
+        t.setExperiencia(dto.getExperiencia());
+        t.setTelefonoTrabajador(dto.getTelefonoTrabajador());
+        t.setCorreoTrabajador(dto.getCorreoTrabajador().toLowerCase().trim());
+        t.setContratacion(dto.getContratacion());
+        t.setJornada(dto.getJornada());
+        t.setEvaluacionTrabajador(dto.getEvaluacionTrabajador());
+        t.setFechaIngreso(dto.getFechaIngreso());
+        t.setEstadoCalidadVida(estadoCalidadVida);
+        t.setSexo(dto.getSexo());
+        t.setAntPenal(dto.getAntPenal());
+        t.setDeudorAlim(dto.getDeudorAlim());
+        t.setFolioLicCond(dto.getFolioLicCond());
+        t.setEstadoCivil(dto.getEstadoCivil());
+        t.setIdiomas(dto.getIdiomas());
+        t.setLenguaIndigena(dto.getLenguaIndigena());
+    }
+
+    // ─── MAPPER ───────────────────────────────────────────────────────────────
+    public TrabajadorResponseDTO toResponse(Trabajador t) {
+        DomicilioResponseDTO domicilioDTO = DomicilioResponseDTO.builder()
+                .idDomicilio(t.getDomicilio().getIdDomicilio())
+                .calle(t.getDomicilio().getCalle())
+                .numExt(t.getDomicilio().getNumExt())
+                .numInt(t.getDomicilio().getNumInt())
+                .colonia(t.getDomicilio().getColonia())
+                .codPost(t.getDomicilio().getCodPost())
+                .munAlc(t.getDomicilio().getMunAlc())
+                .idEstado(t.getDomicilio().getEstado().getIdEstado())
+                .nombreEstado(t.getDomicilio().getEstado().getNombreEst())
+                .build();
+
+        return TrabajadorResponseDTO.builder()
+                .idTrabajador(t.getIdTrabajador())
+                .nombreTrabajador(t.getNombreTrabajador())
+                .curp(t.getCurp())
+                .rfc(t.getRfc())
+                .nssTrabajador(t.getNssTrabajador())
+                .nacionalidad(t.getNacionalidad())
+                .idMigratorio(t.getRegistroMigratorio() != null
+                        ? t.getRegistroMigratorio().getIdMigratorio() : null)
+                .domicilio(domicilioDTO)
+                .puesto(t.getPuesto())
+                .descPuesto(t.getDescPuesto())
+                .especialidadTrabajador(t.getEspecialidadTrabajador())
+                .escolaridad(t.getEscolaridad())
+                .experiencia(t.getExperiencia())
+                .telefonoTrabajador(t.getTelefonoTrabajador())
+                .correoTrabajador(t.getCorreoTrabajador())
+                .contratacion(t.getContratacion())
+                .jornada(t.getJornada())
+                .estadoTrabajador(t.getEstadoTrabajador())
+                .evaluacionTrabajador(t.getEvaluacionTrabajador())
+                .fechaIngreso(t.getFechaIngreso())
+                .idEstadoCalidadVida(t.getEstadoCalidadVida().getIdEstado())
+                .nombreEstadoCalidadVida(t.getEstadoCalidadVida().getNombreEst())
+                .sexo(t.getSexo())
+                .antPenal(t.getAntPenal())
+                .deudorAlim(t.getDeudorAlim())
+                .folioLicCond(t.getFolioLicCond())
+                .estadoCivil(t.getEstadoCivil())
+                .idiomas(t.getIdiomas())
+                .lenguaIndigena(t.getLenguaIndigena())
+                .build();
     }
 
     private Trabajador getOrThrow(Integer id) {

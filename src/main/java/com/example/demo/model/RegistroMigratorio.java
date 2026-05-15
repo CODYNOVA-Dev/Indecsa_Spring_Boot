@@ -1,14 +1,17 @@
 package com.example.demo.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "registros_migratorios")
-@Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
-@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RegistroMigratorio {
 
     @Id
@@ -21,7 +24,7 @@ public class RegistroMigratorio {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "categoria", nullable = false)
-    private CategoriaVisitante categoria;
+    private Categoria categoria;
 
     @Column(name = "fecha_emision", nullable = false)
     private LocalDate fechaEmision;
@@ -33,12 +36,16 @@ public class RegistroMigratorio {
     private LocalDate fechaVencimiento;
 
     @Column(name = "permiso_trabajo", nullable = false)
-    private Boolean permisoTrabajo;
+    private Boolean permisoTrabajo = false;
 
     @Column(name = "activo", nullable = false)
-    private Boolean activo;
+    private Boolean activo = true;
 
-    public enum CategoriaVisitante {
-        turismo, negocios, razones_humanitarias, transito, actividades_remuneradas
+    public enum Categoria {
+        turismo,
+        negocios,
+        razones_humanitarias,
+        transito,
+        actividades_remuneradas
     }
 }

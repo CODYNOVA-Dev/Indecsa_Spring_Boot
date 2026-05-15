@@ -1,5 +1,6 @@
 package com.example.demo.model;
 
+import com.example.demo.model.enums.Sexo;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
@@ -26,7 +27,7 @@ public class Trabajador {
     @Column(name = "rfc", nullable = false, unique = true, length = 13)
     private String rfc;
 
-    @Column(name = "nss_trabajador", length = 11)
+    @Column(name = "nss_trabajador", unique = true, length = 11)
     private String nssTrabajador;
 
     @Column(name = "nacionalidad", nullable = false, length = 100)
@@ -36,29 +37,10 @@ public class Trabajador {
     @JoinColumn(name = "id_migratorio")
     private RegistroMigratorio registroMigratorio;
 
-    // --- Domicilio ---
-    @Column(name = "calle", nullable = false, length = 100)
-    private String calle;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_domicilio", nullable = false)
+    private Domicilio domicilio;
 
-    @Column(name = "num_ext", nullable = false, length = 10)
-    private String numExt;
-
-    @Column(name = "num_int", length = 10)
-    private String numInt;
-
-    @Column(name = "colonia", nullable = false, length = 100)
-    private String colonia;
-
-    @Column(name = "cod_post", nullable = false)
-    private Integer codPost;
-
-    @Column(name = "mun_alc", nullable = false, length = 100)
-    private String munAlc;
-
-    @Column(name = "estado", nullable = false, length = 100)
-    private String estado;
-
-    // --- Información laboral ---
     @Column(name = "puesto", nullable = false, length = 100)
     private String puesto;
 
@@ -87,12 +69,8 @@ public class Trabajador {
     private String jornada;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado_trabajador", nullable = false)
-    private EstadoTrabajador estadoTrabajador;
-
-    // --- Otros datos ---
-    @Column(name = "descripcion_trabajador", columnDefinition = "TEXT")
-    private String descripcionTrabajador;
+    @Column(name = "estado_trabajador", nullable = false, columnDefinition = "ENUM('DESCANSO','VACACIONES','INCAPACIDAD','ACTIVO','INACTIVO','BAJA','BOLETINADO') DEFAULT 'ACTIVO'")
+    private EstadoTrabajador estadoTrabajador = EstadoTrabajador.ACTIVO;
 
     @Column(name = "evaluacion_trabajador")
     private Byte evaluacionTrabajador;
@@ -100,9 +78,13 @@ public class Trabajador {
     @Column(name = "fecha_ingreso", nullable = false)
     private LocalDate fechaIngreso;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_estado_calidad_vida", nullable = false)
+    private Estado estadoCalidadVida;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "calidad_vida", nullable = false)
-    private EntidadFederativa calidadVida;
+    @Column(name = "sexo", nullable = false)
+    private Sexo sexo;
 
     @Column(name = "ant_penal", length = 500)
     private String antPenal;
@@ -122,14 +104,13 @@ public class Trabajador {
     @Column(name = "lengua_indigena", length = 100)
     private String lenguaIndigena;
 
-    @Column(name = "sexo", length = 50)
-    private String sexo;
-
     public enum EstadoTrabajador {
-        DESCANSO, VACACIONES, INCAPACIDAD, ACTIVO, INACTIVO, BAJA, BOLETINADO
-    }
-
-    public enum EntidadFederativa {
-        CDMX, Hidalgo, Puebla
+        DESCANSO,
+        VACACIONES,
+        INCAPACIDAD,
+        ACTIVO,
+        INACTIVO,
+        BAJA,
+        BOLETINADO
     }
 }

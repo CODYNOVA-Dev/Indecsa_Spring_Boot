@@ -1,13 +1,16 @@
 package com.example.demo.dto.response;
 
-import com.example.demo.model.Trabajador;
+import com.example.demo.model.Trabajador.EstadoTrabajador;
+import com.example.demo.model.enums.Sexo;
 import lombok.Builder;
 import lombok.Data;
+
 import java.time.LocalDate;
 
 @Data
 @Builder
 public class TrabajadorResponseDTO {
+
     private Integer idTrabajador;
     private String nombreTrabajador;
     private String curp;
@@ -15,13 +18,7 @@ public class TrabajadorResponseDTO {
     private String nssTrabajador;
     private String nacionalidad;
     private Integer idMigratorio;
-    private String calle;
-    private String numExt;
-    private String numInt;
-    private String colonia;
-    private Integer codPost;
-    private String munAlc;
-    private String estado;
+    private DomicilioResponseDTO domicilio;
     private String puesto;
     private String descPuesto;
     private String especialidadTrabajador;
@@ -31,16 +28,16 @@ public class TrabajadorResponseDTO {
     private String correoTrabajador;
     private String contratacion;
     private String jornada;
-    private Trabajador.EstadoTrabajador estadoTrabajador;
-    private String descripcionTrabajador;
+    private EstadoTrabajador estadoTrabajador;
     private Byte evaluacionTrabajador;
     private LocalDate fechaIngreso;
-    private Trabajador.EntidadFederativa calidadVida;
+    private Integer idEstadoCalidadVida;
+    private String nombreEstadoCalidadVida;
+    private Sexo sexo;
     private String antPenal;
     private String deudorAlim;
     private String folioLicCond;
     private String estadoCivil;
     private String idiomas;
     private String lenguaIndigena;
-    private String sexo;
 }

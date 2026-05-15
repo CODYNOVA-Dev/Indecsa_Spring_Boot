@@ -29,12 +29,9 @@ public class Proyecto {
     @Column(name = "cliente", nullable = false, length = 200)
     private String cliente;
 
-    @Column(name = "municipio_proyecto", length = 100)
-    private String municipioProyecto;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado_proyecto_geo")
-    private EntidadFederativa estadoProyectoGeo;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_domicilio", nullable = false)
+    private Domicilio domicilio;
 
     @Column(name = "fecha_estimada_inicio")
     private LocalDate fechaEstimadaInicio;
@@ -46,22 +43,24 @@ public class Proyecto {
     private Byte calificacionProyecto;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estatus_proyecto")
-    private EstatusProyecto estatusProyecto;
+    @Column(name = "estatus_proyecto", nullable = false, columnDefinition = "ENUM('PLANEACION','EN_CURSO','PENDIENTE','FINALIZADO','CANCELADO') DEFAULT 'PLANEACION'")
+    private EstatusProyecto estatusProyecto = EstatusProyecto.PLANEACION;
 
     @Column(name = "descripcion_proyecto", length = 500)
     private String descripcionProyecto;
 
     public enum TipoProyecto {
-        Construccion, Remodelacion,
-        Venta_mobiliaria, Instalacion_de_mobiliario
+        Construccion,
+        Remodelacion,
+        Venta_mobiliaria,
+        Instalacion_de_mobiliario
     }
 
     public enum EstatusProyecto {
-        PLANEACION, EN_CURSO, PAUSADO, FINALIZADO, CANCELADO
-    }
-
-    public enum EntidadFederativa {
-        CDMX, Hidalgo, Puebla
+        PLANEACION,
+        EN_CURSO,
+        PENDIENTE,
+        FINALIZADO,
+        CANCELADO
     }
 }

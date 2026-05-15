@@ -18,7 +18,7 @@ public class Empleado {
     @Column(name = "nombre_empleado", nullable = false, length = 100)
     private String nombreEmpleado;
 
-    @Column(name = "curp", nullable = false, length = 18)
+    @Column(name = "curp", nullable = false, unique = true, length = 18)
     private String curp;
 
     @Column(name = "correo_empleado", nullable = false, unique = true, length = 100)

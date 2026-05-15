@@ -3,6 +3,8 @@ package com.example.demo.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
+// RolResponseDTO is in the same package — no import needed
+
 @Data
 @Builder
 public class EmpleadoResponseDTO {

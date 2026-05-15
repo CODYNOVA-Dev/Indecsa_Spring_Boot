@@ -24,7 +24,6 @@ public class ProyectoRepositoryImpl implements ProyectoRepositoryCustom {
             String nombre,
             Proyecto.TipoProyecto tipo,
             Proyecto.EstatusProyecto estatus,
-            Proyecto.EntidadFederativa estadoGeo,
             String cliente,
             Pageable pageable
     ) {
@@ -32,8 +31,7 @@ public class ProyectoRepositoryImpl implements ProyectoRepositoryCustom {
 
         CriteriaQuery<Proyecto> query = cb.createQuery(Proyecto.class);
         Root<Proyecto> root = query.from(Proyecto.class);
-        root.fetch("ubicacion", JoinType.LEFT);
-        List<Predicate> predicates = buildPredicates(cb, root, nombre, tipo, estatus, estadoGeo, cliente);
+        List<Predicate> predicates = buildPredicates(cb, root, nombre, tipo, estatus, cliente);
         query.where(predicates.toArray(new Predicate[0]))
              .orderBy(cb.asc(root.get("nombreProyecto")));
 
@@ -43,7 +41,7 @@ public class ProyectoRepositoryImpl implements ProyectoRepositoryCustom {
 
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Proyecto> countRoot = countQuery.from(Proyecto.class);
-        List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, tipo, estatus, estadoGeo, cliente);
+        List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, tipo, estatus, cliente);
         countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
         Long total = em.createQuery(countQuery).getSingleResult();
 
@@ -56,7 +54,6 @@ public class ProyectoRepositoryImpl implements ProyectoRepositoryCustom {
             String nombre,
             Proyecto.TipoProyecto tipo,
             Proyecto.EstatusProyecto estatus,
-            Proyecto.EntidadFederativa estadoGeo,
             String cliente
     ) {
         List<Predicate> predicates = new ArrayList<>();
@@ -70,9 +67,6 @@ public class ProyectoRepositoryImpl implements ProyectoRepositoryCustom {
         }
         if (estatus != null) {
             predicates.add(cb.equal(root.get("estatusProyecto"), estatus));
-        }
-        if (estadoGeo != null) {
-            predicates.add(cb.equal(root.get("estadoProyectoGeo"), estadoGeo));
         }
         if (cliente != null && !cliente.isBlank()) {
             predicates.add(cb.like(cb.lower(root.get("cliente")),

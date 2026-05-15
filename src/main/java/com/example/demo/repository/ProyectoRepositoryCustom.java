@@ -10,7 +10,6 @@ public interface ProyectoRepositoryCustom {
             String nombre,
             Proyecto.TipoProyecto tipo,
             Proyecto.EstatusProyecto estatus,
-            Proyecto.EntidadFederativa estadoGeo,
             String cliente,
             Pageable pageable
     );

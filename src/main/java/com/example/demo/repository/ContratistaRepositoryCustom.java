@@ -9,7 +9,6 @@ public interface ContratistaRepositoryCustom {
     Page<Contratista> findByFiltros(
             String nombre,
             Contratista.EstadoContratista estado,
-            Contratista.EntidadFederativa ubicacion,
             Byte calificacionMin,
             Pageable pageable
     );

@@ -2,7 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.request.ProyectoRequestDTO;
 import com.example.demo.dto.response.ProyectoResponseDTO;
-import com.example.demo.model.Proyecto.EstatusProyecto;
+import com.example.demo.model.EstatusProyecto;
 import com.example.demo.model.Proyecto.TipoProyecto;
 import com.example.demo.service.ProyectoService;
 import jakarta.validation.Valid;
@@ -27,7 +27,7 @@ public class ProyectoController {
 
     @GetMapping("/estatus/{estatus}")
     public ResponseEntity<List<ProyectoResponseDTO>> findByEstatus(
-            @PathVariable Proyecto.EstatusProyecto estatus) {
+            @PathVariable EstatusProyecto estatus) {
         return ResponseEntity.ok(proyectoService.findByEstatus(estatus));
     }
 
@@ -62,7 +62,7 @@ public class ProyectoController {
     @PatchMapping("/{id}/estatus")
     public ResponseEntity<ProyectoResponseDTO> cambiarEstatus(
             @PathVariable Integer id,
-            @RequestParam Proyecto.EstatusProyecto estatus) {
+            @RequestParam EstatusProyecto estatus) {
         return ResponseEntity.ok(proyectoService.cambiarEstatus(id, estatus));
     }
 

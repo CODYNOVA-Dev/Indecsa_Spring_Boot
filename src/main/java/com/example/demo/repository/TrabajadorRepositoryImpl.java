@@ -25,14 +25,13 @@ public class TrabajadorRepositoryImpl implements TrabajadorRepositoryCustom {
             Trabajador.EstadoTrabajador estado,
             String especialidad,
             String puesto,
-            Trabajador.EntidadFederativa calidadVida,
             Pageable pageable
     ) {
         CriteriaBuilder cb = em.getCriteriaBuilder();
 
         CriteriaQuery<Trabajador> query = cb.createQuery(Trabajador.class);
         Root<Trabajador> root = query.from(Trabajador.class);
-        List<Predicate> predicates = buildPredicates(cb, root, nombre, estado, especialidad, puesto, calidadVida);
+        List<Predicate> predicates = buildPredicates(cb, root, nombre, estado, especialidad, puesto);
         query.where(predicates.toArray(new Predicate[0]))
              .orderBy(cb.asc(root.get("nombreTrabajador")));
 
@@ -42,7 +41,7 @@ public class TrabajadorRepositoryImpl implements TrabajadorRepositoryCustom {
 
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Trabajador> countRoot = countQuery.from(Trabajador.class);
-        List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, estado, especialidad, puesto, calidadVida);
+        List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, estado, especialidad, puesto);
         countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
         Long total = em.createQuery(countQuery).getSingleResult();
 
@@ -55,8 +54,7 @@ public class TrabajadorRepositoryImpl implements TrabajadorRepositoryCustom {
             String nombre,
             Trabajador.EstadoTrabajador estado,
             String especialidad,
-            String puesto,
-            Trabajador.EntidadFederativa calidadVida
+            String puesto
     ) {
         List<Predicate> predicates = new ArrayList<>();
 
@@ -74,9 +72,6 @@ public class TrabajadorRepositoryImpl implements TrabajadorRepositoryCustom {
         if (puesto != null && !puesto.isBlank()) {
             predicates.add(cb.like(cb.lower(root.get("puesto")),
                     "%" + puesto.toLowerCase() + "%"));
-        }
-        if (calidadVida != null) {
-            predicates.add(cb.equal(root.get("calidadVida"), calidadVida));
         }
 
         return predicates;

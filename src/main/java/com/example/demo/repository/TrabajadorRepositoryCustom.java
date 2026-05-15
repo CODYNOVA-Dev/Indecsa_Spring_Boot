@@ -11,7 +11,6 @@ public interface TrabajadorRepositoryCustom {
             Trabajador.EstadoTrabajador estado,
             String especialidad,
             String puesto,
-            Trabajador.EntidadFederativa calidadVida,
             Pageable pageable
     );
 }

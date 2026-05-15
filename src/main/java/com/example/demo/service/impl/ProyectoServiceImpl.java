@@ -33,6 +33,11 @@ public class ProyectoServiceImpl implements ProyectoService {
     }
 
     @Override
+    public ProyectoResponseDTO findById(Integer id) {
+        return toResponse(getOrThrow(id));
+    }
+
+    @Override
     public List<ProyectoResponseDTO> findByEstatus(Proyecto.EstatusProyecto estatus) {
         return proyectoRepository.findByEstatusProyecto(estatus)
                 .stream().map(this::toResponse).collect(Collectors.toList());
@@ -72,7 +77,7 @@ public class ProyectoServiceImpl implements ProyectoService {
     @Override
     @Transactional
     public ProyectoResponseDTO update(Integer id, ProyectoRequestDTO dto) {
-        Proyecto proyecto = getProyectoOrThrow(id);
+        Proyecto proyecto = getOrThrow(id);
         validarFechas(dto);
         Domicilio domicilio = getDomicilioOrThrow(dto.getIdDomicilio());
         mapDtoToEntity(dto, proyecto, domicilio);
@@ -155,20 +160,5 @@ public class ProyectoServiceImpl implements ProyectoService {
                 .build();
     }
 
-    public ProyectoResponseDTO toResponse(Proyecto p) {
-        return ProyectoResponseDTO.builder()
-                .idProyecto(p.getIdProyecto())
-                .nombreProyecto(p.getNombreProyecto())
-                .tipoProyecto(p.getTipoProyecto())
-                .ofertaTrabajo(p.getOfertaTrabajo())
-                .cliente(p.getCliente())
-                .municipioProyecto(p.getMunicipioProyecto())
-                .estadoProyectoGeo(p.getEstadoProyectoGeo())
-                .fechaEstimadaInicio(p.getFechaEstimadaInicio())
-                .fechaEstimadaFin(p.getFechaEstimadaFin())
-                .calificacionProyecto(p.getCalificacionProyecto())
-                .estatusProyecto(p.getEstatusProyecto())
-                .descripcionProyecto(p.getDescripcionProyecto())
-                .build();
-    }
 }
+

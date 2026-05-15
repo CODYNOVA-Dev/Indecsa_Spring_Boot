@@ -1,7 +1,9 @@
 package com.example.demo.service.impl;
 
+import com.example.demo.dto.auth.LoginResponse;
 import com.example.demo.dto.request.EmpleadoRequestDTO;
 import com.example.demo.dto.response.EmpleadoResponseDTO;
+import com.example.demo.dto.response.RolResponseDTO;
 import com.example.demo.model.Empleado;
 import com.example.demo.model.Rol;
 import com.example.demo.repository.EmpleadoRepository;
@@ -48,19 +50,19 @@ public class EmpleadoServiceImpl implements EmpleadoService {
         if (empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
-        if (empleadoRepository.existsByCurp(dto.getCurp())) {
+        if (empleadoRepository.existsByCurp(request.getCurp())) {
             throw new IllegalArgumentException(
-                    "Ya existe un empleado con la CURP: " + dto.getCurp());
+                    "Ya existe un empleado con la CURP: " + request.getCurp());
         }
-        Rol rol = rolRepository.findById(dto.getIdRol())
+        Rol rol = rolRepository.findById(request.getIdRol())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Rol no encontrado con id: " + dto.getIdRol()));
+                        "Rol no encontrado con id: " + request.getIdRol()));
 
         Empleado empleado = new Empleado();
-        empleado.setNombreEmpleado(dto.getNombreEmpleado());
-        empleado.setCurp(dto.getCurp());
-        empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
-        empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
+        empleado.setNombreEmpleado(request.getNombreEmpleado());
+        empleado.setCurp(request.getCurp());
+        empleado.setCorreoEmpleado(request.getCorreoEmpleado().toLowerCase().trim());
+        empleado.setContrasena(passwordEncoder.encode(request.getContrasena()));
         empleado.setRol(rol);
         return toResponse(empleadoRepository.save(empleado));
     }
@@ -75,22 +77,22 @@ public class EmpleadoServiceImpl implements EmpleadoService {
                 && empleadoRepository.existsByCorreoEmpleado(request.getCorreoEmpleado())) {
             throw new IllegalArgumentException("Ya existe un empleado con el correo: " + request.getCorreoEmpleado());
         }
-        if (!empleado.getCurp().equals(dto.getCurp())
-                && empleadoRepository.existsByCurp(dto.getCurp())) {
+        if (!empleado.getCurp().equals(request.getCurp())
+                && empleadoRepository.existsByCurp(request.getCurp())) {
             throw new IllegalArgumentException(
-                    "Ya existe un empleado con la CURP: " + dto.getCurp());
+                    "Ya existe un empleado con la CURP: " + request.getCurp());
         }
-        Rol rol = rolRepository.findById(dto.getIdRol())
+        Rol rol = rolRepository.findById(request.getIdRol())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "Rol no encontrado con id: " + dto.getIdRol()));
+                        "Rol no encontrado con id: " + request.getIdRol()));
 
-        empleado.setNombreEmpleado(dto.getNombreEmpleado());
-        empleado.setCurp(dto.getCurp());
-        empleado.setCorreoEmpleado(dto.getCorreoEmpleado().toLowerCase().trim());
-        empleado.setContrasena(passwordEncoder.encode(dto.getContrasena()));
+        empleado.setNombreEmpleado(request.getNombreEmpleado());
+        empleado.setCurp(request.getCurp());
+        empleado.setCorreoEmpleado(request.getCorreoEmpleado().toLowerCase().trim());
+        empleado.setContrasena(passwordEncoder.encode(request.getContrasena()));
         empleado.setRol(rol);
 
-        return EmpleadoResponse.from(empleadoRepository.save(empleado));
+        return toResponse(empleadoRepository.save(empleado));
     }
 
     @Override
@@ -101,9 +103,8 @@ public class EmpleadoServiceImpl implements EmpleadoService {
     }
 
     // ─── LOGIN ────────────────────────────────────────────────────────────────
-    @Override
     @Transactional(readOnly = true)
-    public LoginResponseDTO login(String correo, String contrasena) {
+    public LoginResponse login(String correo, String contrasena) {
         Empleado empleado = empleadoRepository
                 .findByCorreoEmpleado(correo.toLowerCase().trim())
                 .orElseThrow(() -> new IllegalArgumentException("Credenciales incorrectas"));
@@ -112,12 +113,13 @@ public class EmpleadoServiceImpl implements EmpleadoService {
             throw new IllegalArgumentException("Credenciales incorrectas");
         }
 
-        return LoginResponseDTO.builder()
-                .idEmpleado(empleado.getIdEmpleado())
-                .nombreEmpleado(empleado.getNombreEmpleado())
-                .correoEmpleado(empleado.getCorreoEmpleado())
-                .nombreRol(empleado.getRol().getNombreRol().name())
-                .build();
+        return new LoginResponse(
+                empleado.getIdEmpleado(),
+                empleado.getNombreEmpleado(),
+                empleado.getCorreoEmpleado(),
+                empleado.getRol().getNombreRol().name(),
+                null
+        );
     }
 
     // ─── HELPERS ──────────────────────────────────────────────────────────────

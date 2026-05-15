@@ -23,7 +23,6 @@ public class ContratistaRepositoryImpl implements ContratistaRepositoryCustom {
     public Page<Contratista> findByFiltros(
             String nombre,
             Contratista.EstadoContratista estado,
-            Contratista.EntidadFederativa ubicacion,
             Byte calificacionMin,
             Pageable pageable
     ) {
@@ -31,7 +30,7 @@ public class ContratistaRepositoryImpl implements ContratistaRepositoryCustom {
 
         CriteriaQuery<Contratista> query = cb.createQuery(Contratista.class);
         Root<Contratista> root = query.from(Contratista.class);
-        List<Predicate> predicates = buildPredicates(cb, root, nombre, estado, ubicacion, calificacionMin);
+        List<Predicate> predicates = buildPredicates(cb, root, nombre, estado, calificacionMin);
         query.where(predicates.toArray(new Predicate[0]))
              .orderBy(cb.asc(root.get("nombreContratista")));
 
@@ -41,7 +40,7 @@ public class ContratistaRepositoryImpl implements ContratistaRepositoryCustom {
 
         CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
         Root<Contratista> countRoot = countQuery.from(Contratista.class);
-        List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, estado, ubicacion, calificacionMin);
+        List<Predicate> countPredicates = buildPredicates(cb, countRoot, nombre, estado, calificacionMin);
         countQuery.select(cb.count(countRoot)).where(countPredicates.toArray(new Predicate[0]));
         Long total = em.createQuery(countQuery).getSingleResult();
 
@@ -53,7 +52,6 @@ public class ContratistaRepositoryImpl implements ContratistaRepositoryCustom {
             Root<Contratista> root,
             String nombre,
             Contratista.EstadoContratista estado,
-            Contratista.EntidadFederativa ubicacion,
             Byte calificacionMin
     ) {
         List<Predicate> predicates = new ArrayList<>();
@@ -64,9 +62,6 @@ public class ContratistaRepositoryImpl implements ContratistaRepositoryCustom {
         }
         if (estado != null) {
             predicates.add(cb.equal(root.get("estadoContratista"), estado));
-        }
-        if (ubicacion != null) {
-            predicates.add(cb.equal(root.get("ubicacionContratista"), ubicacion));
         }
         if (calificacionMin != null) {
             predicates.add(cb.greaterThanOrEqualTo(root.get("calificacionContratista"), calificacionMin));

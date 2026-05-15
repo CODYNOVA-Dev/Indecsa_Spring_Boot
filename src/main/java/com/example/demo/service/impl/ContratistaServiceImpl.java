@@ -57,33 +57,6 @@ public class ContratistaServiceImpl implements ContratistaService {
 
     @Override
     @Transactional
-    public ContratistaResponseDTO create(ContratistaRequestDTO request) {
-        if (request.getRfcContratista() != null
-                && contratistaRepository.existsByRfcContratista(request.getRfcContratista())) {
-            throw new IllegalArgumentException("Ya existe un contratista con el RFC: " + request.getRfcContratista());
-        }
-        if (request.getCorreoContratista() != null
-                && contratistaRepository.existsByCorreoContratista(request.getCorreoContratista())) {
-            throw new IllegalArgumentException("Ya existe un contratista con el correo: " + request.getCorreoContratista());
-        }
-
-        if (!contratista.getCorreoContratista().equals(dto.getCorreoContratista())
-                && contratistaRepository.existsByCorreoContratista(dto.getCorreoContratista())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un contratista con el correo: " + dto.getCorreoContratista());
-        }
-        if (!contratista.getRfcContratista().equals(dto.getRfcContratista())
-                && contratistaRepository.existsByRfcContratista(dto.getRfcContratista())) {
-            throw new IllegalArgumentException(
-                    "Ya existe un contratista con el RFC: " + dto.getRfcContratista());
-        }
-        Estado estadoOperacion = estadoService.getEstadoOrThrow(dto.getIdEstadoOperacion());
-        mapDtoToEntity(dto, contratista, estadoOperacion);
-        return toResponse(contratistaRepository.save(contratista));
-    }
-
-    @Override
-    @Transactional
     public ContratistaResponseDTO update(Integer id, ContratistaRequestDTO request) {
         Contratista contratista = getOrThrow(id);
 
@@ -106,8 +79,6 @@ public class ContratistaServiceImpl implements ContratistaService {
         if (request.getDescripcionContratista() != null) contratista.setDescripcionContratista(request.getDescripcionContratista());
         if (request.getExperiencia() != null)            contratista.setExperiencia(request.getExperiencia());
         if (request.getCalificacionContratista() != null) contratista.setCalificacionContratista(request.getCalificacionContratista());
-        if (request.getEstadoContratista() != null)      contratista.setEstadoContratista(request.getEstadoContratista());
-        if (request.getUbicacionContratista() != null)   contratista.setUbicacionContratista(request.getUbicacionContratista());
 
         return toResponse(contratistaRepository.save(contratista));
     }
@@ -163,19 +134,5 @@ public class ContratistaServiceImpl implements ContratistaService {
                 .build();
     }
 
-    public ContratistaResponseDTO toResponse(Contratista c) {
-        return ContratistaResponseDTO.builder()
-                .idContratista(c.getIdContratista())
-                .nombreContratista(c.getNombreContratista())
-                .curp(c.getCurp())
-                .rfcContratista(c.getRfcContratista())
-                .telefonoContratista(c.getTelefonoContratista())
-                .correoContratista(c.getCorreoContratista())
-                .descripcionContratista(c.getDescripcionContratista())
-                .experiencia(c.getExperiencia())
-                .calificacionContratista(c.getCalificacionContratista())
-                .estadoContratista(c.getEstadoContratista())
-                .ubicacionContratista(c.getUbicacionContratista())
-                .build();
-    }
 }
+

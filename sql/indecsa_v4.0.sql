@@ -1,6 +1,6 @@
 -- ============================================================
---  INDECSA · Base de Datos v4.2 (Normalización Total + Imágenes)
---  Fecha: 2026-05-14
+--  INDECSA · Base de Datos v4.2 (Normalizacion Total + Imagenes)
+--  Fecha: 2026-05-15 (Ajuste de Caracteres)
 -- ============================================================
 
 DROP DATABASE IF EXISTS indecsa;
@@ -10,19 +10,16 @@ CREATE DATABASE IF NOT EXISTS indecsa
 USE indecsa;
 
 -- ===================================
--- 1. CATÁLOGOS BASE
+-- 1. CATALOGOS BASE
 -- ===================================
 
--- Sustituye a los ENUM de ubicación
 CREATE TABLE Estado (
     id_estado   INT AUTO_INCREMENT PRIMARY KEY,
     nombre_est  VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Inserción de estados base
 INSERT INTO Estado (nombre_est) VALUES ('CDMX'), ('Hidalgo'), ('Puebla');
 
--- Tabla centralizada de direcciones
 CREATE TABLE Domicilio (
     id_domicilio INT AUTO_INCREMENT PRIMARY KEY,
     calle        VARCHAR(100) NOT NULL,
@@ -43,7 +40,7 @@ CREATE TABLE Rol (
 
 INSERT INTO Rol (nombre_rol, descripcion_rol) VALUES 
 ('ADMIN', 'Acceso total al sistema'),
-('CAPITAL_HUMANO', 'Gestión de personal y asignaciones');
+('CAPITAL_HUMANO', 'Gestion de personal y asignaciones');
 
 -- ===================================
 -- 2. ENTIDADES PRINCIPALES
@@ -55,7 +52,7 @@ CREATE TABLE Empleado (
     curp            VARCHAR(18)  NOT NULL UNIQUE,
     correo_empleado VARCHAR(100) NOT NULL UNIQUE,
     contrasena      VARCHAR(255) NOT NULL,
-    foto_perfil_url VARCHAR(255) NULL, -- <-- NUEVO CAMPO PARA IMAGEN
+    foto_perfil_url VARCHAR(255) NULL,
     id_rol          INT NOT NULL,
     FOREIGN KEY (id_rol) REFERENCES Rol(id_rol) ON UPDATE CASCADE ON DELETE RESTRICT
 );
@@ -68,11 +65,11 @@ CREATE TABLE Contratista (
     telefono_contratista     VARCHAR(15)  NOT NULL,
     correo_contratista       VARCHAR(100) NOT NULL UNIQUE,
     descripcion_contratista  VARCHAR(255) NOT NULL,
-    foto_perfil_url          VARCHAR(255) NULL, -- <-- NUEVO CAMPO PARA IMAGEN (Logo/Perfil)
+    foto_perfil_url          VARCHAR(255) NULL,
     experiencia              VARCHAR(200),
     calificacion_contratista TINYINT CHECK (calificacion_contratista BETWEEN 1 AND 5),
     estado_contratista       ENUM('ACTIVO','INACTIVO','SUSPENDIDO') NOT NULL DEFAULT 'ACTIVO',
-    id_estado_operacion      INT NOT NULL, -- Sustituye al ENUM anterior
+    id_estado_operacion      INT NOT NULL,
     FOREIGN KEY (id_estado_operacion) REFERENCES Estado(id_estado)
 );
 
@@ -103,7 +100,7 @@ CREATE TABLE Proyecto (
     calificacion_proyecto TINYINT CHECK (calificacion_proyecto BETWEEN 1 AND 5),
     estatus_proyecto      ENUM('PLANEACION','EN_CURSO','PENDIENTE','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'PLANEACION',
     descripcion_proyecto  VARCHAR(500) DEFAULT 'Sin descripcion',
-    imagen_proyecto_url   VARCHAR(255) NULL, -- <-- NUEVO CAMPO PARA IMAGEN DEL PROYECTO
+    imagen_proyecto_url   VARCHAR(255) NULL,
     FOREIGN KEY (id_domicilio) REFERENCES Domicilio(id_domicilio) ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
@@ -115,8 +112,8 @@ CREATE TABLE Trabajador (
     nss_trabajador          VARCHAR(11)  UNIQUE,
     nacionalidad            VARCHAR(100) NOT NULL,
     id_migratorio           INT NULL,
-    id_domicilio            INT NOT NULL, -- Referencia a tabla Domicilios
-    foto_perfil_url         VARCHAR(255) NULL, -- <-- NUEVO CAMPO PARA IMAGEN
+    id_domicilio            INT NOT NULL,
+    foto_perfil_url         VARCHAR(255) NULL,
     puesto                  VARCHAR(100) NOT NULL,
     desc_puesto             VARCHAR(500) NOT NULL,
     especialidad_trabajador VARCHAR(100) NOT NULL,
@@ -129,7 +126,7 @@ CREATE TABLE Trabajador (
     estado_trabajador       ENUM('DESCANSO','VACACIONES','INCAPACIDAD','ACTIVO','INACTIVO','BAJA','BOLETINADO') NOT NULL DEFAULT 'ACTIVO',
     evaluacion_trabajador   TINYINT      CHECK (evaluacion_trabajador BETWEEN 1 AND 5),
     fecha_ingreso           DATE         NOT NULL,
-    id_estado_calidad_vida  INT NOT NULL, -- Referencia a tabla Estado
+    id_estado_calidad_vida  INT NOT NULL,
     sexo                    ENUM('Masculino','Femenino','Otro') NOT NULL,
     ant_penal               VARCHAR(500),
     deudor_alim             VARCHAR(500),
@@ -249,7 +246,7 @@ SET DEFAULT ROLE 'ROL_ADMIN' TO 'Admin_unico'@'%';
 DELIMITER //
 
 -- T1: Validar fechas de proyecto
-CREATE TRIGGER trg_validar_fechas_proyecto
+CREATE DEFINER = CURRENT_USER TRIGGER trg_validar_fechas_proyecto
 BEFORE INSERT ON Proyecto FOR EACH ROW
 BEGIN
     IF NEW.fecha_estimada_fin IS NOT NULL AND NEW.fecha_estimada_fin < NEW.fecha_estimada_inicio THEN
@@ -257,8 +254,8 @@ BEGIN
     END IF;
 END //
 
--- T2: Cierre automático de asignaciones
-CREATE TRIGGER trg_cerrar_asignaciones_finalizacion
+-- T2: Cierre automatico de asignaciones
+CREATE DEFINER = CURRENT_USER TRIGGER trg_cerrar_asignaciones_finalizacion
 AFTER UPDATE ON Proyecto FOR EACH ROW
 BEGIN
     IF NEW.estatus_proyecto IN ('FINALIZADO','CANCELADO') AND OLD.estatus_proyecto NOT IN ('FINALIZADO','CANCELADO') THEN
@@ -272,15 +269,15 @@ BEGIN
     END IF;
 END //
 
--- T3: Normalización de correos
-CREATE TRIGGER trg_norm_correo_empleado BEFORE INSERT ON Empleado FOR EACH ROW 
+-- T3: Normalizacion de correos
+CREATE DEFINER = CURRENT_USER TRIGGER trg_norm_correo_empleado BEFORE INSERT ON Empleado FOR EACH ROW 
 BEGIN SET NEW.correo_empleado = LOWER(TRIM(NEW.correo_empleado)); END //
 
-CREATE TRIGGER trg_norm_correo_trabajador BEFORE INSERT ON Trabajador FOR EACH ROW 
+CREATE DEFINER = CURRENT_USER TRIGGER trg_norm_correo_trabajador BEFORE INSERT ON Trabajador FOR EACH ROW 
 BEGIN SET NEW.correo_trabajador = LOWER(TRIM(NEW.correo_trabajador)); END //
 
 -- SP: Crear usuario de BD
-CREATE PROCEDURE sp_crear_usuario_desde_empleado(IN emp_id INT, IN temp_password VARCHAR(255))
+CREATE DEFINER = CURRENT_USER PROCEDURE sp_crear_usuario_desde_empleado(IN emp_id INT, IN temp_password VARCHAR(255))
 BEGIN
     DECLARE emp_correo VARCHAR(100);
     DECLARE r_nombre VARCHAR(50);
